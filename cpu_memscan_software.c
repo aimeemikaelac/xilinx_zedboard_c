@@ -52,6 +52,8 @@ int getValueAtAddress(unsigned gpio_addr, int* value){
 
 	munmap(ptr, page_size);
 
+	close(fd);
+
 	return 0;
 }
 
@@ -87,6 +89,8 @@ int writeValueToAddress(int value, unsigned gpio_addr){
 //	*((unsigned *)(ptr + page_offset + 8)) = value;
 
 	munmap(ptr, page_size);
+
+	close(fd);
 
 	return 0;
 }
