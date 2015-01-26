@@ -101,12 +101,12 @@ unsigned getMemscannerBaseAddress(){
 
 void enableAxiMM2SControlBit(int bitIntValue){
 	unsigned addr = getAxiDmaBaseAddress();
-	printf("\nBase address: %08x\n", addr);
+//	printf("\nBase address: %08x\n", addr);
 	int statusValue;
 	getValueAtAddress(addr, &statusValue);
-	printf("\nOriginal status value: %08x\n", statusValue);
+//	printf("\nOriginal status value: %08x\n", statusValue);
 	statusValue |= bitIntValue;
-	printf("\nStatus value: %08x\n", statusValue);
+//	printf("\nStatus value: %08x\n", statusValue);
 	writeValueToAddress(statusValue, addr);
 }
 
@@ -137,6 +137,10 @@ void setAxiDmaAddress(unsigned addr){
 
 void setAxiDmaTransferLength(int length){
 	writeValueToAddress(length, getAxiDmaBaseAddress() + 0x28);
+}
+
+void setAxiDmaInterrupt(){
+	enableAxiMM2SControlBit(4096);
 }
 
 int getAxiDmaConfigRegister(){
@@ -182,6 +186,8 @@ int main(void){
 	for(i = 0; i<1000; i++){
 		//reset axi dma at start
 		enableResetAxiMM2SDma();
+		//enable interupt on complete
+		setAxiDmaInterrupt();
 		//setup the dma engine
 			//enable
 		runAxiMM2SDma();
