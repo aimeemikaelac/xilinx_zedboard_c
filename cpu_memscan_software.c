@@ -11,11 +11,9 @@
 //the run/stop bit in the AXI_DMA control register
 #define AXI_RS_BIT 1
 
-#define MEMSCANNER_BASE_ADDRESS "0x43C10000"
+#define MEMSCANNER_BASE_ADDRESS "0x43C00000"
 #define MEMSCANNER_AP_START_ENABLE_OFFSET 0x14
 #define MEMSCANNER_AP_STATUS_OFFSET 0x1C
-
-#define MEMSCANNER_ACCELERATOR_BASE_ADDRESS "0x43C00000"
 
 //TODO: refactor this and write function, as setup and unmap is the same in both
 //get the value at memory address gpio_addr in system address
@@ -101,10 +99,6 @@ unsigned getMemscannerBaseAddress(){
 	return strtoul(MEMSCANNER_BASE_ADDRESS, NULL, 0);
 }
 
-unsigned getMemscannerAcceleratorBaseAddress(){
-	return strtoul(MEMSCANNER_ACCELERATOR_BASE_ADDRESS, NULL, 0);
-}
-
 void enableAxiMM2SControlBit(int bitIntValue){
 	unsigned addr = getAxiDmaBaseAddress();
 	int statusValue;
@@ -148,33 +142,23 @@ int getAxiDmaStatusRegister(){
 	return value;
 }
 
-void startMemScanner(){
-	writeValueToAddress(1, getMemscannerBaseAddress() + MEMSCANNER_AP_START_ENABLE_OFFSET);
-}
-
-void stopMemScanner(){
-	writeValueToAddress(0, getMemscannerBaseAddress() + MEMSCANNER_AP_START_ENABLE_OFFSET);
-}
-
 int getMemscannerOutput(){
 	int output;
-	getValueAtAddress(getMemscannerAcceleratorBaseAddress() + 0x14, &output);
+	getValueAtAddress(getMemscannerBaseAddress() + 0x14, &output);
 	return output;
 }
 
-int getMemscannerStatus(){
-	int status;
-	getValueAtAddress(getMemscannerBaseAddress() + MEMSCANNER_AP_STATUS_OFFSET, &status);
-	return status;
+int getMemscannerMemoryValue(){
+	int output;
+	getValueAtAddress(getMemscannerBaseAddress() + 0x1c, &output);
+	return output;
 }
+
 int main(void){
 	printf("Running memscanner on first 1000 word of system memory");
 	unsigned addr = 0;
 	int i;
-	startMemScanner();
 	for(i = 0; i<1000; i++){
-		//enable the memscanner
-		startMemScanner();
 		//setup the dma engine
 			//enable
 		runAxiMM2SDma();
@@ -189,7 +173,7 @@ int main(void){
 		//print output of scanner
 		printf("\nCurrent scanner output: %d\n", getMemscannerOutput());
 		//print status of scanner
-		printf("\nCurrent scanner ap_ctl status: %d\n", getMemscannerStatus());
+		printf("\nCurrent memory value read: %d\n", getMemscannerMemoryValue());
 		//increment address
 		addr += 4;
 	}
