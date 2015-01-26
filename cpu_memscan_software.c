@@ -180,6 +180,7 @@ int main(void){
 		//setup the dma engine
 			//enable
 		runAxiMM2SDma();
+		printf("\nAxi Dma config register after enabling: %08x\n", getAxiDmaConfigRegister());
 			//write address
 		setAxiDmaAddress(addr);
 			//write length as 4 bytes
