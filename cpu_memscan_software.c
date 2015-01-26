@@ -136,6 +136,24 @@ void setAxiDmaTransferLength(int length){
 	writeValueToAddress(length, getAxiDmaBaseAddress() + 0x28);
 }
 
+int getAxiDmaConfigRegister(){
+	int value;
+	getValueAtAddress(getAxiDmaBaseAddress(), &value);
+	return value;
+}
+
+int getAxiDmaAddressRegister(){
+	int value;
+	getValueAtAddress(getAxiDmaBaseAddress() + 0x18, &value);
+	return value;
+}
+
+int getAxiDmaLengthRegister(){
+	int value;
+	getValueAtAddress(getAxiDmaBaseAddress() + 0x28, &value);
+	return value;
+}
+
 int getAxiDmaStatusRegister(){
 	int value;
 	getValueAtAddress(getAxiDmaBaseAddress() + 0x4, &value);
@@ -167,6 +185,9 @@ int main(void){
 			//write length as 4 bytes
 		setAxiDmaTransferLength(4);
 		//poll until transfer complete
+		printf("\nAxi Dma config register: %08x\n", getAxiDmaConfigRegister());
+		printf("\nAxi Dma Address register: %08x\n", getAxiDmaAddressRegister());
+		printf("\nAxi Dma Length register: %08x\n", getAxiDmaLengthRegister());
 		printf("\nAxi Dma status register: %08x\n", getAxiDmaStatusRegister());
 
 		while(getAxiDmaStatusRegister() & 2){
