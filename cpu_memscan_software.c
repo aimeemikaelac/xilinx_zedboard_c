@@ -104,6 +104,7 @@ void enableAxiMM2SControlBit(int bitIntValue){
 	printf("\nBase address: %08x\n", addr);
 	int statusValue;
 	getValueAtAddress(addr, &statusValue);
+	printf("\nOriginal status value: %08x\n", statusValue);
 	statusValue &= bitIntValue;
 	printf("\nStatus value: %08x\n", statusValue);
 	writeValueToAddress(statusValue, addr);
