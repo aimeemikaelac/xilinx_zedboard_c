@@ -202,8 +202,8 @@ int main(void){
 		printf("\nAxi Dma Length register: %08x\n", getAxiDmaLengthRegister());
 		printf("\nAxi Dma status register: %08x\n", getAxiDmaStatusRegister());
 
-		while(getAxiDmaStatusRegister() & 2){
-			printf("\nAxi Dma status register: %08x\n", getAxiDmaStatusRegister());
+		while(!(getAxiDmaStatusRegister() & 2)){
+//			printf("\nAxi Dma status register: %08x\n", getAxiDmaStatusRegister());
 		}
 		//print address read
 		printf("\nRead from address: %08x\n", addr);
