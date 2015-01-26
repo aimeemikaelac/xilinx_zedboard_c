@@ -7,7 +7,7 @@
 //control bits for the axi dma taken from LogiCORE IP AXI DMA v7.1, PG021 April 2, 2014 from Xilinx - the documentation for the AXI_DMA core
 
 #define AXI_DMA_BASE_ADDRESS "0x40400000"
-#define AXI_RESET_BIT 3
+#define AXI_RESET_BIT 4
 //the run/stop bit in the AXI_DMA control register
 #define AXI_RS_BIT 1
 
@@ -176,10 +176,12 @@ int getMemscannerMemoryValue(){
 }
 
 int main(void){
-	printf("Running memscanner on first 1000 word of system memory");
-	unsigned addr = 0;
+//	printf("Running memscanner on first 1000 word of system memory");
+	unsigned addr = 0x10000000;
 	int i;
 	for(i = 0; i<1000; i++){
+		//reset axi dma at start
+		enableResetAxiMM2SDma();
 		//setup the dma engine
 			//enable
 		runAxiMM2SDma();
