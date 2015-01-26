@@ -211,7 +211,7 @@ int main(void){
 		printf("\nCurrent scanner output: %d\n", getMemscannerOutput());
 		//print status of scanner
 		int memoryValue = getMemscannerMemoryValue();
-		printf("\nCurrent memory value read: %d\nAs hex: %08x", memoryValue, memoryValue);
+		printf("\nCurrent memory value read: %d\nAs hex: %08x\n", memoryValue, memoryValue);
 		//increment address
 		addr += 4;
 	}
