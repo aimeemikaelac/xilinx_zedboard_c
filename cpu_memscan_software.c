@@ -179,6 +179,12 @@ int getMemscannerMemoryValue(){
 	return output;
 }
 
+int getMemscannerCounterValue(){
+	int output;
+	getValueAtAddress(getMemscannerBaseAddress() + 0x24, &output);
+	return output;
+}
+
 int main(void){
 //	printf("Running memscanner on first 1000 word of system memory");
 	unsigned addr = 0x10000000;
@@ -191,7 +197,7 @@ int main(void){
 		//setup the dma engine
 			//enable
 		runAxiMM2SDma();
-		printf("\nAxi Dma config register after enabling: %08x\n", getAxiDmaConfigRegister());
+		printf("\n------------------\nAxi Dma config register after enabling: %08x\n", getAxiDmaConfigRegister());
 			//write address
 		setAxiDmaAddress(addr);
 			//write length as 4 bytes
@@ -209,9 +215,11 @@ int main(void){
 		printf("\nRead from address: %08x\n", addr);
 		//print output of scanner
 		printf("\nCurrent scanner output: %d\n", getMemscannerOutput());
+
+		printf("\nCurrent counter value: %d\n", getMemscannerCounterValue());
 		//print status of scanner
 		int memoryValue = getMemscannerMemoryValue();
-		printf("\nCurrent memory value read: %d\nAs hex: %08x\n", memoryValue, memoryValue);
+		printf("\nCurrent memory value read: %d\nAs hex: %08x\n--------------------\n", memoryValue, memoryValue);
 		//increment address
 		addr += 4;
 	}
