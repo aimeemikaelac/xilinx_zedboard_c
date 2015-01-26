@@ -45,7 +45,7 @@ int getValueAtAddress(unsigned gpio_addr, int* value){
 
 	/* Read value from the device register */
 	*value = *((int *)(ptr + page_offset));
-	printf("gpio dev-mem test: input: %08x\n", *value);
+//	printf("gpio dev-mem test: input: %08x\n", *value);
 
 	munmap(ptr, page_size);
 
