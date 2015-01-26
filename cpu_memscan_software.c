@@ -29,7 +29,6 @@ int getValueAtAddress(unsigned gpio_addr, int* value){
 
 	if (gpio_addr == 0) {
 		printf("GPIO physical address is required.\n");
-		usage();
 		return -1;
 	}
 
@@ -66,7 +65,6 @@ int writeValueToAddress(int value, unsigned gpio_addr){
 
 	if (gpio_addr == 0) {
 		printf("GPIO physical address is required.\n");
-		usage();
 		return -1;
 	}
 
@@ -191,4 +189,5 @@ int main(void){
 		//increment address
 		addr += 4;
 	}
+	return 0;
 }
