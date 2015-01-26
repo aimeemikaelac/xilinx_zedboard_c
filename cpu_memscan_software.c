@@ -101,6 +101,7 @@ unsigned getMemscannerBaseAddress(){
 
 void enableAxiMM2SControlBit(int bitIntValue){
 	unsigned addr = getAxiDmaBaseAddress();
+	printf("\nBase address: %08x\n", addr);
 	int statusValue;
 	getValueAtAddress(addr, &statusValue);
 	statusValue &= bitIntValue;
