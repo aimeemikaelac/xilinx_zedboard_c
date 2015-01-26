@@ -167,7 +167,11 @@ int main(void){
 			//write length as 4 bytes
 		setAxiDmaTransferLength(4);
 		//poll until transfer complete
-		while(getAxiDmaStatusRegister() & 2){}
+		printf("\nAxi Dma status register: %08x\n", getAxiDmaStatusRegister());
+
+		while(getAxiDmaStatusRegister() & 2){
+			printf("\nAxi Dma status register: %08x\n", getAxiDmaStatusRegister());
+		}
 		//print address read
 		printf("\nRead from address: %08x\n", addr);
 		//print output of scanner
