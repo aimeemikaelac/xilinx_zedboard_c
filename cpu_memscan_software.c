@@ -121,15 +121,15 @@ void disableAxiMM2SControlBit(int bitIntValue){
 }
 
 void enableResetAxiMM2SDma(){
-	enableAxiControlBit(AXI_RESET_BIT);
+	enableAxiMM2SControlBit(AXI_RESET_BIT);
 }
 
 void runAxiMM2SDma(){
-	enableAxiControlBit(AXI_RS_BIT);
+	enableAxiMM2SControlBit(AXI_RS_BIT);
 }
 
 void stopAxiMM2SDma(){
-	disableAxiControlBit(AXI_RS_BIT);
+	disableAxiMM2SControlBit(AXI_RS_BIT);
 }
 
 void setAxiDmaAddress(unsigned addr){
