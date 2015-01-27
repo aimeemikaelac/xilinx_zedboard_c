@@ -100,10 +100,6 @@ unsigned getMemscannerBaseAddress(){
 	return strtoul(MEMSCANNER_BASE_ADDRESS, NULL, 0);
 }
 
-unsigned getControllerBaseAddress(){
-	return strtoul(CONTROLLER_BASE_ADDRESS, NULL, 0);
-}
-
 int getMemscannerOutput(){
 	int output;
 	getValueAtAddress(getMemscannerBaseAddress() + 0x14, &output);
