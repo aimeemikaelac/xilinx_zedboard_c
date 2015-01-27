@@ -17,6 +17,7 @@
 #define GPIO_0_ADDRESS 0x41200000
 #define GPIO_1_ADDRESS 0x41210000
 #define GPIO_2_ADDRESS 0x41220000
+#define GPIO_3_ADDRESS 0x41230000
 #define GPIO_PORT_1 0x00
 #define GPIO_PORT_2 0x08
 
@@ -150,27 +151,45 @@ int getControllerDmaStatus(){
 	return output;
 }
 
+int getMemoryAddress(){
+	int output;
+	getValueAtAddress(GPIO_3_ADDRESS, &output);
+	return output;
+}
+
 int main(void){
 //	printf("Running memscanner on first 1000 word of system memory");
 	unsigned startAddr = 0x10000000;
+	int iterations = 100000;
 	setControllerStartAddress(startAddr);
 	setControllerReadLength(4);
-	setControllerIterations(1000);
+	setControllerIterations(iterations);
 	setControllerEnabled();
-	int lastCounter = 0;
+	unsigned lastCounter = getMemscannerMemoryValue();
+	unsigned currentAddress = getMemoryAddress();
 	int currentCounter = getMemscannerCounterValue();
-	while(lastCounter < 1000){
-		printf("Current counter: %d\n", getMemscannerCounterValue());
+	int dummy = 0;
+	while(lastCounter < iterations && currentAddress < (startAddr + iterations * 4)){
+		currentCounter = getMemscannerCounterValue();
+		currentAddress = getMemoryAddress();
+		printf("Current counter: %d\n", currentCounter);
 		printf("\nDMA control register value: %08x", getControllerDmaControl());
 		printf("\nDMA status register value: %08x", getControllerDmaStatus());
+		printf("\nCurrent address: %08x", currentAddress);
+		printf("\nTest");
 		//spin while counter is the same
-		while(lastCounter == currentCounter){}
-		currentCounter = getMemscannerCounterValue();
+//		while(currentCounter < 1000 && lastCounter == currentCounter){
+//			printf("\nTest");
+//			dummy++;
+//		}
 		printf("\n---------\nGot output: %d\nMemory value as hex: %08x\nFor counter number: %d", getMemscannerOutput(), getMemscannerMemoryValue(), currentCounter);
 		printf("\nDMA control register value: %08x", getControllerDmaControl());
 		printf("\nDMA status register value: %08x", getControllerDmaStatus());
 		printf("\n---------\n");
+		lastCounter = currentCounter;
 	}
 
+	setControllerDisabled();
+	printf("\nExiting\n");
 	return 0;
 }
