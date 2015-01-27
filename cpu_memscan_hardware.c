@@ -8,15 +8,17 @@
 #define MEMSCANNER_AP_START_ENABLE_OFFSET 0x14
 #define MEMSCANNER_AP_STATUS_OFFSET 0x1C
 
-#define CONTROLLER_BASE_ADDRESS "0x43C10000"
-#define CONTROLLER_START_ADDRESS_OFFSET 0x10
-#define CONTROLLER_READ_LENGTH_OFFSET 0x18
-#define CONTROLLER_ITERATIONS_OFFSET 0x20
-#define CONTROLLER_ENABLED_OFFSET 0x28
+//#define CONTROLLER_BASE_ADDRESS "0x43C10000"
+//#define CONTROLLER_START_ADDRESS_OFFSET 0x10
+//#define CONTROLLER_READ_LENGTH_OFFSET 0x18
+//#define CONTROLLER_ITERATIONS_OFFSET 0x20
+//#define CONTROLLER_ENABLED_OFFSET 0x28
 
-#define GPIO_CONTROLLER_DMA_OUT_ADDRESS "0x41200000"
-#define GPIO_CONTROLLER_PORT_1 0x00
-#define GPIO_CONTROLLER_PORT_2 0x08
+#define GPIO_0_ADDRESS 0x41200000
+#define GPIO_1_ADDRESS 0x41210000
+#define GPIO_2_ADDRESS 0x41220000
+#define GPIO_PORT_1 0x00
+#define GPIO_PORT_2 0x08
 
 //TODO: refactor this and write function, as setup and unmap is the same in both
 //get the value at memory address gpio_addr in system address
@@ -102,10 +104,6 @@ unsigned getControllerBaseAddress(){
 	return strtoul(CONTROLLER_BASE_ADDRESS, NULL, 0);
 }
 
-unsigned getGpioBaseAddress(){
-	return strtoul(GPIO_CONTROLLER_DMA_OUT_ADDRESS, NULL, 0);
-}
-
 int getMemscannerOutput(){
 	int output;
 	getValueAtAddress(getMemscannerBaseAddress() + 0x14, &output);
@@ -125,44 +123,34 @@ int getMemscannerCounterValue(){
 }
 
 void setControllerStartAddress(unsigned startAddr){
-	writeValueToAddress(startAddr, getControllerBaseAddress() + CONTROLLER_START_ADDRESS_OFFSET);
+	writeValueToAddress(startAddr, GPIO_0_ADDRESS);
 }
 
 void setControllerReadLength(int length){
-	writeValueToAddress(length, getControllerBaseAddress() + CONTROLLER_READ_LENGTH_OFFSET);
+	writeValueToAddress(length, GPIO_0_ADDRESS + GPIO_PORT_2);
 }
 
 void setControllerIterations(int iterations){
-	writeValueToAddress(iterations, getControllerBaseAddress() + CONTROLLER_ITERATIONS_OFFSET);
+	writeValueToAddress(iterations, GPIO_1_ADDRESS);
 }
 
 void setControllerEnabled(){
-	writeValueToAddress(1, getControllerBaseAddress() + CONTROLLER_ENABLED_OFFSET);
+	writeValueToAddress(1, GPIO_1_ADDRESS + GPIO_PORT_2);
 }
 
 void setControllerDisabled(){
-	writeValueToAddress(0, getControllerBaseAddress() + CONTROLLER_ENABLED_OFFSET);
-}
-
-void setControllerApStart(){
-	writeValueToAddress(1, getControllerBaseAddress());
+	writeValueToAddress(0, GPIO_1_ADDRESS + GPIO_PORT_2);
 }
 
 int getControllerDmaControl(){
 	int output;
-	getValueAtAddress(getGpioBaseAddress(), &output);
+	getValueAtAddress(GPIO_2_ADDRESS, &output);
 	return output;
 }
 
 int getControllerDmaStatus(){
 	int output;
-	getValueAtAddress(getGpioBaseAddress() + GPIO_CONTROLLER_PORT_2, &output);
-	return output;
-}
-
-int getControllerApRegister(){
-	int output;
-	getValueAtAddress(getControllerBaseAddress(), &output);
+	getValueAtAddress(GPIO_2_ADDRESS + GPIO_PORT_2, &output);
 	return output;
 }
 
@@ -173,9 +161,6 @@ int main(void){
 	setControllerReadLength(4);
 	setControllerIterations(1000);
 	setControllerEnabled();
-	setControllerApStart();
-	//disabled so that is does not start again after it is finished?
-	setControllerDisabled();
 	int lastCounter = 0;
 	int currentCounter = getMemscannerCounterValue();
 	while(lastCounter < 1000){
