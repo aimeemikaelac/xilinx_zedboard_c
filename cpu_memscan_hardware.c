@@ -14,6 +14,10 @@
 #define CONTROLLER_ITERATIONS_OFFSET 0x20
 #define CONTROLLER_ENABLED_OFFSET 0x28
 
+#define GPIO_CONTROLLER_DMA_OUT_ADDRESS "0x41200000"
+#define GPIO_CONTROLLER_PORT_1 0x00
+#define GPIO_CONTROLLER_PORT_2 0x08
+
 //TODO: refactor this and write function, as setup and unmap is the same in both
 //get the value at memory address gpio_addr in system address
 //map using GPIO and /dev/map. program must be run as root
@@ -98,6 +102,10 @@ unsigned getControllerBaseAddress(){
 	return strtoul(CONTROLLER_BASE_ADDRESS, NULL, 0);
 }
 
+unsigned getGpioBaseAddress(){
+	return strtoul(GPIO_CONTROLLER_DMA_OUT_ADDRESS, NULL, 0);
+}
+
 int getMemscannerOutput(){
 	int output;
 	getValueAtAddress(getMemscannerBaseAddress() + 0x14, &output);
@@ -142,20 +150,20 @@ void setControllerApStart(){
 
 int getControllerDmaControl(){
 	int output;
-	getValueAtAddress(getControllerBaseAddress() + 0x30, &output);
+	getValueAtAddress(getGpioBaseAddress(), &output);
 	return output;
 }
 
 int getControllerDmaStatus(){
 	int output;
-	getValueAtAddress(getControllerBaseAddress() + 0x38, &output);
+	getValueAtAddress(getGpioBaseAddress() + GPIO_CONTROLLER_PORT_2, &output);
 	return output;
 }
 
 int getControllerApRegister(){
 	int output;
-		getValueAtAddress(getControllerBaseAddress(), &output);
-		return output;
+	getValueAtAddress(getControllerBaseAddress(), &output);
+	return output;
 }
 
 int main(void){
