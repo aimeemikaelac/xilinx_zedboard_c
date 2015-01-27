@@ -161,11 +161,11 @@ int getControllerApRegister(){
 int main(void){
 //	printf("Running memscanner on first 1000 word of system memory");
 	unsigned startAddr = 0x10000000;
-	setControllerApStart();
 	setControllerStartAddress(startAddr);
 	setControllerReadLength(4);
 	setControllerIterations(1000);
 	setControllerEnabled();
+	setControllerApStart();
 	//disabled so that is does not start again after it is finished?
 	setControllerDisabled();
 	int lastCounter = 0;
