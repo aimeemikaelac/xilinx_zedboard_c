@@ -161,7 +161,6 @@ int main(void){
 	int currentCounter = getMemscannerCounterValue();
 	while(lastCounter < 1000){
 		printf("Current counter: %d\n", getMemscannerCounterValue());
-		printf("\nController ap_ctl register value: %08x", getControllerApRegister());
 		printf("\nDMA control register value: %08x", getControllerDmaControl());
 		printf("\nDMA status register value: %08x", getControllerDmaStatus());
 		//spin while counter is the same
