@@ -148,6 +148,7 @@ int main(void){
 	int lastCounter = 0;
 	int currentCounter = getMemscannerCounterValue();
 	while(lastCounter < 1000){
+		printf("Current counter: %d\n", getMemscannerCounterValue());
 		//spin while counter is the same
 		while(lastCounter == currentCounter){}
 		currentCounter = getMemscannerCounterValue();
