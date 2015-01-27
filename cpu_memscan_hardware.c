@@ -90,6 +90,13 @@ int writeValueToAddress(int value, unsigned gpio_addr){
 	return 0;
 }
 
+unsigned getMemscannerBaseAddress(){
+	return strtoul(MEMSCANNER_BASE_ADDRESS, NULL, 0);
+}
+
+unsigned getControllerBaseAddress(){
+	return strtoul(CONTROLLER_BASE_ADDRESS, NULL, 0);
+}
 
 int getMemscannerOutput(){
 	int output;
@@ -110,23 +117,23 @@ int getMemscannerCounterValue(){
 }
 
 void setControllerStartAddress(unsigned startAddr){
-	writeValueToAddress(startAddr, CONTROLLER_BASE_ADDRESS + CONTROLLER_START_ADDRESS_OFFSET);
+	writeValueToAddress(startAddr, getControllerBaseAddress() + CONTROLLER_START_ADDRESS_OFFSET);
 }
 
 void setControllerReadLength(int length){
-	writeValueToAddress(length, CONTROLLER_BASE_ADDRESS + CONTROLLER_READ_LENGTH_OFFSET);
+	writeValueToAddress(length, getControllerBaseAddress() + CONTROLLER_READ_LENGTH_OFFSET);
 }
 
 void setControllerIterations(int iterations){
-	writeValueToAddress(iterations, CONTROLLER_BASE_ADDRESS + CONTROLLER_ITERATIONS_OFFSET);
+	writeValueToAddress(iterations, getControllerBaseAddress() + CONTROLLER_ITERATIONS_OFFSET);
 }
 
 void setControllerEnabled(){
-	writeValueToAddress(1, CONTROLLER_BASE_ADDRESS + CONTROLLER_ENABLED_OFFSET);
+	writeValueToAddress(1, getControllerBaseAddress() + CONTROLLER_ENABLED_OFFSET);
 }
 
 void setControllerDisabled(){
-	writeValueToAddress(0, CONTROLLER_BASE_ADDRESS + CONTROLLER_ENABLED_OFFSET);
+	writeValueToAddress(0, getControllerBaseAddress() + CONTROLLER_ENABLED_OFFSET);
 }
 
 int main(void){
