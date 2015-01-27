@@ -136,9 +136,26 @@ void setControllerDisabled(){
 	writeValueToAddress(0, getControllerBaseAddress() + CONTROLLER_ENABLED_OFFSET);
 }
 
+void setControllerApStart(){
+	writeValueToAddress(1, getControllerBaseAddress());
+}
+
+int getControllerDmaControl(){
+	int output;
+	getValueAtAddress(getControllerBaseAddress() + 0x30, &output);
+	return output;
+}
+
+int getControllerDmaStatus(){
+	int output;
+	getValueAtAddress(getControllerBaseAddress() + 0x38, &output);
+	return output;
+}
+
 int main(void){
 //	printf("Running memscanner on first 1000 word of system memory");
 	unsigned startAddr = 0x10000000;
+	setControllerApStart();
 	setControllerStartAddress(startAddr);
 	setControllerReadLength(4);
 	setControllerIterations(1000);
@@ -149,10 +166,14 @@ int main(void){
 	int currentCounter = getMemscannerCounterValue();
 	while(lastCounter < 1000){
 		printf("Current counter: %d\n", getMemscannerCounterValue());
+		printf("\nDMA control register value: %08x", getControllerDmaControl());
+		printf("\nDMA status register value: %08x", getControllerDmaStatus());
 		//spin while counter is the same
 		while(lastCounter == currentCounter){}
 		currentCounter = getMemscannerCounterValue();
 		printf("\n---------\nGot output: %d\nMemory value as hex: %08x\nFor counter number: %d", getMemscannerOutput(), getMemscannerMemoryValue(), currentCounter);
+		printf("\nDMA control register value: %08x", getControllerDmaControl());
+		printf("\nDMA status register value: %08x", getControllerDmaStatus());
 		printf("\n---------\n");
 	}
 
