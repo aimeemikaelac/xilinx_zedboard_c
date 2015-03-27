@@ -33,6 +33,8 @@ int getValueAtAddress(unsigned address, int* value);
 int writeValueToAddress(int value, unsigned address);
 //get a pointer to a memory region of a certain length through /dev/mem
 shared_memory getSharedMemoryArea(unsigned address, unsigned length);
+//cleanup a shared_memory struct
+void cleanupSharedMemoryPointer(shared_memory mem);
 
 
 
