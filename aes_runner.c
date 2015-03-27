@@ -91,7 +91,7 @@ int main(){
 	writeKey(key);
 	writeSourceAddress(source);
 	writeDestinationAddress(dest);
-	writeLength(128);
+	writeLength(1);
 	writeEnable(1);
 	int finished = readFinished();
 	printf("\nWaiting for fabric.");
