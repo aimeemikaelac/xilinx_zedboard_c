@@ -59,18 +59,25 @@ int main(){
 
 	unsigned char* encrypted_data = (unsigned char*)malloc(16);
 
+	if(encrypted_data == NULL){
+		printf("\nCould not allocated encrypted data buffer");
+		return -1;
+	}
 	AES_KEY aes_key;
 	AES_set_encrypt_key(key, 128, &aes_key);
 
 	AES_encrypt((unsigned char*)data_to_encrypt, encrypted_data, &aes_key);
 
 	printf("\nEncrypted data as hex: 0x - from openssl");
+	printf("\n");
 	for(i = 0; i<16; i++){
 		printf("%02x", encrypted_data[i]);
 	}
 	int source = SHARED_MEM_BASE;
+	printf("\nShared memory base: %08x", source);
 	int length = SHARED_MEM_LENGTH;
 	shared_memory shared_system_mem = getSharedMemoryArea(source, length);
+	printf("\nNo segfault");
 	if(shared_system_mem == NULL){
 		printf("Error getting shared system memory pointer");
 		return -1;
