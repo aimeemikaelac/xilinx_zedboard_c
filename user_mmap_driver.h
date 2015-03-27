@@ -10,6 +10,10 @@
 
 #include <sys/mman.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <stdlib.h>
 
 typedef struct shared_memory{
 	int fd;
