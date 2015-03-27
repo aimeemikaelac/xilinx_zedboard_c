@@ -4,9 +4,9 @@
 #include <stdio.h>
 
 
-#define SHARED_MEM_BASE 524288000
+#define SHARED_MEM_BASE 0x1F400000
 
-#define SHARED_MEM_LENGTH 16777216
+#define SHARED_MEM_LENGTH 0x10000
 
 #define AES_CONTROL_BASE "0x43C00000"
 
@@ -68,11 +68,11 @@ int main(){
 
 	AES_encrypt((unsigned char*)data_to_encrypt, encrypted_data, &aes_key);
 
-	printf("\nEncrypted data as hex: 0x - from openssl");
-	printf("\n");
+	printf("\nEncrypted data as hex: 0x");
 	for(i = 0; i<16; i++){
 		printf("%02x", encrypted_data[i]);
 	}
+	printf(" - from openssl\n");
 	int source = SHARED_MEM_BASE;
 	printf("\nShared memory base: %08x", source);
 	int length = SHARED_MEM_LENGTH;
@@ -85,8 +85,8 @@ int main(){
 	int destOffset = length/2;
 	int dest = source + destOffset;
 	for(i = 0; i<16; i++){
-		((char*)shared_system_mem)[i] = data_to_encrypt[i];
-		((char*)shared_system_mem)[destOffset + i] = 0;
+		((char*)shared_system_mem->ptr)[i] = data_to_encrypt[i];
+		((char*)shared_system_mem->ptr)[destOffset + i] = 0;
 	}
 	writeKey(key);
 	writeSourceAddress(source);
@@ -94,13 +94,22 @@ int main(){
 	writeLength(128);
 	writeEnable(1);
 	int finished = readFinished();
-	while(finished == 0){
-		printf("\nFabric finished: %d", finished);
-		finished = readFinished();
+	printf("\nWaiting for fabric.");
+//	while(finished == 0){
+//		printf(".");
+//		finished = readFinished();
+//	}
+	printf("\n");
+	printf("\nData to encrypt as hex: 0x");
+	for(i = 0; i<16; i++){
+		printf("%02x", ((char*)shared_system_mem->ptr)[i]);
 	}
-	printf("\nEncrypted data as hex: 0x - from fabric");
-		for(i = 0; i<16; i++){
-			printf("%02x", ((char*)shared_system_mem->ptr)[destOffset + i]);
-		}
+	printf("\n");
+	printf("\nEncrypted data as hex: 0x");
+	for(i = 0; i<16; i++){
+		printf("%02x", ((char*)shared_system_mem->ptr)[destOffset + i]);
+	}
+	printf(" - from fabric\n");
+	return 0;
 }
 
