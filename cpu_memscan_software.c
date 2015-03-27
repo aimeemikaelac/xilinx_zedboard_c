@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <fcntl.h>
+#include "user_mmap_driver.h"
 
 //control bits for the axi dma taken from LogiCORE IP AXI DMA v7.1, PG021 April 2, 2014 from Xilinx - the documentation for the AXI_DMA core
 
@@ -14,82 +15,6 @@
 #define MEMSCANNER_BASE_ADDRESS "0x43C00000"
 #define MEMSCANNER_AP_START_ENABLE_OFFSET 0x14
 #define MEMSCANNER_AP_STATUS_OFFSET 0x1C
-
-//TODO: refactor this and write function, as setup and unmap is the same in both
-//get the value at memory address gpio_addr in system address
-//map using GPIO and /dev/map. program must be run as root
-int getValueAtAddress(unsigned gpio_addr, int* value){
-	unsigned page_addr, page_offset;
-	//get page size from system
-	unsigned page_size=sysconf(_SC_PAGESIZE);
-	int fd;
-	void * ptr;
-
-	if (gpio_addr == 0) {
-		printf("GPIO physical address is required.\n");
-		return -1;
-	}
-
-	/* Open /dev/mem file */
-	fd = open ("/dev/mem", O_RDWR);
-	if (fd < 1) {
-		perror("Error opening /dev/mem in getValueAtAddress: ");
-		return -1;
-	}
-
-	/* mmap the device into memory */
-	page_addr = (gpio_addr & (~(page_size-1)));
-	page_offset = gpio_addr - page_addr;
-	ptr = mmap(NULL, page_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, page_addr);
-
-
-	/* Read value from the device register */
-	*value = *((int *)(ptr + page_offset));
-//	printf("gpio dev-mem test: input: %08x\n", *value);
-
-	munmap(ptr, page_size);
-
-	close(fd);
-
-	return 0;
-}
-
-//write value to address in system memory map using gpio. program
-//must still be run as root
-int writeValueToAddress(int value, unsigned gpio_addr){
-	unsigned page_addr, page_offset;
-	//get page size from system
-	unsigned page_size=sysconf(_SC_PAGESIZE);
-	int fd;
-	void * ptr;
-
-	if (gpio_addr == 0) {
-		printf("GPIO physical address is required.\n");
-		return -1;
-	}
-
-	/* Open /dev/mem file */
-	fd = open ("/dev/mem", O_RDWR);
-	if (fd < 1) {
-		perror("Error opening /dev/mem in getValueAtAddress: ");
-		return -1;
-	}
-
-	/* mmap the device into memory */
-	page_addr = (gpio_addr & (~(page_size-1)));
-	page_offset = gpio_addr - page_addr;
-	ptr = mmap(NULL, page_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, page_addr);
-
-	/* Write value to the device register */
-	*((unsigned *)(ptr + page_offset)) = value;
-//	*((unsigned *)(ptr + page_offset + 8)) = value;
-
-	munmap(ptr, page_size);
-
-	close(fd);
-
-	return 0;
-}
 
 unsigned getAxiDmaBaseAddress(){
 	return strtoul(AXI_DMA_BASE_ADDRESS, NULL, 0);

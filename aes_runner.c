@@ -16,7 +16,7 @@ unsigned getAesControlBaseAddress(){
 
 void writeKey(char* key){
 	int i;
-	shared_memory key_input = getSharedMemoryArea(getAesControlBaseAddress() + 0x1C);
+	shared_memory key_input = getSharedMemoryArea(getAesControlBaseAddress() + 0x1C, NULL);
 	if(key_input == NULL){
 		printf("Error getting pointer to key");
 		return;
