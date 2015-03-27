@@ -14,6 +14,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 typedef struct shared_memory{
 	int fd;

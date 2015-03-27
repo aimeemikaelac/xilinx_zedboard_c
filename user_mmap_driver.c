@@ -6,7 +6,7 @@
 int getValueAtAddress(unsigned gpio_addr, int* value){
 	shared_memory mem = getSharedMemoryArea(gpio_addr, 0);
 
-	if(shared_memory == NULL){
+	if(mem == NULL){
 		return -1;
 	}
 
@@ -73,7 +73,7 @@ shared_memory getSharedMemoryArea(unsigned sharedMemoryAddress, unsigned length)
 		return NULL;
 	}
 	//increment ptr to be at the point specified by the input address
-	ptr = ptr + ((void*)page_offset);
+	ptr = ptr + ((char)page_offset);
 
 	mem->fd = fd;
 	mem->ptr = ptr;
