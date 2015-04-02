@@ -66,22 +66,14 @@ void writeLengthValid(){
 	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x34);
 }
 
-void writeEnable(int enable){
-	writeValueToAddress(enable, getAesControlBaseAddress() + 0x40);
-}
-
-void writeEnableValid(){
-	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x3c);
-}
-
 int readFinished(){
 	int output;
-	getValueAtAddress(getAesControlBaseAddress() + 0x48, &output);
+	getValueAtAddress(getAesControlBaseAddress() + 0x40, &output);
 	return output;
 }
 
 void signalReadFinished(){
-	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x44);
+	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x3c);
 }
 
 int main(){
@@ -129,8 +121,7 @@ int main(){
 	writeDestinationAddressValid();
 	writeLength(1);
 	writeLengthValid();
-	writeEnable(1);
-	writeEnableValid();
+
 	int finished = readFinished();
 	printf("\nWaiting for fabric.");
 	while(finished == 0){
