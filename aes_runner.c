@@ -10,9 +10,21 @@
 
 #define AES_CONTROL_BASE "0x43C00000"
 
+#define BRAM_INPUT_ADDRESS 0x80000000
+
+#define BRAM_OUTPUT_ADDRESS 0x82000000
+
 unsigned getAesControlBaseAddress(){
 	return strtoul(AES_CONTROL_BASE, NULL, 0);
 }
+
+//unsigned getBramInputAddress(){
+//	return strtoul(BRAM_INPUT_ADDRESS, NULL, 0);
+//}
+//
+//unsigned getBramOuputAddress(){
+//	return strtoul(BRAM_OUTPUT_ADDRESS, NULL, 0);
+//}
 
 void writeKey(char* key){
 	int i;
@@ -44,6 +56,14 @@ void writeLength(int length){
 
 void writeEnable(int enable){
 	writeValueToAddress(enable, getAesControlBaseAddress() + 0x40);
+}
+
+void writeBramInputAddress(){
+	writeValueToAddress(BRAM_INPUT_ADDRESS, getAesControlBaseAddress() + 0x50);
+}
+
+void writeBramOuputAddress(){
+	writeValueToAddress(BRAM_OUTPUT_ADDRESS, getAesControlBaseAddress() + 0x58);
 }
 
 int readFinished(){
@@ -91,6 +111,8 @@ int main(){
 	writeKey(key);
 	writeSourceAddress(source);
 	writeDestinationAddress(dest);
+	writeBramInputAddress();
+	writeBramOuputAddress();
 	writeLength(1);
 	writeEnable(1);
 	int finished = readFinished();
