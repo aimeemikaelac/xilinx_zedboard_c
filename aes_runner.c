@@ -39,7 +39,7 @@ void writeKey(char* key){
 }
 
 void writeKeyValid(){
-	writeValueToAddress(0xffffffff, getBaseAddress() + 0x18);
+	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x18);
 }
 
 void writeDestinationAddress(int destAddress){
@@ -47,7 +47,7 @@ void writeDestinationAddress(int destAddress){
 }
 
 void writeDestinationAddressValid(){
-	writeValueToAddress(0xffffffff, getBaseAddress() + 0x2c);
+	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x2c);
 }
 
 void writeSourceAddress(int sourceAddress){
@@ -55,7 +55,7 @@ void writeSourceAddress(int sourceAddress){
 }
 
 void writeSourceAddressValid(){
-	writeValueToAddress(0xffffffff, getBaseAddress() + 0x10);
+	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x10);
 }
 
 void writeLength(int length){
@@ -63,15 +63,15 @@ void writeLength(int length){
 }
 
 void writeLengthValid(){
-	writeValueToAddress(0xffffffff, getBaseAddress() + 0x34);
+	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x34);
 }
 
 void writeEnable(int enable){
 	writeValueToAddress(enable, getAesControlBaseAddress() + 0x40);
 }
 
-void writeEnablehValid(){
-	writeValueToAddress(0xffffffff, getBaseAddress() + 0x3c);
+void writeEnableValid(){
+	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x3c);
 }
 
 int readFinished(){
@@ -115,8 +115,9 @@ int main(){
 		return -1;
 	}
 	int destOffset = length/2;
-	int dest = source + destOffset;
-	for(i = 0; i<16; i++){
+//	int dest = source + destOffset;
+	int dest = source +1;
+	for(i = 0; i<32; i++){
 		((char*)shared_system_mem->ptr)[i] = data_to_encrypt[i];
 		((char*)shared_system_mem->ptr)[destOffset + i] = 0;
 	}
@@ -129,13 +130,13 @@ int main(){
 	writeLength(1);
 	writeLengthValid();
 	writeEnable(1);
-	writeEnablehValid();
+	writeEnableValid();
 	int finished = readFinished();
 	printf("\nWaiting for fabric.");
-//	while(finished == 0){
-//		printf(".");
-//		finished = readFinished();
-//	}
+	while(finished == 0){
+		printf(".");
+		finished = readFinished();
+	}
 	printf("\n");
 	printf("\nData to encrypt as hex: 0x");
 	for(i = 0; i<16; i++){
