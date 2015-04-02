@@ -6,13 +6,9 @@
 
 #define SHARED_MEM_BASE 0x1F400000
 
-#define SHARED_MEM_LENGTH 0x10000
+#define SHARED_MEM_LENGTH 0x800000
 
 #define AES_CONTROL_BASE "0x43C00000"
-
-#define BRAM_INPUT_ADDRESS 0x80000000
-
-#define BRAM_OUTPUT_ADDRESS 0x82000000
 
 unsigned getAesControlBaseAddress(){
 	return strtoul(AES_CONTROL_BASE, NULL, 0);
@@ -42,34 +38,50 @@ void writeKey(char* key){
 	cleanupSharedMemoryPointer(key_input);
 }
 
+void writeKeyValid(){
+	writeValueToAddress(0xffffffff, getBaseAddress() + 0x18);
+}
+
 void writeDestinationAddress(int destAddress){
 	writeValueToAddress(destAddress, getAesControlBaseAddress() + 0x30);
+}
+
+void writeDestinationAddressValid(){
+	writeValueToAddress(0xffffffff, getBaseAddress() + 0x2c);
 }
 
 void writeSourceAddress(int sourceAddress){
 	writeValueToAddress(sourceAddress, getAesControlBaseAddress() + 0x14);
 }
 
+void writeSourceAddressValid(){
+	writeValueToAddress(0xffffffff, getBaseAddress() + 0x10);
+}
+
 void writeLength(int length){
 	writeValueToAddress(length, getAesControlBaseAddress() + 0x38);
+}
+
+void writeLengthValid(){
+	writeValueToAddress(0xffffffff, getBaseAddress() + 0x34);
 }
 
 void writeEnable(int enable){
 	writeValueToAddress(enable, getAesControlBaseAddress() + 0x40);
 }
 
-void writeBramInputAddress(){
-	writeValueToAddress(BRAM_INPUT_ADDRESS, getAesControlBaseAddress() + 0x50);
-}
-
-void writeBramOuputAddress(){
-	writeValueToAddress(BRAM_OUTPUT_ADDRESS, getAesControlBaseAddress() + 0x58);
+void writeEnablehValid(){
+	writeValueToAddress(0xffffffff, getBaseAddress() + 0x3c);
 }
 
 int readFinished(){
 	int output;
 	getValueAtAddress(getAesControlBaseAddress() + 0x48, &output);
 	return output;
+}
+
+void signalReadFinished(){
+	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x44);
 }
 
 int main(){
@@ -109,12 +121,15 @@ int main(){
 		((char*)shared_system_mem->ptr)[destOffset + i] = 0;
 	}
 	writeKey(key);
+	writeKeyValid();
 	writeSourceAddress(source);
+	writeSourceAddressValid();
 	writeDestinationAddress(dest);
-	writeBramInputAddress();
-	writeBramOuputAddress();
+	writeDestinationAddressValid();
 	writeLength(1);
+	writeLengthValid();
 	writeEnable(1);
+	writeEnablehValid();
 	int finished = readFinished();
 	printf("\nWaiting for fabric.");
 //	while(finished == 0){
