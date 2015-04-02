@@ -28,9 +28,9 @@ typedef struct shared_memory{
 typedef shared_memory_struct* shared_memory;
 
 //get an int at an address in system memory
-int getValueAtAddress(unsigned address, int* value);
+int getValueAtAddress(unsigned address, unsigned int* value);
 //write an int to an address in system memory
-int writeValueToAddress(int value, unsigned address);
+int writeValueToAddress(unsigned int value, unsigned address);
 //get a pointer to a memory region of a certain length through /dev/mem
 shared_memory getSharedMemoryArea(unsigned address, unsigned length);
 //cleanup a shared_memory struct

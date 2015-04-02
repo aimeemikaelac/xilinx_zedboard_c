@@ -23,19 +23,53 @@ unsigned getAesControlBaseAddress(){
 //}
 
 void writeKey(char* key){
-	int i;
-	shared_memory key_input = getSharedMemoryArea(getAesControlBaseAddress() + 0x1C, 0);
-	if(key_input == NULL){
-		printf("Error getting pointer to key");
-		return;
-	}
-	char* aes_key = (char*)key_input->ptr;
+	int i, j, output, key_part;
+	int current;
+//	shared_memory key_input = getSharedMemoryArea(getAesControlBaseAddress() + 0x1C, 0);
+//	if(key_input == NULL){
+//		printf("Error getting pointer to key");
+//		return;
+//	}
+//	char* aes_key = (char*)(key_input->ptr);
 	//TODO: for now, assume that we will not go over a page boundary
 	//if occurs, write each 4 bytes individually, or check if this will occur
-	for(i = 0; i<16; i++){
-		aes_key[i] = key[i];
+//	for(i=0; i<16; i++){
+//		*aes_key = 0;//key[15-i];
+//		aes_key[j] = key[i];
+//		aes_key = aes_key + (char)(1);
+//	}
+/*	aes_key[15] = key[8];
+	aes_key[14] = key[8];
+	aes_key[13] = key[8];
+	aes_key[12] = key[8];
+	aes_key[11] = key[8];
+	aes_key[10] = key[8];
+	aes_key[9] = key[8];
+	aes_key[8] = key[8];
+	aes_key[7] = key[8];
+	aes_key[6] = key[8];
+	aes_key[5] = key[8];
+	aes_key[4] = key[8];
+	aes_key[3] = key[8];
+	aes_key[2] = key[8];
+	aes_key[1] = key[8];
+	aes_key[0] = key[8];*/
+
+	for(i = 0; i<4; i++){
+		key_part = 0;
+		for(j=0; j<4; j++){
+			current = key[15-i*4 - j];
+			current = current << (j*8);
+			key_part += current;
+//		getValueAtAddress(getAesControlBaseAddress() + 0x1c + i/4, &output);
+			printf("\nkey_part %i,%i: %08x", i, j, current);
+		}
+		writeValueToAddress(key_part, getAesControlBaseAddress() + 0x1c + i*4);
+		getValueAtAddress(getAesControlBaseAddress() + 0x1c + i*4, &output);
+		printf("\nkey[%i] is: %08x\n", i, output);
 	}
-	cleanupSharedMemoryPointer(key_input);
+	
+//	cleanupSharedMemoryPointer(key_input);
 }
 
 void writeKeyValid(){
@@ -79,6 +113,7 @@ void signalReadFinished(){
 int main(){
 	int i;
 	unsigned char data_to_encrypt[] = {0x01, 0x4B, 0xAF, 0x22, 0x78, 0xA6, 0x9D, 0x33, 0x1D, 0x51, 0x80, 0x10, 0x36, 0x43, 0xE9, 0x9A, '\0'};
+//	unsigned char key[] = {0xE8, 0xE9, 0xEA, 0xEB, 0xED, 0xEE, 0xEF, 0xF0, 0xF2, 0xF3, 0xF4, 0xF5, 0xF7, 0xF8, 0xF9, 0xFA, '\0'};
 	unsigned char key[] = {0xE8, 0xE9, 0xEA, 0xEB, 0xED, 0xEE, 0xEF, 0xF0, 0xF2, 0xF3, 0xF4, 0xF5, 0xF7, 0xF8, 0xF9, 0xFA, '\0'};
 
 	unsigned char* encrypted_data = (unsigned char*)malloc(16);
@@ -106,21 +141,43 @@ int main(){
 		printf("Error getting shared system memory pointer");
 		return -1;
 	}
-	int destOffset = length/2;
-//	int dest = source + destOffset;
-	int dest = source +1;
-	for(i = 0; i<32; i++){
+	int destOffset = 0x30;
+//	int destOffset = 16;
+	int dest = source + destOffset;
+//	int dest = source + 16;
+
+	printf("\nDestination address: %08x\n", dest);
+	for(i = 0; i<16; i++){
 		((char*)shared_system_mem->ptr)[i] = data_to_encrypt[i];
 		((char*)shared_system_mem->ptr)[destOffset + i] = 0;
 	}
+	printf("\nDestination region before fabric as hex: 0x");
+	for(i = 0; i<16; i++){
+		printf("%02x", ((char*)shared_system_mem->ptr)[i+destOffset]);
+	}
+	printf("\n");
+
 	writeKey(key);
-	writeKeyValid();
 	writeSourceAddress(source);
-	writeSourceAddressValid();
 	writeDestinationAddress(dest);
-	writeDestinationAddressValid();
 	writeLength(1);
+
 	writeLengthValid();
+	writeDestinationAddressValid();
+	writeSourceAddressValid();
+	writeKeyValid();
+
+	unsigned int output;
+	for(i = 0; i<4; i++){
+		getValueAtAddress(getAesControlBaseAddress() + 0x1c + i*4, &output);
+		printf("\nkey[%d] read from config register: %08x\n", i, output);
+	}
+
+	
+	for(i=0; i<4; i++){
+		getValueAtAddress(source + i*4, &output);
+		printf("\nUnencrypted Data[%i] in memory: %08x", i, output);
+	}
 
 	int finished = readFinished();
 	printf("\nWaiting for fabric.");
@@ -136,9 +193,21 @@ int main(){
 	printf("\n");
 	printf("\nEncrypted data as hex: 0x");
 	for(i = 0; i<16; i++){
-		printf("%02x", ((char*)shared_system_mem->ptr)[destOffset + i]);
+		char current =  ((char*)shared_system_mem->ptr)[i + destOffset];
+		//if(current != 0){
+			printf("%02x", current);
+		//}
 	}
 	printf(" - from fabric\n");
+	for(i=0; i<4; i++){
+		getValueAtAddress(dest + i*4, &output);
+		if(output != 0){
+			printf("\n%08x at %i", output, i);
+		}
+	}
+	printf("\n");
+	cleanupSharedMemoryPointer(shared_system_mem);
+	signalReadFinished();
 	return 0;
 }
 

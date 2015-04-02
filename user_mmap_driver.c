@@ -3,7 +3,7 @@
 //TODO: refactor this and write function, as setup and unmap is the same in both
 //get the value at memory address gpio_addr in system address
 //map using GPIO and /dev/map. program must be run as root
-int getValueAtAddress(unsigned gpio_addr, int* value){
+int getValueAtAddress(unsigned gpio_addr, unsigned int* value){
 	shared_memory mem = getSharedMemoryArea(gpio_addr, 0);
 
 	if(mem == NULL){
@@ -11,7 +11,7 @@ int getValueAtAddress(unsigned gpio_addr, int* value){
 	}
 
 	/* Read value from the device register */
-	*value = *((int *)(mem->ptr));
+	*value = *((unsigned int *)(mem->ptr));
 //	printf("gpio dev-mem test: input: %08x\n", *value);
 
 	cleanupSharedMemoryPointer(mem);
@@ -21,11 +21,11 @@ int getValueAtAddress(unsigned gpio_addr, int* value){
 
 //write value to address in system memory map using gpio. program
 //must still be run as root
-int writeValueToAddress(int value, unsigned gpio_addr){
+int writeValueToAddress(unsigned int value, unsigned gpio_addr){
 	shared_memory mem = getSharedMemoryArea(gpio_addr, 0);
 
 	/* Write value to the device register */
-	*((unsigned *)(mem->ptr)) = value;
+	*((unsigned int *)(mem->ptr)) = value;
 //	*((unsigned *)(ptr + page_offset + 8)) = value;
 	cleanupSharedMemoryPointer(mem);
 
