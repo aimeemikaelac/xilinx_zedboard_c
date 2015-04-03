@@ -48,20 +48,22 @@ int main(){
 		((char*)shared_system_mem->ptr)[i] = 0;
 	}
 
-	((char*)shared_system_mem->ptr)[0] = 0xff;
+	for(i=0; i<5; i++){
+		((char*)shared_system_mem->ptr)[i] = 0xff;
+	}
+
 	printf("\nNo segfault");
 	writeSourceAddress(SHARED_MEM_BASE);
-	writeDestinationAddress(SHARED_MEM_BASE + 1);
+	writeDestinationAddress(SHARED_MEM_BASE + 10);
 	writeSourceAddressValid();
 	writeDestinationAddressValid();
-	for(i=0; i<0xff; i++){
-		((char*)shared_system_mem->ptr)[0] = (char)i;
-		printf("\nData at source address: %02x", ((char*)shared_system_mem->ptr)[0]);
-		printf("\nData at dest address: %02x", ((char*)shared_system_mem->ptr)[1]);
-		writeSourceAddressValid();
-		writeDestinationAddressValid();
-		printf("\nData at source address: %02x - fabric", ((char*)shared_system_mem->ptr)[0]);
-		printf("\nData at dest address: %02x - fabric", ((char*)shared_system_mem->ptr)[1]);
+	printf("\nData at source address:");
+	for(i=0; i<10; i++){
+		printf("%02x", ((char*)shared_system_mem->ptr)[i]);
+	}
+	printf("\nData at dest address:");
+	for(i=0; i<10; i++){
+		printf("%02x", ((char*)shared_system_mem->ptr)[i+10]);
 	}
 
 	printf("\nNo segfault");
