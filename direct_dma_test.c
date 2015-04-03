@@ -52,17 +52,23 @@ int main(){
 		((char*)shared_system_mem->ptr)[i] = 0xff;
 	}
 
+	cleanupSharedMemoryPointer(shared_system_mem);
 	printf("\nNo segfault");
 	writeSourceAddress(SHARED_MEM_BASE);
-	writeDestinationAddress(SHARED_MEM_BASE + 10);
+	writeDestinationAddress(SHARED_MEM_BASE + 20);
 	writeSourceAddressValid();
 	writeDestinationAddressValid();
 	printf("\nData at source address:");
-	for(i=0; i<10; i++){
+	shared_system_mem = getSharedMemoryArea(source, 0);
+	int dummy;
+	for(i=0; i<10000000; i++){
+		dummy += i*2;
+	}
+	for(i=0; i<500; i++){
 		printf("%02x", ((char*)shared_system_mem->ptr)[i]);
 	}
 	printf("\nData at dest address:");
-	for(i=0; i<10; i++){
+	for(i=0; i<500; i++){
 		printf("%02x", ((char*)shared_system_mem->ptr)[i+10]);
 	}
 
