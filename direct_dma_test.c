@@ -9,12 +9,26 @@
 
 #define BASE_ADDRESS "0x43C00000"
 
+#define ENABLE_ADDRESS "0x41200000"
+
 #define SHARED_MEM_BASE 0x1F400000
 
 #define SHARED_MEM_LENGTH 0x800000
 
 unsigned getBaseAddress(){
 	return strtoul(BASE_ADDRESS, NULL, 0);
+}
+
+unsigned getEnableAddress(){
+	return strtoul(ENABLE_ADDRESS, NULL, 0);
+}
+
+void enable(){
+	writeValueToAddress(0xffffffff, getEnableAddress());
+}
+
+void disable(){
+	writeValueToAddress(0x0, getEnableAddress());
 }
 
 void writeSourceAddress(int sourceAddress){
@@ -36,6 +50,7 @@ void writeDestinationAddressValid(){
 int main(){
 	int i;
 	int source = SHARED_MEM_BASE;
+	disable();
 	printf("\nShared memory base: %08x", source);
 	int length = SHARED_MEM_LENGTH;
 	printf("\nShared memory length: %08x", length);
@@ -57,6 +72,7 @@ int main(){
 	writeDestinationAddress(SHARED_MEM_BASE + 10);
 	writeSourceAddressValid();
 	writeDestinationAddressValid();
+	enable()
 	printf("\nData at source address:");
 	for(i=0; i<10; i++){
 		printf("%02x", ((char*)shared_system_mem->ptr)[i]);
@@ -69,4 +85,5 @@ int main(){
 	printf("\nNo segfault");
 	printf("\n");
 	cleanupSharedMemoryPointer(shared_system_mem);
+	disable();
 }
