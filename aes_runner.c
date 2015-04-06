@@ -117,7 +117,7 @@ int main(){
 //	unsigned char key[] = {0xE8, 0xE9, 0xEA, 0xEB, 0xED, 0xEE, 0xEF, 0xF0, 0xF2, 0xF3, 0xF4, 0xF5, 0xF7, 0xF8, 0xF9, 0xFA, '\0'};
 	unsigned char key[] = {0xE8, 0xE9, 0xEA, 0xEB, 0xED, 0xEE, 0xEF, 0xF0, 0xF2, 0xF3, 0xF4, 0xF5, 0xF7, 0xF8, 0xF9, 0xFA, '\0'};
 	unsigned char data_to_encrypt2[] = {0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, '\0'};
-	int data_length = 100000;
+	int data_length = 10;
 	unsigned char data_to_encrypt3[16*data_length];
 	unsigned char encrypted_data_openssl[16*data_length];
 
@@ -279,15 +279,15 @@ int main(){
 		printf("Error getting shared system memory pointer");
 		return -1;
 	}
-/*	printf("\nWaiting...");
+	printf("\nWaiting...");
 	int dummy = 0;
-	for(i=0; i<data_length; i++){
+	for(i=0; i<data_length*100; i++){
 //		printf(".");
 		for(j=0; j<1000; j++){
 			dummy += i*j;
 		}
 	}
-	printf("\n");*/
+	printf("\n");
 	printf ("It took %f clicks (%f seconds) in fabric.\n",(float)ticks,((float)ticks)/CLOCKS_PER_SEC);
 //	printf("\nEncrypted data as hex:\n0x");
 
@@ -317,7 +317,7 @@ int main(){
 			char openssl = encrypted_data_openssl[i*16 + j];
 			char fabric = ((char*)shared_system_mem->ptr)[i*16 + j + destOffset];
 			if(openssl != fabric){
-//				printf("\nChar at index %i is not encrypted correctly. It is %02x in openssl, %02x in fabric", i*16+j, openssl, fabric);
+				printf("\nChar at index %i is not encrypted correctly. It is %02x in openssl, %02x in fabric", i*16+j, openssl, fabric);
 				incorrectCount++;
 			}
 		}
