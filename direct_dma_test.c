@@ -114,6 +114,7 @@ int main(){
 //	writeDestinationAddressValid();
 //	enable();
 //	printf("\nData at source address:");
+	printf("\n");
 	shared_system_mem = getSharedMemoryArea(source, 0);
 	int dummy;
 	for(i=0; i<10000000; i++){
@@ -122,17 +123,18 @@ int main(){
 	for(i=0; i<500; i++){
 		printf("%02x", ((char*)shared_system_mem->ptr)[i]);
 	}
-	printf("\nData at dest address:");
+	printf("\nData at dest address:\n");
 	for(i=0; i<500; i++){
 		printf("%02x", ((char*)shared_system_mem->ptr)[i+10]);
 	}
 //
 //	printf("\nNo segfault");
-//	printf("\n");
+	printf("\n");
 //	finished = getFinished();
 //	printf("\nFinished value: %i\n", finished);
 //	disable();
 //	clearFinished();
 	cleanupSharedMemoryPointer(shared_system_mem);
+	XTest_direct_dma_Release(dma_config);
 //	disable();
 }
