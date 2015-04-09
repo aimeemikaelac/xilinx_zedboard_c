@@ -36,6 +36,8 @@ shared_memory getSharedMemoryArea(unsigned address, unsigned length);
 //cleanup a shared_memory struct
 void cleanupSharedMemoryPointer(shared_memory mem);
 
-
+shared_memory getUioMemoryArea();
+int writeValueToAddressUio(unsigned int value, int offset);
+int getValueAtAddressUio(int offset, unsigned int* value);
 
 #endif /* USER_MMAP_DRIVER_H_ */

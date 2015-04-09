@@ -6,6 +6,7 @@
  */
 
 #include "user_mmap_driver.h"
+#include "xtest_direct_dma.h"
 
 #define BASE_ADDRESS "0x43C00000"
 
@@ -13,7 +14,9 @@
 
 #define SHARED_MEM_BASE 0x1F400000
 
-#define SHARED_MEM_LENGTH 0x800000
+#define SHARED_MEM_LENGTH 0x1000
+
+#define DEVICE_NAME "testdirectdma"
 
 unsigned getBaseAddress(){
 	return strtoul(BASE_ADDRESS, NULL, 0);
@@ -24,33 +27,46 @@ unsigned getEnableAddress(){
 }
 
 void enable(){
-	writeValueToAddress(0xffffffff, getEnableAddress());
+	writeValueToAddress(0x1, getBaseAddress());
 }
 
 void disable(){
-	writeValueToAddress(0x0, getEnableAddress());
+	writeValueToAddress(0x0, getBaseAddress());
 }
 
 void writeSourceAddress(int sourceAddress){
-	writeValueToAddress(sourceAddress, getBaseAddress() + 0x14);
+	writeValueToAddress(sourceAddress, getBaseAddress() + 0x18);
 }
 
 void writeSourceAddressValid(){
-	writeValueToAddress(0xffffffff, getBaseAddress() + 0x10);
+	writeValueToAddress(0x1, getBaseAddress() + 0x1c);
 }
 
 void writeDestinationAddress(int destAddress){
-	writeValueToAddress(destAddress, getBaseAddress() + 0x1c);
+	writeValueToAddress(destAddress, getBaseAddress() + 0x20);
 }
 
 void writeDestinationAddressValid(){
-	writeValueToAddress(0xffffffff, getBaseAddress() + 0x18);
+	writeValueToAddress(0x1, getBaseAddress() + 0x24);
+}
+
+unsigned getFinished(){
+	unsigned output;
+	getValueAtAddress(getBaseAddress() + 0x10, &output);
+	return output;
+}
+
+void clearFinished(){
+	writeValueToAddress(3, getBaseAddress() + 0xc);
 }
 
 int main(){
 	int i;
 	int source = SHARED_MEM_BASE;
-	disable();
+//	int finished = getFinished();
+//	printf("\nFinished value: %i\n", finished);
+//	clearFinished();
+//	disable();
 	printf("\nShared memory base: %08x", source);
 	int length = SHARED_MEM_LENGTH;
 	printf("\nShared memory length: %08x", length);
@@ -59,7 +75,7 @@ int main(){
 
 	//int destOffset = length/2;
 	//int dest = source + destOffset;
-	for(i = 0; i<100; i++){
+	for(i = 0; i<length; i++){
 		((char*)shared_system_mem->ptr)[i] = 0;
 	}
 
@@ -69,12 +85,35 @@ int main(){
 
 	cleanupSharedMemoryPointer(shared_system_mem);
 	printf("\nNo segfault");
-	writeSourceAddress(SHARED_MEM_BASE);
-	writeDestinationAddress(SHARED_MEM_BASE + 20);
-	writeSourceAddressValid();
-	writeDestinationAddressValid();
-	enable()
-	printf("\nData at source address:");
+
+	XTest_direct_dma* dma_config = malloc(sizeof(XTest_direct_dma));
+	if(XTest_direct_dma_Initialize(dma_config, DEVICE_NAME) != XST_SUCCESS){
+		printf("\nError initializing Xilinx uio driver");
+		return -1;
+	}
+
+	XTest_direct_dma_Set_sourceAddress(dma_config, SHARED_MEM_BASE);
+	XTest_direct_dma_Set_destinationAddress(dma_config, SHARED_MEM_BASE + 20);
+
+	XTest_direct_dma_Set_sourceAddress_vld(dma_config);
+	XTest_direct_dma_Set_destinationAddress_vld(dma_config);
+
+	XTest_direct_dma_Start(dma_config);
+
+	printf("\nWaiting for fabric");
+	while(!XTest_direct_dma_IsDone(dma_config)){
+		printf(".");
+	}
+	int finished = XTest_direct_dma_Get_return(dma_config);
+	printf("\nReturn value: %i", finished);
+
+//	enable();
+//	writeSourceAddress(SHARED_MEM_BASE);
+//	writeDestinationAddress(SHARED_MEM_BASE + 20);
+//	writeSourceAddressValid();
+//	writeDestinationAddressValid();
+//	enable();
+//	printf("\nData at source address:");
 	shared_system_mem = getSharedMemoryArea(source, 0);
 	int dummy;
 	for(i=0; i<10000000; i++){
@@ -87,9 +126,13 @@ int main(){
 	for(i=0; i<500; i++){
 		printf("%02x", ((char*)shared_system_mem->ptr)[i+10]);
 	}
-
-	printf("\nNo segfault");
-	printf("\n");
+//
+//	printf("\nNo segfault");
+//	printf("\n");
+//	finished = getFinished();
+//	printf("\nFinished value: %i\n", finished);
+//	disable();
+//	clearFinished();
 	cleanupSharedMemoryPointer(shared_system_mem);
-	disable();
+//	disable();
 }
