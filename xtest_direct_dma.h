@@ -80,6 +80,13 @@ int XTest_direct_dma_Initialize(XTest_direct_dma *InstancePtr, const char* Insta
 int XTest_direct_dma_Release(XTest_direct_dma *InstancePtr);
 #endif
 
+void XTest_direct_dma_Start(XTest_direct_dma *InstancePtr);
+u32 XTest_direct_dma_IsDone(XTest_direct_dma *InstancePtr);
+u32 XTest_direct_dma_IsIdle(XTest_direct_dma *InstancePtr);
+u32 XTest_direct_dma_IsReady(XTest_direct_dma *InstancePtr);
+void XTest_direct_dma_EnableAutoRestart(XTest_direct_dma *InstancePtr);
+void XTest_direct_dma_DisableAutoRestart(XTest_direct_dma *InstancePtr);
+u32 XTest_direct_dma_Get_return(XTest_direct_dma *InstancePtr);
 
 void XTest_direct_dma_Set_sourceAddress(XTest_direct_dma *InstancePtr, u32 Data);
 u32 XTest_direct_dma_Get_sourceAddress(XTest_direct_dma *InstancePtr);
@@ -89,6 +96,18 @@ void XTest_direct_dma_Set_destinationAddress(XTest_direct_dma *InstancePtr, u32 
 u32 XTest_direct_dma_Get_destinationAddress(XTest_direct_dma *InstancePtr);
 void XTest_direct_dma_Set_destinationAddress_vld(XTest_direct_dma *InstancePtr);
 u32 XTest_direct_dma_Get_destinationAddress_vld(XTest_direct_dma *InstancePtr);
+void XTest_direct_dma_Set_length_r(XTest_direct_dma *InstancePtr, u32 Data);
+u32 XTest_direct_dma_Get_length_r(XTest_direct_dma *InstancePtr);
+void XTest_direct_dma_Set_length_r_vld(XTest_direct_dma *InstancePtr);
+u32 XTest_direct_dma_Get_length_r_vld(XTest_direct_dma *InstancePtr);
+
+void XTest_direct_dma_InterruptGlobalEnable(XTest_direct_dma *InstancePtr);
+void XTest_direct_dma_InterruptGlobalDisable(XTest_direct_dma *InstancePtr);
+void XTest_direct_dma_InterruptEnable(XTest_direct_dma *InstancePtr, u32 Mask);
+void XTest_direct_dma_InterruptDisable(XTest_direct_dma *InstancePtr, u32 Mask);
+void XTest_direct_dma_InterruptClear(XTest_direct_dma *InstancePtr, u32 Mask);
+u32 XTest_direct_dma_InterruptGetEnabled(XTest_direct_dma *InstancePtr);
+u32 XTest_direct_dma_InterruptGetStatus(XTest_direct_dma *InstancePtr);
 
 #ifdef __cplusplus
 }
