@@ -38,23 +38,6 @@ u32 XTest_direct_dma_Get_sourceAddress(XTest_direct_dma *InstancePtr) {
     return Data;
 }
 
-void XTest_direct_dma_Set_sourceAddress_vld(XTest_direct_dma *InstancePtr) {
-    Xil_AssertVoid(InstancePtr != NULL);
-    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    XTest_direct_dma_WriteReg(InstancePtr->Axilites_BaseAddress, XTEST_DIRECT_DMA_AXILITES_ADDR_SOURCEADDRESS_CTRL, 1);
-}
-
-u32 XTest_direct_dma_Get_sourceAddress_vld(XTest_direct_dma *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XTest_direct_dma_ReadReg(InstancePtr->Axilites_BaseAddress, XTEST_DIRECT_DMA_AXILITES_ADDR_SOURCEADDRESS_CTRL);
-    return Data & 0x1;
-}
-
 void XTest_direct_dma_Set_destinationAddress(XTest_direct_dma *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -70,22 +53,5 @@ u32 XTest_direct_dma_Get_destinationAddress(XTest_direct_dma *InstancePtr) {
 
     Data = XTest_direct_dma_ReadReg(InstancePtr->Axilites_BaseAddress, XTEST_DIRECT_DMA_AXILITES_ADDR_DESTINATIONADDRESS_DATA);
     return Data;
-}
-
-void XTest_direct_dma_Set_destinationAddress_vld(XTest_direct_dma *InstancePtr) {
-    Xil_AssertVoid(InstancePtr != NULL);
-    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    XTest_direct_dma_WriteReg(InstancePtr->Axilites_BaseAddress, XTEST_DIRECT_DMA_AXILITES_ADDR_DESTINATIONADDRESS_CTRL, 1);
-}
-
-u32 XTest_direct_dma_Get_destinationAddress_vld(XTest_direct_dma *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XTest_direct_dma_ReadReg(InstancePtr->Axilites_BaseAddress, XTEST_DIRECT_DMA_AXILITES_ADDR_DESTINATIONADDRESS_CTRL);
-    return Data & 0x1;
 }
 
