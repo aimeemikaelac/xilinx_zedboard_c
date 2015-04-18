@@ -83,8 +83,12 @@ int XTest_direct_dma_Release(XTest_direct_dma *InstancePtr);
 
 void XTest_direct_dma_Set_sourceAddress(XTest_direct_dma *InstancePtr, u32 Data);
 u32 XTest_direct_dma_Get_sourceAddress(XTest_direct_dma *InstancePtr);
+void XTest_direct_dma_Set_sourceAddress_vld(XTest_direct_dma *InstancePtr);
+u32 XTest_direct_dma_Get_sourceAddress_vld(XTest_direct_dma *InstancePtr);
 void XTest_direct_dma_Set_destinationAddress(XTest_direct_dma *InstancePtr, u32 Data);
 u32 XTest_direct_dma_Get_destinationAddress(XTest_direct_dma *InstancePtr);
+void XTest_direct_dma_Set_destinationAddress_vld(XTest_direct_dma *InstancePtr);
+u32 XTest_direct_dma_Get_destinationAddress_vld(XTest_direct_dma *InstancePtr);
 
 #ifdef __cplusplus
 }
