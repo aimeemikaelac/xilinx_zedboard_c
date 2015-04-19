@@ -14,176 +14,268 @@ int XAes_CfgInitialize(XAes *InstancePtr, XAes_Config *ConfigPtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(ConfigPtr != NULL);
 
-    InstancePtr->Axi4lites_BaseAddress = ConfigPtr->Axi4lites_BaseAddress;
+    InstancePtr->Axilites_BaseAddress = ConfigPtr->Axilites_BaseAddress;
     InstancePtr->IsReady = XIL_COMPONENT_IS_READY;
 
     return XST_SUCCESS;
 }
 #endif
 
-void XAes_SetSourceaddress(XAes *InstancePtr, u32 Data) {
+void XAes_Start(XAes *InstancePtr) {
+    u32 Data;
+
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_SOURCEADDRESS_DATA, Data);
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_AP_CTRL) & 0x80;
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_AP_CTRL, Data | 0x01);
 }
 
-u32 XAes_GetSourceaddress(XAes *InstancePtr) {
+u32 XAes_IsDone(XAes *InstancePtr) {
     u32 Data;
 
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    Data = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_SOURCEADDRESS_DATA);
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_AP_CTRL);
+    return (Data >> 1) & 0x1;
+}
+
+u32 XAes_IsIdle(XAes *InstancePtr) {
+    u32 Data;
+
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_AP_CTRL);
+    return (Data >> 2) & 0x1;
+}
+
+u32 XAes_IsReady(XAes *InstancePtr) {
+    u32 Data;
+
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_AP_CTRL);
+    // check ap_start to see if the pcore is ready for next input
+    return !(Data & 0x1);
+}
+
+void XAes_EnableAutoRestart(XAes *InstancePtr) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_AP_CTRL, 0x80);
+}
+
+void XAes_DisableAutoRestart(XAes *InstancePtr) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_AP_CTRL, 0);
+}
+
+u32 XAes_Get_return(XAes *InstancePtr) {
+    u32 Data;
+
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_AP_RETURN);
+    return Data;
+}
+void XAes_Set_sourceAddress(XAes *InstancePtr, u32 Data) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_SOURCEADDRESS_DATA, Data);
+}
+
+u32 XAes_Get_sourceAddress(XAes *InstancePtr) {
+    u32 Data;
+
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_SOURCEADDRESS_DATA);
     return Data;
 }
 
-void XAes_SetSourceaddressVld(XAes *InstancePtr) {
+void XAes_Set_sourceAddress_vld(XAes *InstancePtr) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_SOURCEADDRESS_CTRL, 1);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_SOURCEADDRESS_CTRL, 1);
 }
 
-u32 XAes_GetSourceaddressVld(XAes *InstancePtr) {
+u32 XAes_Get_sourceAddress_vld(XAes *InstancePtr) {
     u32 Data;
 
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    Data = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_SOURCEADDRESS_CTRL);
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_SOURCEADDRESS_CTRL);
     return Data & 0x1;
 }
 
-void XAes_SetKey_in_v(XAes *InstancePtr, XAes_Key_in_v Data) {
+void XAes_Set_key_in_V(XAes *InstancePtr, XAes_Key_in_v Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_KEY_IN_V_DATA + 0, Data.word_0);
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_KEY_IN_V_DATA + 4, Data.word_1);
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_KEY_IN_V_DATA + 8, Data.word_2);
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_KEY_IN_V_DATA + 12, Data.word_3);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_KEY_IN_V_DATA + 0, Data.word_0);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_KEY_IN_V_DATA + 4, Data.word_1);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_KEY_IN_V_DATA + 8, Data.word_2);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_KEY_IN_V_DATA + 12, Data.word_3);
 }
 
-XAes_Key_in_v XAes_GetKey_in_v(XAes *InstancePtr) {
+XAes_Key_in_v XAes_Get_key_in_V(XAes *InstancePtr) {
     XAes_Key_in_v Data;
 
-    Data.word_0 = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_KEY_IN_V_DATA + 0);
-    Data.word_1 = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_KEY_IN_V_DATA + 4);
-    Data.word_2 = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_KEY_IN_V_DATA + 8);
-    Data.word_3 = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_KEY_IN_V_DATA + 12);
+    Data.word_0 = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_KEY_IN_V_DATA + 0);
+    Data.word_1 = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_KEY_IN_V_DATA + 4);
+    Data.word_2 = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_KEY_IN_V_DATA + 8);
+    Data.word_3 = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_KEY_IN_V_DATA + 12);
     return Data;
 }
 
-void XAes_SetKey_in_vVld(XAes *InstancePtr) {
+void XAes_Set_key_in_V_vld(XAes *InstancePtr) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_KEY_IN_V_CTRL, 1);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_KEY_IN_V_CTRL, 1);
 }
 
-u32 XAes_GetKey_in_vVld(XAes *InstancePtr) {
+u32 XAes_Get_key_in_V_vld(XAes *InstancePtr) {
     u32 Data;
 
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    Data = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_KEY_IN_V_CTRL);
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_KEY_IN_V_CTRL);
     return Data & 0x1;
 }
 
-void XAes_SetDestinationaddress(XAes *InstancePtr, u32 Data) {
+void XAes_Set_destinationAddress(XAes *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_DESTINATIONADDRESS_DATA, Data);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_DESTINATIONADDRESS_DATA, Data);
 }
 
-u32 XAes_GetDestinationaddress(XAes *InstancePtr) {
+u32 XAes_Get_destinationAddress(XAes *InstancePtr) {
     u32 Data;
 
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    Data = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_DESTINATIONADDRESS_DATA);
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_DESTINATIONADDRESS_DATA);
     return Data;
 }
 
-void XAes_SetDestinationaddressVld(XAes *InstancePtr) {
+void XAes_Set_destinationAddress_vld(XAes *InstancePtr) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_DESTINATIONADDRESS_CTRL, 1);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_DESTINATIONADDRESS_CTRL, 1);
 }
 
-u32 XAes_GetDestinationaddressVld(XAes *InstancePtr) {
+u32 XAes_Get_destinationAddress_vld(XAes *InstancePtr) {
     u32 Data;
 
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    Data = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_DESTINATIONADDRESS_CTRL);
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_DESTINATIONADDRESS_CTRL);
     return Data & 0x1;
 }
 
-void XAes_SetLength_r(XAes *InstancePtr, u32 Data) {
+void XAes_Set_length_r(XAes *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_LENGTH_R_DATA, Data);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_LENGTH_R_DATA, Data);
 }
 
-u32 XAes_GetLength_r(XAes *InstancePtr) {
+u32 XAes_Get_length_r(XAes *InstancePtr) {
     u32 Data;
 
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    Data = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_LENGTH_R_DATA);
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_LENGTH_R_DATA);
     return Data;
 }
 
-void XAes_SetLength_rVld(XAes *InstancePtr) {
+void XAes_Set_length_r_vld(XAes *InstancePtr) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_LENGTH_R_CTRL, 1);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_LENGTH_R_CTRL, 1);
 }
 
-u32 XAes_GetLength_rVld(XAes *InstancePtr) {
+u32 XAes_Get_length_r_vld(XAes *InstancePtr) {
     u32 Data;
 
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    Data = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_LENGTH_R_CTRL);
+    Data = XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_LENGTH_R_CTRL);
     return Data & 0x1;
 }
 
-u32 XAes_GetFinished(XAes *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_FINISHED_DATA);
-    return Data;
-}
-
-void XAes_SetFinishedAck(XAes *InstancePtr) {
+void XAes_InterruptGlobalEnable(XAes *InstancePtr) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    XAes_WriteReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_FINISHED_CTRL, 2);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_GIE, 1);
 }
 
-u32 XAes_GetFinishedAck(XAes *InstancePtr) {
-    u32 Data;
+void XAes_InterruptGlobalDisable(XAes *InstancePtr) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_GIE, 0);
+}
+
+void XAes_InterruptEnable(XAes *InstancePtr, u32 Mask) {
+    u32 Register;
+
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Register =  XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_IER);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_IER, Register | Mask);
+}
+
+void XAes_InterruptDisable(XAes *InstancePtr, u32 Mask) {
+    u32 Register;
+
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Register =  XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_IER);
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_IER, Register & (~Mask));
+}
+
+void XAes_InterruptClear(XAes *InstancePtr, u32 Mask) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    XAes_WriteReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_ISR, Mask);
+}
+
+u32 XAes_InterruptGetEnabled(XAes *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    Data = XAes_ReadReg(InstancePtr->Axi4lites_BaseAddress, XAES_AXI4LITES_ADDR_FINISHED_CTRL);
-    return (Data >> 1) & 0x1;
+    return XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_IER);
+}
+
+u32 XAes_InterruptGetStatus(XAes *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return XAes_ReadReg(InstancePtr->Axilites_BaseAddress, XAES_AXILITES_ADDR_ISR);
 }
 

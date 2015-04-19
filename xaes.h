@@ -40,12 +40,12 @@ typedef uint32_t u32;
 #else
 typedef struct {
     u16 DeviceId;
-    u32 Axi4lites_BaseAddress;
+    u32 Axilites_BaseAddress;
 } XAes_Config;
 #endif
 
 typedef struct {
-    u32 Axi4lites_BaseAddress;
+    u32 Axilites_BaseAddress;
     u32 IsReady;
 } XAes;
 
@@ -87,26 +87,38 @@ int XAes_Initialize(XAes *InstancePtr, const char* InstanceName);
 int XAes_Release(XAes *InstancePtr);
 #endif
 
+void XAes_Start(XAes *InstancePtr);
+u32 XAes_IsDone(XAes *InstancePtr);
+u32 XAes_IsIdle(XAes *InstancePtr);
+u32 XAes_IsReady(XAes *InstancePtr);
+void XAes_EnableAutoRestart(XAes *InstancePtr);
+void XAes_DisableAutoRestart(XAes *InstancePtr);
+u32 XAes_Get_return(XAes *InstancePtr);
 
-void XAes_SetSourceaddress(XAes *InstancePtr, u32 Data);
-u32 XAes_GetSourceaddress(XAes *InstancePtr);
-void XAes_SetSourceaddressVld(XAes *InstancePtr);
-u32 XAes_GetSourceaddressVld(XAes *InstancePtr);
-void XAes_SetKey_in_v(XAes *InstancePtr, XAes_Key_in_v Data);
-XAes_Key_in_v XAes_GetKey_in_v(XAes *InstancePtr);
-void XAes_SetKey_in_vVld(XAes *InstancePtr);
-u32 XAes_GetKey_in_vVld(XAes *InstancePtr);
-void XAes_SetDestinationaddress(XAes *InstancePtr, u32 Data);
-u32 XAes_GetDestinationaddress(XAes *InstancePtr);
-void XAes_SetDestinationaddressVld(XAes *InstancePtr);
-u32 XAes_GetDestinationaddressVld(XAes *InstancePtr);
-void XAes_SetLength_r(XAes *InstancePtr, u32 Data);
-u32 XAes_GetLength_r(XAes *InstancePtr);
-void XAes_SetLength_rVld(XAes *InstancePtr);
-u32 XAes_GetLength_rVld(XAes *InstancePtr);
-u32 XAes_GetFinished(XAes *InstancePtr);
-void XAes_SetFinishedAck(XAes *InstancePtr);
-u32 XAes_GetFinishedAck(XAes *InstancePtr);
+void XAes_Set_sourceAddress(XAes *InstancePtr, u32 Data);
+u32 XAes_Get_sourceAddress(XAes *InstancePtr);
+void XAes_Set_sourceAddress_vld(XAes *InstancePtr);
+u32 XAes_Get_sourceAddress_vld(XAes *InstancePtr);
+void XAes_Set_key_in_V(XAes *InstancePtr, XAes_Key_in_v Data);
+XAes_Key_in_v XAes_Get_key_in_V(XAes *InstancePtr);
+void XAes_Set_key_in_V_vld(XAes *InstancePtr);
+u32 XAes_Get_key_in_V_vld(XAes *InstancePtr);
+void XAes_Set_destinationAddress(XAes *InstancePtr, u32 Data);
+u32 XAes_Get_destinationAddress(XAes *InstancePtr);
+void XAes_Set_destinationAddress_vld(XAes *InstancePtr);
+u32 XAes_Get_destinationAddress_vld(XAes *InstancePtr);
+void XAes_Set_length_r(XAes *InstancePtr, u32 Data);
+u32 XAes_Get_length_r(XAes *InstancePtr);
+void XAes_Set_length_r_vld(XAes *InstancePtr);
+u32 XAes_Get_length_r_vld(XAes *InstancePtr);
+
+void XAes_InterruptGlobalEnable(XAes *InstancePtr);
+void XAes_InterruptGlobalDisable(XAes *InstancePtr);
+void XAes_InterruptEnable(XAes *InstancePtr, u32 Mask);
+void XAes_InterruptDisable(XAes *InstancePtr, u32 Mask);
+void XAes_InterruptClear(XAes *InstancePtr, u32 Mask);
+u32 XAes_InterruptGetEnabled(XAes *InstancePtr);
+u32 XAes_InterruptGetStatus(XAes *InstancePtr);
 
 #ifdef __cplusplus
 }
