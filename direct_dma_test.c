@@ -12,11 +12,11 @@
 
 #define ENABLE_ADDRESS "0x41200000"
 
-#define SHARED_MEM_BASE 0x1F400000
+#define SHARED_MEM_BASE 0x1F400020
 
 #define SHARED_MEM_LENGTH 0x1000
 
-#define DEVICE_NAME "testdirectdma"
+#define DEVICE_NAME "aestest"
 
 unsigned getBaseAddress(){
 	return strtoul(BASE_ADDRESS, NULL, 0);
@@ -60,9 +60,14 @@ void clearFinished(){
 	writeValueToAddress(3, getBaseAddress() + 0xc);
 }
 
-int main(){
+int main(int argc, char** argv){
 	int i;
 	int source = SHARED_MEM_BASE;
+	if(argc != 2){
+		printf("\nRequire a single argument- the value to write to the source address");
+		return -1;
+	}
+	unsigned mem_val = atoi(argv[1]);
 //	int finished = getFinished();
 //	printf("\nFinished value: %i\n", finished);
 //	clearFinished();
@@ -79,8 +84,8 @@ int main(){
 		((char*)shared_system_mem->ptr)[i] = 0;
 	}
 
-	for(i=0; i<5; i++){
-		((char*)shared_system_mem->ptr)[i] = 0xff;
+	for(i=0; i<16; i++){
+		((char*)shared_system_mem->ptr)[i] = mem_val;
 	}
 
 	cleanupSharedMemoryPointer(shared_system_mem);
@@ -92,13 +97,21 @@ int main(){
 		return -1;
 	}
 
+	printf("\nWriting to device");
+	XTest_direct_dma_Start(dma_config);
 	XTest_direct_dma_Set_sourceAddress(dma_config, SHARED_MEM_BASE);
-	XTest_direct_dma_Set_destinationAddress(dma_config, SHARED_MEM_BASE + 20);
+	unsigned dest_offset = 0x40;
+	unsigned dest_address = SHARED_MEM_BASE + dest_offset;
+	XTest_direct_dma_Set_destinationAddress(dma_config, dest_address);
+	XTest_direct_dma_Set_length_r(dma_config, 2);
 
 	XTest_direct_dma_Set_sourceAddress_vld(dma_config);
 	XTest_direct_dma_Set_destinationAddress_vld(dma_config);
+	XTest_direct_dma_Set_length_r_vld(dma_config);
 
 	XTest_direct_dma_Start(dma_config);
+	
+	printf("\nWrote to device");
 
 	printf("\nWaiting for fabric");
 	while(!XTest_direct_dma_IsDone(dma_config)){
@@ -114,18 +127,20 @@ int main(){
 //	writeDestinationAddressValid();
 //	enable();
 //	printf("\nData at source address:");
+	XTest_direct_dma_Release(dma_config);
 	printf("\n");
-	shared_system_mem = getSharedMemoryArea(source, 0);
 	int dummy;
-	for(i=0; i<10000000; i++){
+	for(i=0; i<100000000; i++){
 		dummy += i*2;
 	}
+	printf("\nDummy: %i\n", dummy);
+	shared_system_mem = getSharedMemoryArea(source, 0);
 	for(i=0; i<500; i++){
 		printf("%02x", ((char*)shared_system_mem->ptr)[i]);
 	}
 	printf("\nData at dest address:\n");
 	for(i=0; i<500; i++){
-		printf("%02x", ((char*)shared_system_mem->ptr)[i+10]);
+		printf("%02x", ((char*)shared_system_mem->ptr)[i+dest_offset]);
 	}
 //
 //	printf("\nNo segfault");
@@ -135,6 +150,5 @@ int main(){
 //	disable();
 //	clearFinished();
 	cleanupSharedMemoryPointer(shared_system_mem);
-	XTest_direct_dma_Release(dma_config);
 //	disable();
 }
