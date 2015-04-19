@@ -88,7 +88,7 @@ int main(int argc, char** argv){
 		((char*)shared_system_mem->ptr)[i] = mem_val;
 	}
 
-	cleanupSharedMemoryPointer(shared_system_mem);
+//	cleanupSharedMemoryPointer(shared_system_mem);
 	printf("\nNo segfault");
 
 	XTest_direct_dma* dma_config = malloc(sizeof(XTest_direct_dma));
@@ -114,8 +114,12 @@ int main(int argc, char** argv){
 	printf("\nWrote to device");
 
 	printf("\nWaiting for fabric");
+	int dummy;
+	dummy = 0;
+	printf("\nDummy: %i", dummy);
 	while(!XTest_direct_dma_IsDone(dma_config)){
-		printf(".");
+//		printf(".");
+		dummy++;
 	}
 	int finished = XTest_direct_dma_Get_return(dma_config);
 	printf("\nReturn value: %i", finished);
@@ -129,12 +133,14 @@ int main(int argc, char** argv){
 //	printf("\nData at source address:");
 	XTest_direct_dma_Release(dma_config);
 	printf("\n");
-	int dummy;
-	for(i=0; i<100000000; i++){
-		dummy += i*2;
-	}
-	printf("\nDummy: %i\n", dummy);
-	shared_system_mem = getSharedMemoryArea(source, 0);
+//	for(i=0; i<100000000; i++){
+//		dummy += i*2;
+//	}
+//	printf("\nDummy: %i\n", dummy);
+//	shared_system_mem = getSharedMemoryArea(source, 0);
+//	printf("\nAddr: %p\n", shared_system_mem->ptr);
+//	int success = syncSharedMemory(shared_system_mem);
+//	printf("\nmsync return val: %i\n", success);
 	for(i=0; i<500; i++){
 		printf("%02x", ((char*)shared_system_mem->ptr)[i]);
 	}

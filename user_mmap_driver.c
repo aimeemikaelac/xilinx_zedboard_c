@@ -1,4 +1,6 @@
 #include "user_mmap_driver.h"
+#include <stdio.h>
+#include <errno.h>
 
 //TODO: refactor this and write function, as setup and unmap is the same in both
 //get the value at memory address gpio_addr in system address
@@ -80,7 +82,7 @@ shared_memory getSharedMemoryArea(unsigned sharedMemoryAddress, unsigned length)
 	}
 
 	/* Open /dev/mem file */
-	fd = open ("/dev/mem", O_RDWR);
+	fd = open ("/dev/mem", O_RDWR|O_SYNC);
 	if (fd < 1) {
 		perror("Error opening /dev/mem in getValueAtAddress: ");
 		return NULL;
@@ -127,7 +129,7 @@ shared_memory getUioMemoryArea(){
 	void * ptr = NULL;
 
 	/* Open /dev/uio0 file */
-	fd = open ("/dev/uio0", O_RDWR);
+	fd = open ("/dev/uio0", O_RDWR|O_SYNC);
 	if (fd < 1) {
 		perror("Error opening /dev/uio0 in getValueAtAddress: ");
 		return NULL;
@@ -162,8 +164,18 @@ shared_memory getUioMemoryArea(){
 	return mem;
 }
 
+//int syncSharedMemory(shared_memory mem){
+//	printf("\nAddr: %p\n", mem->ptr);
+//	int err = msync(mem->ptr, 1, MS_INVALIDATE|MS_SYNC);
+//	if(err == -1){
+//	//	printf("\nError encounterd in sync. Error string: %s\n", strerror(errno));
+//		perror("msync()");
+//	}
+//	return err;
+//}
+
 void cleanupSharedMemoryPointer(shared_memory mem){
-	munmap(mem->original_ptr, mem->page_size);
+	munmap((void *)mem->ptr, mem->page_size);
 
 	close(mem->fd);
 
