@@ -3,7 +3,7 @@
 #include <openssl/aes.h>
 #include <stdio.h>
 #include <time.h>
-
+#include "xaes.h"
 
 #define SHARED_MEM_BASE 0x1F400000
 
@@ -127,35 +127,14 @@ int main(){
 
 	int randStart = rand();
 	for(i=0; i<data_length; i++){
-//		printf("\nNo seg fault: %i", i);
 		for(j=0; j<16; j++){
 			data_to_encrypt3[16*i + j] = i*j+randStart;
 		}
 	}
 
-//	unsigned char* encrypted_data = (unsigned char*)malloc(16);
-
-//	if(encrypted_data == NULL){
-//		printf("\nCould not allocated encrypted data buffer");
-//		return -1;
-//	}
 	AES_KEY aes_key;
 	AES_set_encrypt_key(key, 128, &aes_key);
 
-//	AES_encrypt(data_to_encrypt, encrypted_data, &aes_key);
-	
-
-//	printf("\nData to encrypt:\n0x");
-//	for(i=0; i<data_length; i++){
-//		for(j=0; j<16; j++){		
-//			printf("%02x", data_to_encrypt3[i*16 + j]);
-//		}
-//		printf("  0x");
-//	}
-//	printf("\nto openssl\n");
-//
-///	printf("\nEncrypted data as hex:  0x");
-//	printf("\n0x");
 	unsigned char* data_pointer = data_to_encrypt3;
 	unsigned char* encrypted_dest = encrypted_data_openssl;
 
@@ -163,109 +142,100 @@ int main(){
 	ticks = clock();
 	for(i=0; i<data_length; i++){
 		AES_encrypt(data_pointer, encrypted_dest, &aes_key);	
-//		for(j = 0; j<16; j++){
-//			printf("%02x", encrypted_data_openssl[i*16 + j]);
-//		}
-//		printf("  0x");
 		data_pointer = data_pointer + 16;
 		encrypted_dest = encrypted_dest + 16;
 	}
 	ticks = clock() - ticks;
 
-//	printf("\nfrom openssl\n");
-	
 	printf ("It took %f clicks (%f seconds) in openssl.\n",(float)ticks,((float)ticks)/CLOCKS_PER_SEC);
 	int source = SHARED_MEM_BASE;
-//	printf("\nShared memory base: %08x", source);
 	int length = SHARED_MEM_LENGTH;
 	shared_memory shared_system_mem = getSharedMemoryArea(source, length);
-//	printf("\nNo segfault");
 	if(shared_system_mem == NULL){
 		printf("Error getting shared system memory pointer");
 		return -1;
 	}
 	int destOffset = 16*data_length +16;
-//	int destOffset = 16;
 	int dest = source + destOffset;
-//	int dest = source + 16;
 
-//	printf("\nDestination address: %08x\n", dest);
 	for(i=0; i<10000; i++){
 		((char*)shared_system_mem->ptr)[i] = 0;
 	}
 
-//	for(i = 0; i<16; i++){
-//		((char*)shared_system_mem->ptr)[i] = data_to_encrypt[i];
-//	}
-//	
-//	for(i=0; i<16; i++){
-//		((char*)shared_system_mem->ptr)[i+16] = data_to_encrypt2[i];
-//	}
-//	printf("\nDestination region before fabric as hex: 0x");
-//	for(i = 0; i<16; i++){
-//		printf("%02x", ((char*)shared_system_mem->ptr)[i+destOffset]);
-//	}
-//	printf("\n");
-
-
 	unsigned int output;
-//	for(i = 0; i<4; i++){
-//		getValueAtAddress(getAesControlBaseAddress() + 0x1c + i*4, &output);
-//		printf("\nkey[%d] read from config register: %08x\n", i, output);
-//	}
-
-	
-//	for(i=0; i<4; i++){
-//		getValueAtAddress(source + i*4, &output);
-//		printf("\nUnencrypted Data[%i] in memory: %08x", i, output);
-//	}
-
 	unsigned int current, currentTotal, k;
-/*	for(i=0; i<100; i++){
-		current = 0;
-		for(j = 0; j<4; j++){
-			currentTotal = 0;
-			for(k=0; k<4; k++){
-				current += data_to_encrypt3[i*16 + j*4 + k];
-				current = current << (8*k);
-				currentTotal += current;
-//			((char*)shared_system_mem->ptr)[i] = data_to_encrypt3[i*16 + j];
-//			printf("%02x", ((char*)shared_system_mem->ptr)[i*16 + j]);
-			}
-			writeValueToAddress(currentTotal, SHARED_MEM_BASE + i*4 + j);
-			getValueAtAddress(SHARED_MEM_BASE + i*4 + j, &output);
-			printf("%08x ", output);
-		}
-	}*/
-	
-//	printf("\nData to encrypt as hex:\n0x");
 	for(i=0; i<data_length; i++){
 		for(j=0; j<16; j++){
 			((char*)shared_system_mem->ptr)[i*16 +j] = data_to_encrypt3[i*16 + j];
-//			printf("%02x", ((char*)shared_system_mem->ptr)[i*16 +j]);
 		}
-//		printf("  0x");
 	}
-//
-//	printf("\nto fabric\n");
 
 	cleanupSharedMemoryPointer(shared_system_mem);
-	writeKey(key);
-	writeSourceAddress(source);
-	writeDestinationAddress(dest);
-	writeLength(data_length);
+	XAes *aes_device = NULL;
+	aes_device = malloc(sizeof(XAes));
+	if(aes_device == NULL){
+		printf("\nCould not allocate memory for aes device");
+		return -1;
+	}
+	if(XAes_Initialize(aes_device, "aestest") != XST_SUCCESS){
+		printf("\nCould not initialize aes device");
+		return -1;
+	}
+
+	XAes_Key_in_v *key_in = NULL;
+	key_in = (XAes_Key_in_v*)malloc(sizeof(XAes_Key_in_v));
+	if(key_in == NULL){
+		printf("\nCould not allocate memory for key struct");
+		return -1;
+	}
+	u32 key_array[4];
+	for(i=0; i<4; i++){
+		u32 current = 0;
+		for(j=0; j<4; j++){
+			current << 8;
+			current += key[i+j];
+		}
+		key_array[i] = current;
+	}
+	key_in->word_0 = key_array[0];
+	key_in->word_1 = key_array[1];
+	key_in->word_2 = key_array[2];
+	key_in->word_3 = key_array[3];
+
+	printf("\nOriginal key:\n0x");
+	for(i=0; i<16; i++){
+		printf("%08x", key[i]);
+	}
+
+	printf("\nFabric key:\n0x");
+	for(i=0; i<4; i++){
+		printf("%0x",key_array[i]);
+	}
+
+	XAes_SetKey_in_v(aes_device, *key_in);
+//	writeKey(key);
+	XAes_SetSourceaddress(aes_device, source);
+//	writeSourceAddress(source);
+	XAes_SetDestinationaddress(aes_device, dest);
+//	writeDestinationAddress(dest);
+	XAes_SetLength_r(aes_device, data_length);
+//	writeLength(data_length);
 	
 	ticks = clock();
-	writeLengthValid();
-	writeDestinationAddressValid();
-	writeSourceAddressValid();
-	writeKeyValid();
+	XAes_SetSourceaddressVld(aes_device);
+//	writeLengthValid();
+	XAes_SetKey_in_vVld(aes_device);
+//	writeDestinationAddressValid();
+	XAes_SetDestinationaddressVld(aes_device);
+//	writeSourceAddressValid();
+	XAes_SetLength_rVld(aes_device);
+//	writeKeyValid();
 
-	int finished = readFinished();
+	int finished = XAes_GetFinished(aes_device);
 	printf("\nWaiting for fabric.");
 	while(finished == 0){
 		printf(".");
-		finished = readFinished();
+		finished = XAes_GetFinished(aes_device);
 	}
 	ticks = clock() - ticks;
 	printf("\nDone waiting for fabric\n");
@@ -289,28 +259,6 @@ int main(){
 	}
 	printf("\n");
 	printf ("It took %f clicks (%f seconds) in fabric.\n",(float)ticks,((float)ticks)/CLOCKS_PER_SEC);
-//	printf("\nEncrypted data as hex:\n0x");
-
-//	for(i = 0; i<data_length; i++){
-//		for(j=0; j<16; j++){
-//			char current =  ((char*)shared_system_mem->ptr)[i*16 + j + destOffset];
-//			printf("%02x", current);
-//		}
-//		printf("  0x");
-//	}
-//	printf("\nfrom fabric\n");
-//	for(i = 0; i<16; i++){
-//		char current =  ((char*)shared_system_mem->ptr)[16 + i + destOffset];
-//		printf("%02x", current);
-//	}
-//	printf(" - from fabric\n");
-/*	for(i=0; i<4; i++){
-		getValueAtAddress(dest + i*4, &output);
-		if(output != 0){
-			printf("\n%08x at %i", output, i);
-		}
-	}
-	printf("\n");*/
 	int incorrectCount = 0;
 	for(i=0; i<data_length; i++){
 		for(j=0; j<16; j++){

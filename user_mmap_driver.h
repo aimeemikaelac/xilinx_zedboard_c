@@ -18,8 +18,8 @@
 
 typedef struct shared_memory{
 	int fd;
-	void* ptr;
-	void* original_ptr;
+	volatile void* ptr;
+	volatile void* original_ptr;
 	unsigned length;
 	unsigned offset;
 	unsigned page_size;
@@ -35,6 +35,8 @@ int writeValueToAddress(unsigned int value, unsigned address);
 shared_memory getSharedMemoryArea(unsigned address, unsigned length);
 //cleanup a shared_memory struct
 void cleanupSharedMemoryPointer(shared_memory mem);
+//sync a shred_memory struct
+//int syncSharedMemory(shared_memory mem);
 
 shared_memory getUioMemoryArea();
 int writeValueToAddressUio(unsigned int value, int offset);
