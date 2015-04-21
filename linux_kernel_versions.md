@@ -39,13 +39,23 @@ This is only documented in the commit message for this commit, available at http
 * Seems to work with these UIO config options in the kernel:
 
 \# CONFIG_HID_HUION is not set
+
 CONFIG_UIO=y
+
 \# CONFIG_UIO_CIF is not set
+
 CONFIG_UIO_PDRV_GENIRQ=y
+
 \# CONFIG_UIO_DMEM_GENIRQ is not set
+
 \# CONFIG_UIO_AEC is not set
+
 \# CONFIG_UIO_SERCOS3 is not set
+
 \# CONFIG_UIO_PCI_GENERIC is not set
+
 \# CONFIG_UIO_NETX is not set
+
 \# CONFIG_UIO_MF624 is not set
+
 CONFIG_UIO_XILINX_APM=y
