@@ -37,6 +37,7 @@ This is only documented in the commit message for this commit, available at http
 ##Notes:
 * Get kernel version with: `make kernelversion`
 * Seems to work with these UIO config options in the kernel:
+
 # CONFIG_HID_HUION is not set
 CONFIG_UIO=y
 # CONFIG_UIO_CIF is not set
