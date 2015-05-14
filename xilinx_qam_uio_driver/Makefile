@@ -22,7 +22,7 @@ OUTS = *.o
 
 
 libs:
-	echo "Compiling crec"
+	echo "Compiling qam_runner"
 	$(COMPILER) $(COMPILER_FLAGS) $(EXTRA_COMPILER_FLAGS) $(INCLUDES) $(LIBSOURCES)
 	$(ARCHIVER) -r ${RELEASEDIR}/${LIB} $(OUTS)
 	make clean
