@@ -21,6 +21,61 @@ int XCrec_CfgInitialize(XCrec *InstancePtr, XCrec_Config *ConfigPtr) {
 }
 #endif
 
+void XCrec_Start(XCrec *InstancePtr) {
+    u32 Data;
+
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Data = XCrec_ReadReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_AP_CTRL) & 0x80;
+    XCrec_WriteReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_AP_CTRL, Data | 0x01);
+}
+
+u32 XCrec_IsDone(XCrec *InstancePtr) {
+    u32 Data;
+
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Data = XCrec_ReadReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_AP_CTRL);
+    return (Data >> 1) & 0x1;
+}
+
+u32 XCrec_IsIdle(XCrec *InstancePtr) {
+    u32 Data;
+
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Data = XCrec_ReadReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_AP_CTRL);
+    return (Data >> 2) & 0x1;
+}
+
+u32 XCrec_IsReady(XCrec *InstancePtr) {
+    u32 Data;
+
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Data = XCrec_ReadReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_AP_CTRL);
+    // check ap_start to see if the pcore is ready for next input
+    return !(Data & 0x1);
+}
+
+void XCrec_EnableAutoRestart(XCrec *InstancePtr) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    XCrec_WriteReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_AP_CTRL, 0x80);
+}
+
+void XCrec_DisableAutoRestart(XCrec *InstancePtr) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    XCrec_WriteReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_AP_CTRL, 0);
+}
+
 void XCrec_Set_din_i_V(XCrec *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -239,5 +294,60 @@ u32 XCrec_Get_control_reg_init_V(XCrec *InstancePtr) {
 
     Data = XCrec_ReadReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_CONTROL_REG_INIT_V_DATA);
     return Data;
+}
+
+void XCrec_InterruptGlobalEnable(XCrec *InstancePtr) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    XCrec_WriteReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_GIE, 1);
+}
+
+void XCrec_InterruptGlobalDisable(XCrec *InstancePtr) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    XCrec_WriteReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_GIE, 0);
+}
+
+void XCrec_InterruptEnable(XCrec *InstancePtr, u32 Mask) {
+    u32 Register;
+
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Register =  XCrec_ReadReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_IER);
+    XCrec_WriteReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_IER, Register | Mask);
+}
+
+void XCrec_InterruptDisable(XCrec *InstancePtr, u32 Mask) {
+    u32 Register;
+
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Register =  XCrec_ReadReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_IER);
+    XCrec_WriteReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_IER, Register & (~Mask));
+}
+
+void XCrec_InterruptClear(XCrec *InstancePtr, u32 Mask) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    XCrec_WriteReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_ISR, Mask);
+}
+
+u32 XCrec_InterruptGetEnabled(XCrec *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return XCrec_ReadReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_IER);
+}
+
+u32 XCrec_InterruptGetStatus(XCrec *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return XCrec_ReadReg(InstancePtr->Axilites_BaseAddress, XCREC_AXILITES_ADDR_ISR);
 }
 

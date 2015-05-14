@@ -80,6 +80,12 @@ int XCrec_Initialize(XCrec *InstancePtr, const char* InstanceName);
 int XCrec_Release(XCrec *InstancePtr);
 #endif
 
+void XCrec_Start(XCrec *InstancePtr);
+u32 XCrec_IsDone(XCrec *InstancePtr);
+u32 XCrec_IsIdle(XCrec *InstancePtr);
+u32 XCrec_IsReady(XCrec *InstancePtr);
+void XCrec_EnableAutoRestart(XCrec *InstancePtr);
+void XCrec_DisableAutoRestart(XCrec *InstancePtr);
 
 void XCrec_Set_din_i_V(XCrec *InstancePtr, u32 Data);
 u32 XCrec_Get_din_i_V(XCrec *InstancePtr);
@@ -106,6 +112,14 @@ void XCrec_Set_control_reg_clr(XCrec *InstancePtr, u32 Data);
 u32 XCrec_Get_control_reg_clr(XCrec *InstancePtr);
 void XCrec_Set_control_reg_init_V(XCrec *InstancePtr, u32 Data);
 u32 XCrec_Get_control_reg_init_V(XCrec *InstancePtr);
+
+void XCrec_InterruptGlobalEnable(XCrec *InstancePtr);
+void XCrec_InterruptGlobalDisable(XCrec *InstancePtr);
+void XCrec_InterruptEnable(XCrec *InstancePtr, u32 Mask);
+void XCrec_InterruptDisable(XCrec *InstancePtr, u32 Mask);
+void XCrec_InterruptClear(XCrec *InstancePtr, u32 Mask);
+u32 XCrec_InterruptGetEnabled(XCrec *InstancePtr);
+u32 XCrec_InterruptGetStatus(XCrec *InstancePtr);
 
 #ifdef __cplusplus
 }
