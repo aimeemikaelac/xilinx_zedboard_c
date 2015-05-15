@@ -163,16 +163,6 @@ u32 XQam_runner_Get_output_d_i(XQam_runner *InstancePtr) {
     return Data;
 }
 
-u32 XQam_runner_Get_output_d_i_vld(XQam_runner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XQam_runner_ReadReg(InstancePtr->Axilites_BaseAddress, XQAM_RUNNER_AXILITES_ADDR_OUTPUT_D_I_CTRL);
-    return Data & 0x1;
-}
-
 u32 XQam_runner_Get_output_d_q(XQam_runner *InstancePtr) {
     u32 Data;
 
@@ -181,16 +171,6 @@ u32 XQam_runner_Get_output_d_q(XQam_runner *InstancePtr) {
 
     Data = XQam_runner_ReadReg(InstancePtr->Axilites_BaseAddress, XQAM_RUNNER_AXILITES_ADDR_OUTPUT_D_Q_DATA);
     return Data;
-}
-
-u32 XQam_runner_Get_output_d_q_vld(XQam_runner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XQam_runner_ReadReg(InstancePtr->Axilites_BaseAddress, XQAM_RUNNER_AXILITES_ADDR_OUTPUT_D_Q_CTRL);
-    return Data & 0x1;
 }
 
 void XQam_runner_Set_input_ph_i(XQam_runner *InstancePtr, u32 Data) {

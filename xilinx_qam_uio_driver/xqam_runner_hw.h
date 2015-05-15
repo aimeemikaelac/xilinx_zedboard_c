@@ -39,14 +39,10 @@
 //        others - reserved
 // 0x28 : Data signal of output_d_i
 //        bit 31~0 - output_d_i[31:0] (Read)
-// 0x2c : Control signal of output_d_i
-//        bit 0  - output_d_i_ap_vld (Read/COR)
-//        others - reserved
+// 0x2c : reserved
 // 0x30 : Data signal of output_d_q
 //        bit 31~0 - output_d_q[31:0] (Read)
-// 0x34 : Control signal of output_d_q
-//        bit 0  - output_d_q_ap_vld (Read/COR)
-//        others - reserved
+// 0x34 : reserved
 // 0x38 : Data signal of input_ph_i
 //        bit 31~0 - input_ph_i[31:0] (Read/Write)
 // 0x3c : Control signal of input_ph_i
@@ -122,10 +118,8 @@
 #define XQAM_RUNNER_AXILITES_ADDR_INPUT_D_Q_CTRL              0x24
 #define XQAM_RUNNER_AXILITES_ADDR_OUTPUT_D_I_DATA             0x28
 #define XQAM_RUNNER_AXILITES_BITS_OUTPUT_D_I_DATA             32
-#define XQAM_RUNNER_AXILITES_ADDR_OUTPUT_D_I_CTRL             0x2c
 #define XQAM_RUNNER_AXILITES_ADDR_OUTPUT_D_Q_DATA             0x30
 #define XQAM_RUNNER_AXILITES_BITS_OUTPUT_D_Q_DATA             32
-#define XQAM_RUNNER_AXILITES_ADDR_OUTPUT_D_Q_CTRL             0x34
 #define XQAM_RUNNER_AXILITES_ADDR_INPUT_PH_I_DATA             0x38
 #define XQAM_RUNNER_AXILITES_BITS_INPUT_PH_I_DATA             32
 #define XQAM_RUNNER_AXILITES_ADDR_INPUT_PH_I_CTRL             0x3c
