@@ -1,5 +1,5 @@
-LIBS 		:= -lcrypto -lssl -lstdc++
-INCLUDES	:= test_direct_dma_uio_driver user_mmap_driver xilinx_aes_uio_driver xilinx_qam_uio_driver
+LIBS 		:= -lcrypto -lssl -lstdc++ -lm
+INCLUDES	:= test_direct_dma_uio_driver user_mmap_driver xilinx_aes_uio_driver xilinx_qam_uio_driver fixed_point
 INCL		:= $(foreach d, $(INCLUDES), -I$d/)
 DRIVERS		:= $(foreach d, $(INCLUDES), $(wildcard $d/*.c))
 AES 		:= aes_runner.c
