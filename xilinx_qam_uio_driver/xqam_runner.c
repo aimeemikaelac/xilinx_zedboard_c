@@ -505,6 +505,23 @@ u32 XQam_runner_Get_control_in_reg_init_vld(XQam_runner *InstancePtr) {
     return Data & 0x1;
 }
 
+void XQam_runner_Set_enable_out(XQam_runner *InstancePtr, u32 Data) {
+    Xil_AssertVoid(InstancePtr != NULL);
+    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    XQam_runner_WriteReg(InstancePtr->Axilites_BaseAddress, XQAM_RUNNER_AXILITES_ADDR_ENABLE_OUT_DATA, Data);
+}
+
+u32 XQam_runner_Get_enable_out(XQam_runner *InstancePtr) {
+    u32 Data;
+
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Data = XQam_runner_ReadReg(InstancePtr->Axilites_BaseAddress, XQAM_RUNNER_AXILITES_ADDR_ENABLE_OUT_DATA);
+    return Data;
+}
+
 void XQam_runner_InterruptGlobalEnable(XQam_runner *InstancePtr) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);

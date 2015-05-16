@@ -102,6 +102,10 @@
 // 0x8c : Control signal of control_in_reg_init
 //        bit 0  - control_in_reg_init_ap_vld (Read/Write/SC)
 //        others - reserved
+// 0x90 : Data signal of enable_out
+//        bit 0  - enable_out[0] (Read/Write)
+//        others - reserved
+// 0x94 : reserved
 // (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
 
 #define XQAM_RUNNER_AXILITES_ADDR_AP_CTRL                     0x00
@@ -153,4 +157,6 @@
 #define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_REG_INIT_DATA    0x88
 #define XQAM_RUNNER_AXILITES_BITS_CONTROL_IN_REG_INIT_DATA    32
 #define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_REG_INIT_CTRL    0x8c
+#define XQAM_RUNNER_AXILITES_ADDR_ENABLE_OUT_DATA             0x90
+#define XQAM_RUNNER_AXILITES_BITS_ENABLE_OUT_DATA             1
 

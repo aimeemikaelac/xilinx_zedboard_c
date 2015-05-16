@@ -136,6 +136,8 @@ void XQam_runner_Set_control_in_reg_init(XQam_runner *InstancePtr, u32 Data);
 u32 XQam_runner_Get_control_in_reg_init(XQam_runner *InstancePtr);
 void XQam_runner_Set_control_in_reg_init_vld(XQam_runner *InstancePtr);
 u32 XQam_runner_Get_control_in_reg_init_vld(XQam_runner *InstancePtr);
+void XQam_runner_Set_enable_out(XQam_runner *InstancePtr, u32 Data);
+u32 XQam_runner_Get_enable_out(XQam_runner *InstancePtr);
 
 void XQam_runner_InterruptGlobalEnable(XQam_runner *InstancePtr);
 void XQam_runner_InterruptGlobalDisable(XQam_runner *InstancePtr);
