@@ -5,9 +5,9 @@
 #include <time.h>
 #include "xaes.h"
 
-#define SHARED_MEM_BASE 0x1F400000
+#define SHARED_MEM_BASE 0x1F410000
 
-#define SHARED_MEM_LENGTH 0x800000
+#define SHARED_MEM_LENGTH 0x30000
 
 #define AES_CONTROL_BASE "0x43C00000"
 
@@ -140,13 +140,19 @@ char *int2bin(int a, char *buffer, int buf_size) {
 	return buffer;
 }
 
-int main(){
+int main(int argc, char** argv){
 	int i, j;
 	unsigned char data_to_encrypt[] = {0x01, 0x4B, 0xAF, 0x22, 0x78, 0xA6, 0x9D, 0x33, 0x1D, 0x51, 0x80, 0x10, 0x36, 0x43, 0xE9, 0x9A, '\0'};
 //	unsigned char key[] = {0xE8, 0xE9, 0xEA, 0xEB, 0xED, 0xEE, 0xEF, 0xF0, 0xF2, 0xF3, 0xF4, 0xF5, 0xF7, 0xF8, 0xF9, 0xFA, '\0'};
 	unsigned char key[] = {0xE8, 0xE9, 0xEA, 0xEB, 0xED, 0xEE, 0xEF, 0xF0, 0xF2, 0xF3, 0xF4, 0xF5, 0xF7, 0xF8, 0xF9, 0xFA, '\0'};
 	unsigned char data_to_encrypt2[] = {0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, '\0'};
-	int data_length = 2000;
+	int data_length;
+	if(argc == 2){
+		data_length = atoi(argv[1]);
+	} else{
+		data_length = 100;
+	}
+	printf("Data length: %i\n", data_length);
 	unsigned char data_to_encrypt3[16*data_length];
 	unsigned char encrypted_data_openssl[16*data_length];
 
@@ -179,7 +185,7 @@ int main(){
 	printf ("It took %f clicks (%f seconds) in openssl.\n",(float)ticks,((float)ticks)/CLOCKS_PER_SEC);
 	int source = SHARED_MEM_BASE;
 	int length = SHARED_MEM_LENGTH;
-	shared_memory shared_system_mem = getSharedMemoryArea(source, length);
+	shared_memory shared_system_mem = getSharedMemoryArea(source, length);//getUioMemoryArea("/dev/uio1", length);//=
 	if(shared_system_mem == NULL){
 		printf("Error getting shared system memory pointer");
 		return -1;
@@ -187,7 +193,7 @@ int main(){
 	int destOffset = 16*data_length +16;
 	int dest = source + destOffset;
 
-	for(i=0; i<10000; i++){
+	for(i=0; i<0x1000; i++){
 		((char*)shared_system_mem->ptr)[i] = 0;
 	}
 
@@ -207,11 +213,14 @@ int main(){
 //		printf("\nCould not allocate memory for aes device");
 //		return -1;
 //	}
-	if(XAes_Initialize(aes_device, "aestest") != XST_SUCCESS){
+//	if(XAes_Initialize(aes_device, "aestest") != XST_SUCCESS){
+	printf("Test3------------------------------------\n");
+	if(XAes_Initialize(aes_device, "qam") != XST_SUCCESS){
 		printf("\nCould not initialize aes device");
 		return -1;
 	}
 
+	printf("Test------------------------------------\n");
 	XAes_Key_in_v key_in;// = NULL;
 //	key_in = (XAes_Key_in_v*)malloc(sizeof(XAes_Key_in_v));
 //	if(key_in == NULL){
@@ -268,6 +277,8 @@ int main(){
 //	writeDestinationAddress(dest);
 	XAes_Set_length_r(aes_device, data_length);
 //	writeLength(data_length);
+	int current_data_length = XAes_Get_length_r(aes_device);
+	printf("Current data length: %i\n", current_data_length);
 	
 	ticks = clock();
 	XAes_Set_sourceAddress_vld(aes_device);

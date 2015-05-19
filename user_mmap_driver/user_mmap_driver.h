@@ -38,8 +38,8 @@ void cleanupSharedMemoryPointer(shared_memory mem);
 //sync a shred_memory struct
 //int syncSharedMemory(shared_memory mem);
 
-shared_memory getUioMemoryArea();
-int writeValueToAddressUio(unsigned int value, int offset);
-int getValueAtAddressUio(int offset, unsigned int* value);
+shared_memory getUioMemoryArea(char* filename, unsigned mmap_length);
+int writeValueToAddressUio(unsigned int value, int offset, char* filename, unsigned length);
+int getValueAtAddressUio(int offset, unsigned int* value, char* filename, unsigned length);
 
 #endif /* USER_MMAP_DRIVER_H_ */

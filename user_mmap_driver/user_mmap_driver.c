@@ -36,8 +36,8 @@ int writeValueToAddress(unsigned int value, unsigned gpio_addr){
 
 //get the value at memory address gpio_addr in system address
 //map using GPIO and /dev/map. program must be run as root
-int getValueAtAddressUio(int offset, unsigned int* value){
-	shared_memory mem = getUioMemoryArea();
+int getValueAtAddressUio(int offset, unsigned int* value, char* filename, unsigned length){
+	shared_memory mem = getUioMemoryArea(filename, length);
 
 	if(mem == NULL){
 		return -1;
@@ -54,8 +54,8 @@ int getValueAtAddressUio(int offset, unsigned int* value){
 
 //write value to address in uio memory map using uio. program
 //must still be run as root
-int writeValueToAddressUio(unsigned int value, int offset){
-	shared_memory mem = getUioMemoryArea();
+int writeValueToAddressUio(unsigned int value, int offset, char* filename, unsigned length){
+	shared_memory mem = getUioMemoryArea(filename, length);
 
 	/* Write value to the device register */
 	((unsigned int *)(mem->ptr))[offset] = value;
@@ -116,22 +116,23 @@ shared_memory getSharedMemoryArea(unsigned sharedMemoryAddress, unsigned length)
 	return mem;
 }
 
-shared_memory getUioMemoryArea(){
+shared_memory getUioMemoryArea(char* filename, unsigned mmap_length){
 	unsigned page_addr, page_offset;
 	//get page size from system
 	unsigned page_size=sysconf(_SC_PAGESIZE);
-	unsigned mmap_length = page_size;
+//	unsigned mmap_length = page_size;
 //	if(length != 0){
 //		mmap_length = length;
 //	}
-	mmap_length = 0x10000;
+//	mmap_length = 0x10000;
 	int fd;
 	void * ptr = NULL;
 
 	/* Open /dev/uio0 file */
-	fd = open ("/dev/uio0", O_RDWR|O_SYNC);
+	fd = open (filename, O_RDWR|O_SYNC);
 	if (fd < 1) {
-		perror("Error opening /dev/uio0 in getValueAtAddress: ");
+		printf("Error opening uio file: %s\n", filename);
+		perror("Error opening uio file in getValueAtAddress: ");
 		return NULL;
 	}
 
@@ -141,7 +142,8 @@ shared_memory getUioMemoryArea(){
 	page_offset = sharedMemoryAddress - page_addr;
 	ptr = mmap(NULL, mmap_length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, page_addr);
 	if(ptr == NULL){
-		perror("Error mmapping /dev/uio0");
+		printf("Error mmaping uio file: %s\n", filename);
+		perror("Error mmapping uio file");
 		close(fd);
 		return NULL;
 	}
@@ -149,6 +151,7 @@ shared_memory getUioMemoryArea(){
 	if(mem != NULL){
 		mem -> original_ptr = ptr;
 	} else{
+		printf("Error calling malloc\n");
 		perror("Error mallocing shared mem struct");
 		close(fd);
 		return NULL;
@@ -161,6 +164,7 @@ shared_memory getUioMemoryArea(){
 	mem->length = mmap_length;
 	mem->offset = page_offset;
 	mem->page_size = page_size;
+	printf("Test2-----------------------------------\n");
 	return mem;
 }
 

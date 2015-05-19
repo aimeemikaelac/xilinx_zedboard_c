@@ -21,29 +21,29 @@ u16 createFixed(float in){
 	int intval = (int)in;
 	intval &= 0x3;
 	float fract = sign*in - intval;
-	cout << "Sign: "<<sign <<endl;
-	cout << "Fract: "<<fract<<endl;
+	//cout << "Sign: "<<sign <<endl;
+	//cout << "Fract: "<<fract<<endl;
 	intval = intval << 13;
 	int factor = 1;
 	factor = factor << 13;
-	cout << "Factor: " << factor << endl;
+	//cout << "Factor: " << factor << endl;
 	fract *= (float)factor;
-	cout << "Fract: "<<fract<<endl;
+	//cout << "Fract: "<<fract<<endl;
 	int fractval = (int)ceil(fract);
-	cout << "Input float: " << in <<endl;
+	//cout << "Input float: " << in <<endl;
 	val = intval + fractval;
 	val *= sign;
-	cout << "Output fixed point: " << val << endl;
-	printf("Output fixed point: 0x%04x\n", val);
-	cout << "Fract part: " << fractval << endl;
-	printf("Fract part: 0x%04x\n", fractval);
-	cout << "Int part: " << int(in) << endl;
+	//cout << "Output fixed point: " << val << endl;
+	//printf("Output fixed point: 0x%04x\n", val);
+//	cout << "Fract part: " << fractval << endl;
+//	printf("Fract part: 0x%04x\n", fractval);
+//	cout << "Int part: " << int(in) << endl;
 	return val;
 }
 
 float createFloat(u16 in){
 	int sign;
-	cout << "Input fixed point: "<<in<<endl;
+//	cout << "Input fixed point: "<<in<<endl;
 	if(in & 0x8000){
 		sign = -1;
 	} else{
@@ -54,15 +54,15 @@ float createFloat(u16 in){
 	int intval = (in & 0x6000);
 	int fractval = 0;
 	fractval = (in & 0x1fff);
-	cout << "Fractval: "<<fractval<<endl;
+//	cout << "Fractval: "<<fractval<<endl;
 	float fract = (float)fractval;
-	fract = fract / (float)factor;
-	cout << "Fract val: "<<fract<<endl;
+//	fract = fract / (float)factor;
+//	cout << "Fract val: "<<fract<<endl;
 	intval = intval >> 13;
 	float output = (float)intval + fract;
-	cout << "Input fixed point: "<<in<<endl;
-	printf("Input fixed point: 0x%08x\n", in);
-	cout << "Output float: "<<output<<endl;
+//	cout << "Input fixed point: "<<in<<endl;
+//	printf("Input fixed point: 0x%08x\n", in);
+//	cout << "Output float: "<<output<<endl;
 	return output;
 }
 
@@ -97,20 +97,20 @@ int main(){
 	float16 loop_integ;
 	char wait;
 
-	for (int i = 0; i<20; i++){//13000; ++i) {
+	for (int i = 0; i<13000; ++i) {
 		dout_mix_i.u=0;
 		dout_mix_q.u = 0;
-		cout << "-------------------------------------"<<endl;
-		cout << "ITERATION: "<<i<<endl;
+//		cout << "-------------------------------------"<<endl;
+//		cout << "ITERATION: "<<i<<endl;
 		fp_cin >> f_din; 
-		cout << "D_i: " << f_din;
+//		cout << "D_i: " << f_din;
 		din_i.f = f_din;
 		fp_cin >> f_din;
-		cout << " D_q: " << f_din << endl;
-		cout << "D_i float: " << din_i.f;
+//		cout << " D_q: " << f_din << endl;
+//		cout << "D_i float: " << din_i.f;
 		din_q.f = f_din;
-		cout << " D_q float: " << din_q.f << endl;
-		cout << "D_i u: " << din_q.u << " D_q u: " << din_i.u << endl;
+//		cout << " D_q float: " << din_q.f << endl;
+//		cout << "D_i u: " << din_q.u << " D_q u: " << din_i.u << endl;
 
 	//	u16 fixed_i = createFixed(din_i.f);
 	//	u16 fixed_q = createFixed(din_q.f);
@@ -165,11 +165,11 @@ int main(){
 		XQam_runner_Set_control_in_reg_clr_vld(&qam_instance);
 
 //		XQam_runner_Start(&qam_instance);
-		cout << "Waiting";
+//		cout << "Waiting";
 		while(!XQam_runner_IsDone(&qam_instance)){
 //			cout << ".";
 		}
-		cout << endl;
+//		cout << endl;
 
 		dout_mix_i.u = XQam_runner_Get_output_d_i(&qam_instance);
 		dout_mix_q.u = XQam_runner_Get_output_d_q(&qam_instance);
@@ -182,11 +182,11 @@ int main(){
 		fp_dout << dout_mix_i.f << "\t" << dout_mix_q.f << "\t" << " " << endl;
 		fp_pout << ph_out_i.f << "\t" << ph_out_q.f << "\t" << " " << endl;
 		fp_debug << loop_integ.f << "\t" << endl;
-		cout << "D_out_i u32: " << dout_mix_i.u << " D_out_q u32: " << dout_mix_q.u << endl;
-		cout << "D_out_i float: " << dout_mix_i.f << " D_out_q float: " << dout_mix_q.f << endl;
-		cout << "Ph_out_i u32: " << ph_out_i.u << " Ph_out_q u32: " << ph_out_q.u << endl;
-		cout << "Ph_out_i float: " << ph_out_i.f << " Ph_out_q float: " << ph_out_q.f << endl;
-		cout << endl;
+//		cout << "D_out_i u32: " << dout_mix_i.u << " D_out_q u32: " << dout_mix_q.u << endl;
+//		cout << "D_out_i float: " << dout_mix_i.f << " D_out_q float: " << dout_mix_q.f << endl;
+//		cout << "Ph_out_i u32: " << ph_out_i.u << " Ph_out_q u32: " << ph_out_q.u << endl;
+//		cout << "Ph_out_i float: " << ph_out_i.f << " Ph_out_q float: " << ph_out_q.f << endl;
+//		cout << endl;
 	}
 
 	fp_dout.close();
