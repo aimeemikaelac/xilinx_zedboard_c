@@ -27,85 +27,55 @@
 // 0x10 : Data signal of ap_return
 //        bit 0  - ap_return[0] (Read)
 //        others - reserved
-// 0x18 : Data signal of input_d_i
-//        bit 31~0 - input_d_i[31:0] (Read/Write)
-// 0x1c : Control signal of input_d_i
-//        bit 0  - input_d_i_ap_vld (Read/Write/SC)
+// 0x18 : Data signal of sourceAddress
+//        bit 31~0 - sourceAddress[31:0] (Read/Write)
+// 0x1c : Control signal of sourceAddress
+//        bit 0  - sourceAddress_ap_vld (Read/Write/SC)
 //        others - reserved
-// 0x20 : Data signal of input_d_q
-//        bit 31~0 - input_d_q[31:0] (Read/Write)
-// 0x24 : Control signal of input_d_q
-//        bit 0  - input_d_q_ap_vld (Read/Write/SC)
+// 0x20 : Data signal of destinationAddress
+//        bit 31~0 - destinationAddress[31:0] (Read/Write)
+// 0x24 : Control signal of destinationAddress
+//        bit 0  - destinationAddress_ap_vld (Read/Write/SC)
 //        others - reserved
-// 0x28 : Data signal of output_d_i
-//        bit 31~0 - output_d_i[31:0] (Read)
-// 0x2c : reserved
-// 0x30 : Data signal of output_d_q
-//        bit 31~0 - output_d_q[31:0] (Read)
-// 0x34 : reserved
-// 0x38 : Data signal of input_ph_i
-//        bit 31~0 - input_ph_i[31:0] (Read/Write)
-// 0x3c : Control signal of input_ph_i
-//        bit 0  - input_ph_i_ap_vld (Read/Write/SC)
+// 0x28 : Data signal of iterations
+//        bit 31~0 - iterations[31:0] (Read/Write)
+// 0x2c : Control signal of iterations
+//        bit 0  - iterations_ap_vld (Read/Write/SC)
 //        others - reserved
-// 0x40 : Data signal of input_ph_q
-//        bit 31~0 - input_ph_q[31:0] (Read/Write)
-// 0x44 : Control signal of input_ph_q
-//        bit 0  - input_ph_q_ap_vld (Read/Write/SC)
-//        others - reserved
-// 0x48 : Data signal of output_ph_i
-//        bit 31~0 - output_ph_i[31:0] (Read)
-// 0x4c : Control signal of output_ph_i
-//        bit 0  - output_ph_i_ap_vld (Read/COR)
-//        others - reserved
-// 0x50 : Data signal of output_ph_q
-//        bit 31~0 - output_ph_q[31:0] (Read)
-// 0x54 : Control signal of output_ph_q
-//        bit 0  - output_ph_q_ap_vld (Read/COR)
-//        others - reserved
-// 0x58 : Data signal of loop_out
-//        bit 31~0 - loop_out[31:0] (Read)
-// 0x5c : Control signal of loop_out
-//        bit 0  - loop_out_ap_vld (Read/COR)
-//        others - reserved
-// 0x60 : Data signal of control_in_qam
+// 0x30 : Data signal of control_in_qam
 //        bit 31~0 - control_in_qam[31:0] (Read/Write)
-// 0x64 : Control signal of control_in_qam
+// 0x34 : Control signal of control_in_qam
 //        bit 0  - control_in_qam_ap_vld (Read/Write/SC)
 //        others - reserved
-// 0x68 : Data signal of control_in_lf_p
+// 0x38 : Data signal of control_in_lf_p
 //        bit 7~0 - control_in_lf_p[7:0] (Read/Write)
 //        others  - reserved
-// 0x6c : Control signal of control_in_lf_p
+// 0x3c : Control signal of control_in_lf_p
 //        bit 0  - control_in_lf_p_ap_vld (Read/Write/SC)
 //        others - reserved
-// 0x70 : Data signal of control_in_lf_i
+// 0x40 : Data signal of control_in_lf_i
 //        bit 7~0 - control_in_lf_i[7:0] (Read/Write)
 //        others  - reserved
-// 0x74 : Control signal of control_in_lf_i
+// 0x44 : Control signal of control_in_lf_i
 //        bit 0  - control_in_lf_i_ap_vld (Read/Write/SC)
 //        others - reserved
-// 0x78 : Data signal of control_in_lf_out_gain
+// 0x48 : Data signal of control_in_lf_out_gain
 //        bit 7~0 - control_in_lf_out_gain[7:0] (Read/Write)
 //        others  - reserved
-// 0x7c : Control signal of control_in_lf_out_gain
+// 0x4c : Control signal of control_in_lf_out_gain
 //        bit 0  - control_in_lf_out_gain_ap_vld (Read/Write/SC)
 //        others - reserved
-// 0x80 : Data signal of control_in_reg_clr
+// 0x50 : Data signal of control_in_reg_clr
 //        bit 0  - control_in_reg_clr[0] (Read/Write)
 //        others - reserved
-// 0x84 : Control signal of control_in_reg_clr
+// 0x54 : Control signal of control_in_reg_clr
 //        bit 0  - control_in_reg_clr_ap_vld (Read/Write/SC)
 //        others - reserved
-// 0x88 : Data signal of control_in_reg_init
+// 0x58 : Data signal of control_in_reg_init
 //        bit 31~0 - control_in_reg_init[31:0] (Read/Write)
-// 0x8c : Control signal of control_in_reg_init
+// 0x5c : Control signal of control_in_reg_init
 //        bit 0  - control_in_reg_init_ap_vld (Read/Write/SC)
 //        others - reserved
-// 0x90 : Data signal of enable_out
-//        bit 0  - enable_out[0] (Read/Write)
-//        others - reserved
-// 0x94 : reserved
 // (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
 
 #define XQAM_RUNNER_AXILITES_ADDR_AP_CTRL                     0x00
@@ -114,49 +84,31 @@
 #define XQAM_RUNNER_AXILITES_ADDR_ISR                         0x0c
 #define XQAM_RUNNER_AXILITES_ADDR_AP_RETURN                   0x10
 #define XQAM_RUNNER_AXILITES_BITS_AP_RETURN                   1
-#define XQAM_RUNNER_AXILITES_ADDR_INPUT_D_I_DATA              0x18
-#define XQAM_RUNNER_AXILITES_BITS_INPUT_D_I_DATA              32
-#define XQAM_RUNNER_AXILITES_ADDR_INPUT_D_I_CTRL              0x1c
-#define XQAM_RUNNER_AXILITES_ADDR_INPUT_D_Q_DATA              0x20
-#define XQAM_RUNNER_AXILITES_BITS_INPUT_D_Q_DATA              32
-#define XQAM_RUNNER_AXILITES_ADDR_INPUT_D_Q_CTRL              0x24
-#define XQAM_RUNNER_AXILITES_ADDR_OUTPUT_D_I_DATA             0x28
-#define XQAM_RUNNER_AXILITES_BITS_OUTPUT_D_I_DATA             32
-#define XQAM_RUNNER_AXILITES_ADDR_OUTPUT_D_Q_DATA             0x30
-#define XQAM_RUNNER_AXILITES_BITS_OUTPUT_D_Q_DATA             32
-#define XQAM_RUNNER_AXILITES_ADDR_INPUT_PH_I_DATA             0x38
-#define XQAM_RUNNER_AXILITES_BITS_INPUT_PH_I_DATA             32
-#define XQAM_RUNNER_AXILITES_ADDR_INPUT_PH_I_CTRL             0x3c
-#define XQAM_RUNNER_AXILITES_ADDR_INPUT_PH_Q_DATA             0x40
-#define XQAM_RUNNER_AXILITES_BITS_INPUT_PH_Q_DATA             32
-#define XQAM_RUNNER_AXILITES_ADDR_INPUT_PH_Q_CTRL             0x44
-#define XQAM_RUNNER_AXILITES_ADDR_OUTPUT_PH_I_DATA            0x48
-#define XQAM_RUNNER_AXILITES_BITS_OUTPUT_PH_I_DATA            32
-#define XQAM_RUNNER_AXILITES_ADDR_OUTPUT_PH_I_CTRL            0x4c
-#define XQAM_RUNNER_AXILITES_ADDR_OUTPUT_PH_Q_DATA            0x50
-#define XQAM_RUNNER_AXILITES_BITS_OUTPUT_PH_Q_DATA            32
-#define XQAM_RUNNER_AXILITES_ADDR_OUTPUT_PH_Q_CTRL            0x54
-#define XQAM_RUNNER_AXILITES_ADDR_LOOP_OUT_DATA               0x58
-#define XQAM_RUNNER_AXILITES_BITS_LOOP_OUT_DATA               32
-#define XQAM_RUNNER_AXILITES_ADDR_LOOP_OUT_CTRL               0x5c
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_QAM_DATA         0x60
+#define XQAM_RUNNER_AXILITES_ADDR_SOURCEADDRESS_DATA          0x18
+#define XQAM_RUNNER_AXILITES_BITS_SOURCEADDRESS_DATA          32
+#define XQAM_RUNNER_AXILITES_ADDR_SOURCEADDRESS_CTRL          0x1c
+#define XQAM_RUNNER_AXILITES_ADDR_DESTINATIONADDRESS_DATA     0x20
+#define XQAM_RUNNER_AXILITES_BITS_DESTINATIONADDRESS_DATA     32
+#define XQAM_RUNNER_AXILITES_ADDR_DESTINATIONADDRESS_CTRL     0x24
+#define XQAM_RUNNER_AXILITES_ADDR_ITERATIONS_DATA             0x28
+#define XQAM_RUNNER_AXILITES_BITS_ITERATIONS_DATA             32
+#define XQAM_RUNNER_AXILITES_ADDR_ITERATIONS_CTRL             0x2c
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_QAM_DATA         0x30
 #define XQAM_RUNNER_AXILITES_BITS_CONTROL_IN_QAM_DATA         32
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_QAM_CTRL         0x64
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_P_DATA        0x68
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_QAM_CTRL         0x34
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_P_DATA        0x38
 #define XQAM_RUNNER_AXILITES_BITS_CONTROL_IN_LF_P_DATA        8
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_P_CTRL        0x6c
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_I_DATA        0x70
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_P_CTRL        0x3c
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_I_DATA        0x40
 #define XQAM_RUNNER_AXILITES_BITS_CONTROL_IN_LF_I_DATA        8
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_I_CTRL        0x74
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_OUT_GAIN_DATA 0x78
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_I_CTRL        0x44
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_OUT_GAIN_DATA 0x48
 #define XQAM_RUNNER_AXILITES_BITS_CONTROL_IN_LF_OUT_GAIN_DATA 8
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_OUT_GAIN_CTRL 0x7c
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_REG_CLR_DATA     0x80
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_LF_OUT_GAIN_CTRL 0x4c
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_REG_CLR_DATA     0x50
 #define XQAM_RUNNER_AXILITES_BITS_CONTROL_IN_REG_CLR_DATA     1
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_REG_CLR_CTRL     0x84
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_REG_INIT_DATA    0x88
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_REG_CLR_CTRL     0x54
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_REG_INIT_DATA    0x58
 #define XQAM_RUNNER_AXILITES_BITS_CONTROL_IN_REG_INIT_DATA    32
-#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_REG_INIT_CTRL    0x8c
-#define XQAM_RUNNER_AXILITES_ADDR_ENABLE_OUT_DATA             0x90
-#define XQAM_RUNNER_AXILITES_BITS_ENABLE_OUT_DATA             1
+#define XQAM_RUNNER_AXILITES_ADDR_CONTROL_IN_REG_INIT_CTRL    0x5c
 
