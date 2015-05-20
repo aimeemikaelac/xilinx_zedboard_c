@@ -11,105 +11,6 @@
 
 #define AES_CONTROL_BASE "0x43C00000"
 
-unsigned getAesControlBaseAddress(){
-	return strtoul(AES_CONTROL_BASE, NULL, 0);
-}
-
-//unsigned getBramInputAddress(){
-//	return strtoul(BRAM_INPUT_ADDRESS, NULL, 0);
-//}
-//
-//unsigned getBramOuputAddress(){
-//	return strtoul(BRAM_OUTPUT_ADDRESS, NULL, 0);
-//}
-
-void writeKey(char* key){
-	int i, j, output, key_part;
-	int current;
-//	shared_memory key_input = getSharedMemoryArea(getAesControlBaseAddress() + 0x1C, 0);
-//	if(key_input == NULL){
-//		printf("Error getting pointer to key");
-//		return;
-//	}
-//	char* aes_key = (char*)(key_input->ptr);
-	//TODO: for now, assume that we will not go over a page boundary
-	//if occurs, write each 4 bytes individually, or check if this will occur
-//	for(i=0; i<16; i++){
-//		*aes_key = 0;//key[15-i];
-//		aes_key[j] = key[i];
-//		aes_key = aes_key + (char)(1);
-//	}
-/*	aes_key[15] = key[8];
-	aes_key[14] = key[8];
-	aes_key[13] = key[8];
-	aes_key[12] = key[8];
-	aes_key[11] = key[8];
-	aes_key[10] = key[8];
-	aes_key[9] = key[8];
-	aes_key[8] = key[8];
-	aes_key[7] = key[8];
-	aes_key[6] = key[8];
-	aes_key[5] = key[8];
-	aes_key[4] = key[8];
-	aes_key[3] = key[8];
-	aes_key[2] = key[8];
-	aes_key[1] = key[8];
-	aes_key[0] = key[8];*/
-
-	for(i = 0; i<4; i++){
-		key_part = 0;
-		for(j=0; j<4; j++){
-			current = key[15-i*4 - j];
-			current = current << (j*8);
-			key_part += current;
-//		getValueAtAddress(getAesControlBaseAddress() + 0x1c + i/4, &output);
-//			printf("\nkey_part %i,%i: %08x", i, j, current);
-		}
-		writeValueToAddress(key_part, getAesControlBaseAddress() + 0x1c + i*4);
-		getValueAtAddress(getAesControlBaseAddress() + 0x1c + i*4, &output);
-//		printf("\nkey[%i] is: %08x\n", i, output);
-	}
-	
-//	cleanupSharedMemoryPointer(key_input);
-}
-
-void writeKeyValid(){
-	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x18);
-}
-
-void writeDestinationAddress(int destAddress){
-	writeValueToAddress(destAddress, getAesControlBaseAddress() + 0x30);
-}
-
-void writeDestinationAddressValid(){
-	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x2c);
-}
-
-void writeSourceAddress(int sourceAddress){
-	writeValueToAddress(sourceAddress, getAesControlBaseAddress() + 0x14);
-}
-
-void writeSourceAddressValid(){
-	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x10);
-}
-
-void writeLength(int length){
-	writeValueToAddress(length, getAesControlBaseAddress() + 0x38);
-}
-
-void writeLengthValid(){
-	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x34);
-}
-
-int readFinished(){
-	int output;
-	getValueAtAddress(getAesControlBaseAddress() + 0x40, &output);
-	return output;
-}
-
-void signalReadFinished(){
-	writeValueToAddress(0xffffffff, getAesControlBaseAddress() + 0x3c);
-}
 
 unsigned char reverse_char(unsigned char b) {
 	b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
@@ -158,8 +59,6 @@ int main(int argc, char** argv){
 
 	srand (time(NULL));
 
-	signalReadFinished();
-
 	int randStart = rand();
 	for(i=0; i<data_length; i++){
 		for(j=0; j<16; j++){
@@ -173,19 +72,24 @@ int main(int argc, char** argv){
 	unsigned char* data_pointer = data_to_encrypt3;
 	unsigned char* encrypted_dest = encrypted_data_openssl;
 
-	clock_t ticks;
-	ticks = clock();
+	clock_t begin, end;
+	begin = clock();
 	for(i=0; i<data_length; i++){
 		AES_encrypt(data_pointer, encrypted_dest, &aes_key);	
 		data_pointer = data_pointer + 16;
 		encrypted_dest = encrypted_dest + 16;
 	}
-	ticks = clock() - ticks;
-
-	printf ("It took %f clicks (%f seconds) in openssl.\n",(float)ticks,((float)ticks)/CLOCKS_PER_SEC);
+	end = clock();
+	double ticks = (double)(end - begin);
+	double seconds =(double)(end - begin)/CLOCKS_PER_SEC;
+	printf ("It took %f clicks (%f seconds) in openssl.\n",ticks,seconds);
+	FILE *openssl_fabric_log;
+	openssl_fabric_log = fopen("aes_openssl_results.csv", "a");
+	fprintf(openssl_fabric_log, "%f,%i\n", seconds, data_length);
+	fclose(openssl_fabric_log);
 	int source = SHARED_MEM_BASE;
 	int length = SHARED_MEM_LENGTH;
-	shared_memory shared_system_mem = getSharedMemoryArea(source, length);//getUioMemoryArea("/dev/uio1", length);//=
+	shared_memory shared_system_mem = getUioMemoryArea("/dev/uio1",0x80000);//getSharedMemoryArea(source, length);//getUioMemoryArea("/dev/uio1", length);//=
 	if(shared_system_mem == NULL){
 		printf("Error getting shared system memory pointer");
 		return -1;
@@ -214,13 +118,13 @@ int main(int argc, char** argv){
 //		return -1;
 //	}
 //	if(XAes_Initialize(aes_device, "aestest") != XST_SUCCESS){
-	printf("Test3------------------------------------\n");
+//	printf("Test3------------------------------------\n");
 	if(XAes_Initialize(aes_device, "qam") != XST_SUCCESS){
 		printf("\nCould not initialize aes device");
 		return -1;
 	}
 
-	printf("Test------------------------------------\n");
+//	printf("Test------------------------------------\n");
 	XAes_Key_in_v key_in;// = NULL;
 //	key_in = (XAes_Key_in_v*)malloc(sizeof(XAes_Key_in_v));
 //	if(key_in == NULL){
@@ -248,7 +152,7 @@ int main(int argc, char** argv){
 	key_in.word_2 = key_array[2];
 	key_in.word_3 = key_array[3];
 
-	printf("\nOriginal key:\n0x");
+//	printf("\nOriginal key:\n0x");
 	char bin_buffer[33];
 	for(i=0; i<4; i++){
 		int current_int = 0;
@@ -258,15 +162,16 @@ int main(int argc, char** argv){
 		}
 		int2bin(current_int, bin_buffer, 32);
 		bin_buffer[32] = '\0';
-		printf("%s", bin_buffer);
+//		printf("%s", bin_buffer);
 	}
 
-	printf("\nFabric key:\n0x");
+//	printf("\nFabric key:\n0x");
 	for(i=0; i<4; i++){
 		int2bin(key_array[i], bin_buffer, 32);
 		bin_buffer[32] = '\0';
-		printf("%s", bin_buffer);
+//		printf("%s", bin_buffer);
 	}
+	begin = clock();
 	XAes_Start(aes_device);
 
 	XAes_Set_key_in_V(aes_device, key_in);
@@ -277,10 +182,9 @@ int main(int argc, char** argv){
 //	writeDestinationAddress(dest);
 	XAes_Set_length_r(aes_device, data_length);
 //	writeLength(data_length);
-	int current_data_length = XAes_Get_length_r(aes_device);
-	printf("Current data length: %i\n", current_data_length);
+//	int current_data_length = XAes_Get_length_r(aes_device);
+//	printf("Current data length: %i\n", current_data_length);
 	
-	ticks = clock();
 	XAes_Set_sourceAddress_vld(aes_device);
 //	writeLengthValid();
 	XAes_Set_key_in_V_vld(aes_device);
@@ -298,28 +202,34 @@ int main(int argc, char** argv){
 	}
 	int finished = XAes_Get_return(aes_device);
 //	XAes_SetFinishedAck(aes_device);
-	ticks = clock() - ticks;
-	printf("\nDone waiting for fabric\n");
+	end = clock();
+	ticks = (double)(end - begin);
+	seconds = (double)(end - begin)/CLOCKS_PER_SEC;
+	printf ("It took %f clicks (%f seconds) in fabric for %i encryptions.\n",ticks,seconds, data_length);
+	FILE *aes_fabric_log;
+	aes_fabric_log = fopen("aes_fabric_results.csv", "a");
+	fprintf(aes_fabric_log, "%f,%i\n", seconds, data_length);
+	fclose(aes_fabric_log);
+//	printf("\nDone waiting for fabric\n");
 //	for(i = 0; i<16; i++){
 //		printf("%02x", ((char*)shared_system_mem->ptr)[16+i]);
 //	}
 //	printf("\n");
 //	shared_system_mem = getSharedMemoryArea(source, length);
 //	printf("\nNo segfault");
-	if(shared_system_mem == NULL){
-		printf("Error getting shared system memory pointer");
-		return -1;
-	}
-	printf("\nWaiting...");
-	int dummy = 0;
-	for(i=0; i<data_length*100; i++){
+//	if(shared_system_mem == NULL){
+//		printf("Error getting shared system memory pointer");
+//		return -1;
+//	}
+	printf("\nWaiting for checking...");
+//	int dummy = 0;
+//	for(i=0; i<data_length*100; i++){
 //		printf(".");
-		for(j=0; j<1000; j++){
-			dummy += i*j;
-		}
-	}
+//		for(j=0; j<1000; j++){
+//			dummy += i*j;
+//		}
+//	}
 	printf("\n");
-	printf ("It took %f clicks (%f seconds) in fabric.\n",(float)ticks,((float)ticks)/CLOCKS_PER_SEC);
 	int incorrectCount = 0;
 //	printf("\nChar fabric\t|\tChar openssl\n");
 //	printf("\nOpenssl:\n");
@@ -338,7 +248,7 @@ int main(int argc, char** argv){
 				incorrectCount++;
 			} 
 		}
-		printf(" ");
+//		printf(" ");
 //		printf("\n-------------------------------------");
 	}
 	ticks = clock() - ticks;
@@ -355,13 +265,13 @@ int main(int argc, char** argv){
 //	}
 
 
-	printf("\n");
+//	printf("\n");
 	printf("\nNum incorrect: %i\n", incorrectCount);
 	cleanupSharedMemoryPointer(shared_system_mem);
 	XAes_Release(aes_device);
 //	free(aes_device);
 //	free(key_in);
-	signalReadFinished();
+//	signalReadFinished();
 	return 0;
 }
 
