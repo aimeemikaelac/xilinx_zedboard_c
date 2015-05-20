@@ -1,3 +1,4 @@
+CFLAGS		:= -static
 LIBS 		:= -lcrypto -lssl -lstdc++ -lm
 INCLUDES	:= test_direct_dma_uio_driver user_mmap_driver xilinx_aes_uio_driver xilinx_qam_uio_driver fixed_point
 INCL		:= $(foreach d, $(INCLUDES), -I$d/)
@@ -11,16 +12,16 @@ CC		:= gcc
 CPP		:= g++
 
 aes: $(AES)
-	$(CC) -o $@.o $^ $(DRIVERS) $(INCL) $(LIBS)
+	$(CC) -o $@.o $^ $(CFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 test_direct: $(TEST_DIRECT)
-	$(CC) -o $@.o $^ $(DRIVERS) $(INCL) $(LIBS)
+	$(CC) -o $@.o $^ $(CFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 gpio: $(GPIO)
-	$(CC) -o $@.o $^ $(DRIVERS) $(INCL) $(LIBS)
+	$(CC) -o $@.o $^ $(CFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 qam: $(QAM)
-	$(CC) -o $@.o $^ $(DRIVERS) $(INCL) $(LIBS)
+	$(CC) -o $@.o $^ $(CFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 .PHONY: clean aes test_direct gpio qam
 
