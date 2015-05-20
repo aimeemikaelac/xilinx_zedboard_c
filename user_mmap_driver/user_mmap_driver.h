@@ -16,7 +16,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-typedef struct shared_memory{
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct shared_memory_struct{
 	int fd;
 	volatile void* ptr;
 	volatile void* original_ptr;
@@ -41,5 +45,9 @@ void cleanupSharedMemoryPointer(shared_memory mem);
 shared_memory getUioMemoryArea(char* filename, unsigned mmap_length);
 int writeValueToAddressUio(unsigned int value, int offset, char* filename, unsigned length);
 int getValueAtAddressUio(int offset, unsigned int* value, char* filename, unsigned length);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* USER_MMAP_DRIVER_H_ */
