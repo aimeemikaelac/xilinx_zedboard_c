@@ -3,13 +3,14 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <ctime>
 
-#define SHARED_MEM_BASE 0x1F400000
+#define SHARED_MEM_BASE 0x1F410000
 
 using namespace std;
 
 
-int main(){
+int main(int argc, char** argv){
 	union float16{
 		float f;
 		u32 u;
@@ -24,7 +25,9 @@ int main(){
 	ofstream fp_dout ("hw_dout.txt");
 	ofstream fp_pout ("hw_pout.txt");
 	ofstream fp_debug ("debug.txt");
-	ofstream fp_dout_mem("hw_dout_mem.txt");
+	ofstream results_log;
+	results_log.open("qam_results.csv", ios_base::app);
+//	ofstream fp_dout_mem("hw_dout_mem.txt");
 	float f_din;
 	float16 din_i;
 	float16 din_q;
@@ -41,9 +44,15 @@ int main(){
 	float16 loop_integ;
 	char wait;
 
-	shared_memory shared_system_mem = getSharedMemoryArea((unsigned)SHARED_MEM_BASE, (unsigned)0x1000);//getUioMemoryArea("/dev/uio1", 0x80000);
+	shared_memory shared_system_mem = getUioMemoryArea("/dev/uio1", 0x80000);//getSharedMemoryArea((unsigned)SHARED_MEM_BASE, (unsigned)0x1000);//getUioMemoryArea("/dev/uio1", 0x80000);
+	int length = 1000;
 
-	int length = 10;
+	if(argc == 2){
+		length = atoi(argv[1]);
+	}
+
+	printf("\nNumber of iterations: %i\n", length);
+	cout << "test" << endl;
 
 	for (int i = 0; i<length*4; i+=4) {
 		dout_mix_i.u=0;
@@ -56,22 +65,22 @@ int main(){
 		fp_cin >> f_din;
 
 //		cout << " D_q: " << f_din << endl;
-		cout << "D_i float: " << din_i.f;
+//		cout << "D_i float: " << din_i.f;
 		din_q.f = f_din;
-		cout << " D_q float: " << din_q.f << endl;
-		cout << "D_i u: " << din_q.u << " D_q u: " << din_i.u << endl;
+//		cout << " D_q float: " << din_q.f << endl;
+//		cout << "D_i u: " << din_q.u << " D_q u: " << din_i.u << endl;
 
-//		((u32*)shared_system_mem->ptr)[i] = din_i.u;
-		writeValueToAddress(din_i.u, SHARED_MEM_BASE + i + 3);
+		((u32*)shared_system_mem->ptr)[i+3] = din_i.u;
+//		writeValueToAddress(din_i.u, SHARED_MEM_BASE + i + 3);
 //		cout << "Memory value: " << ((unsigned*)(shared_system_mem->ptr))[i] << endl;
 		unsigned memval;
-		getValueAtAddress(SHARED_MEM_BASE + i, &memval);
+//		getValueAtAddress(SHARED_MEM_BASE + i, &memval);
 		float memfloat = *((float*)&memval);
-		printf("\nMemory value at %08x: %i, as float: %f\n", SHARED_MEM_BASE+i, memval, memfloat);
-		((u32*)shared_system_mem->ptr)[i+1] = din_q.u;
-		writeValueToAddress(din_q.u, SHARED_MEM_BASE + i + 2);
-		writeValueToAddress(din_i.u, SHARED_MEM_BASE + i + 1);
-		writeValueToAddress(din_q.u, SHARED_MEM_BASE + i + 0);
+//		printf("\nMemory value at %08x: %i, as float: %f\n", SHARED_MEM_BASE+i, memval, memfloat);
+		((u32*)shared_system_mem->ptr)[i+2] = din_q.u;
+//		writeValueToAddress(din_q.u, SHARED_MEM_BASE + i + 2);
+//		writeValueToAddress(din_i.u, SHARED_MEM_BASE + i + 1);
+//		writeValueToAddress(din_q.u, SHARED_MEM_BASE + i + 0);
 	//	u16 fixed_i = createFixed(din_i.f);
 	//	u16 fixed_q = createFixed(din_q.f);
 //		ph_xy_i.f = ph_out_i.f;
@@ -110,10 +119,20 @@ int main(){
 	}
 	unsigned sourceAddress = SHARED_MEM_BASE;
 	unsigned offset = length*16;
-	unsigned destinationAddress = sourceAddress + 0x100;
-	printf("\nDest address: 0x%08x, Size of float: %i", destinationAddress, sizeof(float));
-	printf("\nSize of unsigned: %i, Size of u32: %i", sizeof(unsigned), sizeof(u32));
+	unsigned destinationAddress = sourceAddress + offset;
+//	printf("\nDest address: 0x%08x, Size of float: %i", destinationAddress, sizeof(float));
+//	printf("\nSize of unsigned: %i, Size of u32: %i", sizeof(unsigned), sizeof(u32));
 
+	int u_offset = offset/sizeof(u32);
+
+	for(int i=0; i<length*4; i+=4){
+		((u32*)shared_system_mem->ptr)[u_offset + i + 3] = 0;
+		((u32*)shared_system_mem->ptr)[u_offset + i +2] = 0;
+		((u32*)shared_system_mem->ptr)[u_offset + i + 1] = 0;
+		((u32*)shared_system_mem->ptr)[u_offset + i + 0] = 0;
+	}
+	clock_t begin, end;
+	begin = clock();
 	XQam_runner_Start(&qam_runner);
 
 	XQam_runner_Set_sourceAddress(&qam_runner, sourceAddress );
@@ -146,9 +165,18 @@ int main(){
 	printf("\nWaiting for fabric\n");
 	while(XQam_runner_IsDone(&qam_runner) != 1){}
 
-	shared_memory mem2 = getSharedMemoryArea(destinationAddress, 0x1000);
+	end = clock();
+	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	double throughput = ((double)length)/elapsed_secs;
+	double throughput_msps = throughput/1000.0/1000.0;
 
-	for(int i=0; i<length*4; i+=4){
+	printf("\nElapsed time in hardware for %i iterations: %fs\n", length, elapsed_secs);
+	printf("\nThroughput: %f Mega-Samples/s\n", throughput_msps);
+
+	results_log << elapsed_secs << "," << length << "," << throughput << "," << throughput_msps << "," << endl;
+//	shared_memory mem2 = getSharedMemoryArea(destinationAddress, 0x1000);
+
+	for(int i=0; i<length; i++){
 
 		float16 i_out;
 		float16 q_out;
@@ -160,34 +188,37 @@ int main(){
 		float16 ph_i_out_mem;
 		float16 ph_q_out_mem;
 
-		i_out.u = ((u32*)shared_system_mem->ptr)[length*4 + i + 3];
-		q_out.u = ((u32*)shared_system_mem->ptr)[length*4 + i +2];
-		ph_i_out.u = ((u32*)shared_system_mem->ptr)[length*4 + i + 1];
-		ph_q_out.u = ((u32*)shared_system_mem->ptr)[length*4 + i + 0];
+		volatile void* currentBase = shared_system_mem->ptr + (length+i)*16;
+
+		i_out.u = ((u32*)currentBase)[3];//((u32*)shared_system_mem->ptr)[u_offset + i + 3];
+		q_out.u = ((u32*)currentBase)[2];//((u32*)shared_system_mem->ptr)[u_offset + i +2];
+		ph_i_out.u = ((u32*)currentBase)[0];//((u32*)shared_system_mem->ptr)[u_offset + i + 1];
+		ph_q_out.u = ((u32*)currentBase)[1];//((u32*)shared_system_mem->ptr)[u_offset + i + 0];
 		fp_dout << i_out.f << "\t " << q_out.f << "\t "  << ph_i_out.f << "\t" << ph_q_out.f << endl;
 
-		unsigned i_out_mem_u;
-		getValueAtAddress(destinationAddress+i+0, &i_out_mem_u);
+/*		unsigned i_out_mem_u;
+		getValueAtAddress(destinationAddress+i*4+0, &i_out_mem_u);
 		unsigned q_out_mem_u;
-		getValueAtAddress(destinationAddress+i+1, &q_out_mem_u);
+		getValueAtAddress(destinationAddress+i*4+1, &q_out_mem_u);
 		unsigned i_ph_out_mem_u;
-		getValueAtAddress(destinationAddress+i+2, &i_ph_out_mem_u);
+		getValueAtAddress(destinationAddress+i*4+2, &i_ph_out_mem_u);
 		unsigned q_ph_out_mem_u;
-		getValueAtAddress(destinationAddress+i+3, &q_ph_out_mem_u);
+		getValueAtAddress(destinationAddress+i*4+3, &q_ph_out_mem_u);
 
 		i_out_mem.u = i_out_mem_u;// ((u32*)(mem2->ptr))[i];
 		q_out_mem.u = q_out_mem_u;//((u32*)(mem2->ptr))[i +1];
 		ph_i_out_mem.u = i_ph_out_mem_u;//((u32*)(mem2->ptr))[i + 2];
 		ph_q_out_mem.u = q_ph_out_mem_u;//((u32*)(mem2->ptr))[i + 3];
 		fp_dout_mem << i_out_mem.f << "\t " << q_out_mem.f << "\t "  << ph_i_out_mem.f << "\t" << ph_q_out_mem.f << endl;
+		*/
 	}
 
-	fp_dout_mem.close();
+//	fp_dout_mem.close();
 	fp_dout.close();
 	fp_debug.close();
 	fp_cin.close();
 
 	cleanupSharedMemoryPointer(shared_system_mem);
-	cleanupSharedMemoryPointer(mem2);
+//	cleanupSharedMemoryPointer(mem2);
 	XQam_runner_Release(&qam_runner);
 }
