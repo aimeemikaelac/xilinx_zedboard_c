@@ -164,7 +164,7 @@ shared_memory getUioMemoryArea(char* filename, unsigned mmap_length){
 	mem->length = mmap_length;
 	mem->offset = page_offset;
 	mem->page_size = page_size;
-	printf("Test2-----------------------------------\n");
+//	printf("Test2-----------------------------------\n");
 	return mem;
 }
 
