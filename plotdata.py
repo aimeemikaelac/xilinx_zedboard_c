@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-from pylab import plotfile, show, plot, legend, figure, semilogy
+from pylab import plotfile, show, plot, legend, figure, semilogy, title, xlabel, ylabel, grid, savefig
+import numpy
 import csv
 
 qam_file = open("qam_results_ubuntu.csv")
@@ -101,22 +102,61 @@ for row in aes_fabric_reader_android_direct:
     aes_fabric_seconds_android_direct.append(row['seconds'])
     aes_fabric_encryptions_android_direct.append(row['samples'])
 
-semilogy(qam_samples, qam_seconds, '.', qam_tb_samples, qam_tb_seconds, '.')
-#legend(["QAM Fabric Results - Ubuntu", "QAM Testbench Results - Ubuntu"], loc=4)
-#figure()
-semilogy(qam_samples_android, qam_seconds_android, '*', qam_tb_samples_android, qam_tb_seconds_android, '*')
-legend(["QAM Fabric Results - Ubuntu", "QAM Testbench Results - Ubuntu","QAM Fabric Results - Android", "QAM Testbench Results - Android"], loc=4)
-#plot(qam_samples, qam_seconds, '.', qam_tb_samples, qam_tb_seconds, '.')
+fig_dir = "/home/michael/android_partial_reconfiguration/publications/ieee_micro_android_partial_reconfiguration/figs/"
 
+semilogy(qam_samples, qam_seconds, 'd', c='r', ms=5)
+semilogy(qam_tb_samples, qam_tb_seconds, 's', ms=5)
+legend(["Fabric Results", "Testbench Results"], loc=4, fontsize=16)
+#title("QAM Benchmark - Ubuntu Linux", fontsize=20)
+xlabel("Number of Samples", fontsize=18)
+ylabel("Execution time (s)",fontsize=18)
+grid()
+#grid(which='minor', lw=.3)
+savefig(fig_dir+"qam_ubuntu.pdf", bbox_inches='tight')
 figure()
 
-semilogy(aes_fabric_encryptions, aes_fabric_seconds, '.', aes_encryptions, aes_seconds, '.')
-semilogy(aes_fabric_encryptions_android, aes_fabric_seconds_android, '.', aes_encryptions_android, aes_seconds_android, '.')
-semilogy(aes_fabric_encryptions_android_shell, aes_fabric_seconds_android_shell, '*', aes_encryptions_android_shell, aes_seconds_android_shell, '*')
-semilogy(aes_fabric_encryptions_android_direct, aes_fabric_seconds_android_direct, '*')
-#plot(aes_seconds, aes_encryptions, '.', aes_fabric_seconds, aes_fabric_encryptions, '.')
-legend(["AES Fabric Results - Ubuntu","AES OpenSSL Results - Ubuntu", "AES Fabric Results - Android", 
-"AES Android Implementation Results", "Android Fabric - Shell", "Android OpenSSL -Shell",
-"AES Android Fabric Direct"], loc=4)
+semilogy(qam_samples_android, qam_seconds_android, 'd', c='r', ms=5)
+semilogy(qam_tb_samples_android, qam_tb_seconds_android, 's', ms=5)
+legend(["Fabric Results", "Testbench Results"], loc=4, fontsize=16)
+#title("QAM Benchmark - Android", fontsize=20)
+xlabel("Number of Samples", fontsize=18)
+ylabel("Execution time (s)", fontsize=18)
+grid()
+#grid(which='minor', lw=.3)
+savefig(fig_dir+"qam_android.pdf",  bbox_inches='tight')
+#plot(qam_samples, qam_seconds, '.', qam_tb_samples, qam_tb_seconds, '.')
+figure()
 
-show()
+semilogy(aes_fabric_encryptions, aes_fabric_seconds, 'd', c='r', ms=5)
+semilogy(aes_encryptions, aes_seconds, 's', ms=5)
+legend(["Fabric Results","OpenSSL Results"], loc=4, fontsize=16)
+#title("AES 128-bit Benchmark - Ubuntu Linux", fontsize=20)
+xlabel("Number of encryptions", fontsize=18)
+ylabel("Execution time (s)", fontsize=18)
+grid()
+#grid(which='minor', lw=.3)
+savefig(fig_dir+"aes_ubuntu.pdf",  bbox_inches='tight')
+figure()
+
+semilogy(aes_encryptions_android, aes_seconds_android, 'p', ms=5)
+#semilogy(aes_fabric_encryptions_android_shell, aes_fabric_seconds_android_shell, '*')
+semilogy(aes_encryptions_android_shell, aes_seconds_android_shell, 's', ms=5)
+#z = numpy.polyfit(aes_encryptions_android_shell, aes_seconds_android_shell, 1)
+#p = numpy.poly1d(z)
+#semilogy(aes_encryptions_android_shell, p(aes_encryptions_android_shell), "r--")
+semilogy(aes_fabric_encryptions_android, aes_fabric_seconds_android, 'o', ms=5)
+semilogy(aes_fabric_encryptions_android_direct, aes_fabric_seconds_android_direct, 'd', ms=5)
+#plot(aes_seconds, aes_encryptions, '.', aes_fabric_seconds, aes_fabric_encryptions, '.')
+#legend(["Fabric Results - Application measured", 
+#"AOSP AES Implementation Results", "Fabric - Command line", "OpenSSL - Command Line",
+#"Fabric Results - Native measured"], loc=4)
+legend(["AOSP Implementation Results",  "OpenSSL Results",
+"Fabric Results - Java Measured", "FAbric Results"], loc=4, fontsize=16)
+#title("AES 128-bit Benchmark - Android", fontsize=20)
+xlabel("Number of encryptions", fontsize=18)
+ylabel("Execution time (s)", fontsize=18)
+grid()
+#grid(which='minor',lw=.3)
+savefig(fig_dir+"aes_android.pdf",  bbox_inches='tight')
+
+#show()
