@@ -115,9 +115,9 @@ grid()
 savefig(fig_dir+"qam_ubuntu.pdf", bbox_inches='tight')
 figure()
 
-semilogy(qam_samples_android, qam_seconds_android, 'd', c='r', ms=5)
 semilogy(qam_tb_samples_android, qam_tb_seconds_android, 's', ms=5)
-legend(["Fabric Results", "Testbench Results"], loc=4, fontsize=16)
+semilogy(qam_samples_android, qam_seconds_android, 'd', c='r', ms=5)
+legend(["Testbench Results", "Fabric Results"], loc=4, fontsize=16)
 #title("QAM Benchmark - Android", fontsize=20)
 xlabel("Number of Samples", fontsize=18)
 ylabel("Execution time (s)", fontsize=18)
@@ -151,7 +151,7 @@ semilogy(aes_fabric_encryptions_android_direct, aes_fabric_seconds_android_direc
 #"AOSP AES Implementation Results", "Fabric - Command line", "OpenSSL - Command Line",
 #"Fabric Results - Native measured"], loc=4)
 legend(["AOSP Implementation Results",  "OpenSSL Results",
-"Fabric Results - Java Measured", "FAbric Results"], loc=4, fontsize=16)
+"Fabric Results - Java Measured", "Fabric Results"], loc=4, fontsize=16)
 #title("AES 128-bit Benchmark - Android", fontsize=20)
 xlabel("Number of encryptions", fontsize=18)
 ylabel("Execution time (s)", fontsize=18)
