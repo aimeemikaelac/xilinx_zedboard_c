@@ -3,8 +3,8 @@
 struct FPGA_AES{
 	const char* key;
 	int key_length_bits;
-	char** device;
-	char** rst_device;
+	char* device;
+	char* rst_device;
 	unsigned shared_mem_base;
 };
 
@@ -13,9 +13,9 @@ struct FPGA_AES{
 int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_addr){
 	int i, j;
 	XReset_axi reset_axi;
-	if(XReset_axi_Initialize(&reset_axi, *(cipher->rst_device)) != XST_SUCCESS){
+	if(XReset_axi_Initialize(&reset_axi, cipher->rst_device) != XST_SUCCESS){
 //		__android_log_print(ANDROID_LOG_DEBUG, "ndktest_jni", "\nCould not initialize axi reset device");
-		printf("\nCould not initialize axi reset device: %s", *(cipher->rst_device));
+		printf("\nCould not initialize axi reset device: %s", cipher->rst_device);
 		return -1;
 	}
 	XReset_axi_SetIn_reset(&reset_axi, 1);
@@ -24,9 +24,10 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 
 	XAes aes_device;
 
-	if(XAes_Initialize(&aes_device, *(cipher->device)) != XST_SUCCESS){
+	if(XAes_Initialize(&aes_device, cipher->device) != XST_SUCCESS){
+
 //	         __android_log_print(ANDROID_LOG_DEBUG, "ndktest_jni", "\nCould not initialize aes device");
-	         printf("\nCould not initialize aes device: %s", *(cipher->device));
+	         printf("\nCould not initialize aes device: %s", cipher->device);
 	         return -2;
 	}
 	
@@ -104,7 +105,7 @@ int Aes_encrypt_memcpy(FPGA_AES *cipher, const char *input, size_t len, const ch
 
 
 //create a new FPGA AES struct, with info on the shared memory region
-FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char** device_name, char** rst_device){
+FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char* device_name, char* rst_device){
 	FPGA_AES *cipher = NULL;
 	if((cipher=malloc(sizeof(FPGA_AES))) == NULL){
 		return NULL;
