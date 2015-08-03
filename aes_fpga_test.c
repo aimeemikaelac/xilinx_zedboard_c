@@ -49,7 +49,7 @@ int main(int argc, char** argv){
         AES_set_encrypt_key(key, 128, &aes_key);
 
         unsigned char* data_pointer = data_to_encrypt3;
-        unsigned char* encrypted_dest = encrypted_data_fabric;
+        unsigned char* encrypted_dest = encrypted_data_openssl;
 
         clock_t begin, end;
         begin = clock();
@@ -89,7 +89,7 @@ int main(int argc, char** argv){
 //	}
 	FPGA_AES *cipher = fpga_aes_new(key, 16, 0x1f410000, "qam", "axi-reset");
         data_pointer = data_to_encrypt3;
-        encrypted_dest = encrypted_data_openssl;
+        encrypted_dest = encrypted_data_fabric;
 
         begin = clock();
         for(i=0; i<data_length; i++){
