@@ -12,7 +12,9 @@ typedef struct FPGA_AES FPGA_AES;
 
 int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_addr);
 
-int Aes_encrypt_memcpy(FPGA_AES *cipher, const char *input, size_t len, const char *output);
+int Aes_encrypt_memcpy(FPGA_AES *cipher, const char *input, size_t len, char *output);
+
+int Aes_encrypt_cbc_memcpy(FPGA_AES *cipher, const char *input, size_t len, char *output, char* iv);
 
 FPGA_AES *fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char *device_name, char *rst_device);
 

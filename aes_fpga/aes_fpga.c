@@ -71,7 +71,7 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 
 	XAes_Set_length_r_vld(&aes_device);
 
-	printf("\nWaiting for fabric");
+//	printf("\nWaiting for fabric");
 
 	int finished = XAes_Get_return(&aes_device);
 
@@ -82,25 +82,67 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 	return finished;
 }
 
+//assume that the iv is 16 bits, as is supposed to be
+int Aes_encrypt_cbc_memcpy(FPGA_AES *cipher, const char *input, size_t len, char *output, char* iv){
+	int i, j;	
+	char *current_iv = iv;
+	char current_data[16];
+	char *current_out = output;
+	int num_encryptions = len/16;
+	for(i=0; i<num_encryptions; i++){
+		for(j=0; j<16; j++){
+			current_data[j] = current_iv[j] ^ input[i*16 + j];
+		}
+		if(Aes_encrypt_memcpy(cipher, current_data, 16, current_out) != 0){
+			return -1;
+		}
+		current_iv = current_out;
+		current_out = current_out + 16;
+	}
+	return 0;
+}
+
 //memcpy to the shared memory from the source and memcpy back to the dest
 //this function does not need src and dest addresses, as it can allocate
 //wherever it needs to in the shared mem area
-int Aes_encrypt_memcpy(FPGA_AES *cipher, const char *input, size_t len, const char *output){
+//NOTE: for the current AES fpga implementation, be sure to put the input
+//in byte-reversed AND pull the output out byte-reversed. Cannot use
+//system memcpy for that
+int Aes_encrypt_memcpy(FPGA_AES *cipher, const char *input, size_t len, char *output){
 	shared_memory mem = NULL;
+	int i, j;
+	int iterLen = len/16;
 	if((mem = getSharedMemoryArea(cipher->shared_mem_base, len*3)) == NULL){
 		printf("\nCould not get shared memory area");
 		return -1;
 	}
 	unsigned src = cipher->shared_mem_base;
+	//printf("\nSource: 0x%02x", src);
 	unsigned dest = src+len;
-	memcpy((void*)(mem->ptr), (const void*)(input), len);
+	//printf("\nDest: 0x%02x", dest);
+
+//	memcpy((void*)(mem->ptr), (const void*)(input), len);
+	for(i=0; i<iterLen; i++){
+		for(j=0; j<16; j++){
+			((char*)mem->ptr)[i*16+j] = input[i*16 + (15-j)];
+		}
+	}
+
 
 	aes_encrypt(cipher, len, src, dest);
 
-	void *aes_out = ((void*)mem->ptr) + len;
-	memcpy((void*)(output), (const void*)(aes_out), len);
+	char *aes_out = ((char*)(mem->ptr)) + len;
+	char *output_rw = output;
+	
+//	memcpy((void*)(output), (const void*)(aes_out), len);
+	for(i=0; i<iterLen; i++){
+		for(j=0; j<16; j++){
+			output_rw[i*16+j] = aes_out[i*16 + (15-j)];
+		}
+	}
 
 	cleanupSharedMemoryPointer(mem);
+	return 0;
 }
 
 
@@ -114,6 +156,7 @@ FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base
 	cipher->key_length_bits = key_len;
 	cipher->device = device_name;
 	cipher->rst_device = rst_device;
+	cipher->shared_mem_base = shared_mem_base;
 	return cipher;
 }
 
