@@ -1,9 +1,14 @@
 #!/bin/bash
 
-for entry in $(ls /usr/local/include/uio); do
-	rm /usr/local/include/$entry
-done
+set +e
 
-rm -rf /usr/local/include/uio
+if [ -d "$/usr/local/include/uio" ]; then
+	for entry in $(ls /usr/local/include/uio); do
+		rm -v /usr/local/include/$entry
+	done
+fi
 
-rm -f /usr/local/lib/libuio.a
+rm -rfv /usr/local/include/uio
+
+rm -fv /usr/local/lib/libuio.a
+rm -fv /usr/local/lib/libuio.so

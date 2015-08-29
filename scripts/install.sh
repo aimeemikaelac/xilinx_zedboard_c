@@ -1,8 +1,11 @@
 #!/bin/bash
 
-mkdir -p /usr/local/include/uio
+set +e
 
-cp src/**/*.h /usr/local/include/uio
-cp src/**/*.h /usr/local/include
+mkdir -pv /usr/local/include/uio
 
-cp output/libuio.a /usr/local/lib
+cp -v src/**/*.h /usr/local/include/uio
+cp -v src/**/*.h /usr/local/include
+
+cp -v output/libuio.so /usr/local/lib
+cp -v output/libuio.a /usr/local/lib
