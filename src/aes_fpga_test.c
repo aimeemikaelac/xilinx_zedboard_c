@@ -156,7 +156,7 @@ int main(int argc, char** argv){
         begin = clock();
 //        for(i=0; i<data_length; i++){
                 //Aes_encrypt_cbc_memcpy(cipher, data_pointer, 16, encrypted_dest, iv);    
-                Aes_encrypt_cbc_memcpy(cipher, data_pointer, 16*data_length, encrypted_dest, iv);    
+                Aes_encrypt_cbc_memcpy(cipher, iv, encrypted_dest, data_pointer, 16*data_length);    
                 //Aes_encrypt_memcpy(cipher, data_pointer, 16, encrypted_dest);    
   //              data_pointer = data_pointer + 16;
     //            encrypted_dest = encrypted_dest + 16;

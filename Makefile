@@ -22,7 +22,7 @@ QAM		:= $(SRC_DIR)/qam_runner.cpp
 FPGA		:= $(SRC_DIR)/aes_fpga_test.c
 AES_FPGA	:= $(SRC_DIR)/aes_fpga.c
 
-SOURCES		:= $(wildcard $(SRC_DIR)/**/*.c*)
+SOURCES		:= $(wildcard $(SRC_DIR)/**/*.c*)# $(SRC_DIR)/*.c*)
 SRCS		:= $(addprefix $(OUT_DIR)/,$(notdir $(SOURCES)))
 OBJECTS		:= $(addprefix $(OUT_DIR)/,$(notdir $(SOURCES:.c=.o)))
 #OBJECTS		:= $(patsubt %/%%/%,$(OUT_DIR)/%,$(_OBJS))
