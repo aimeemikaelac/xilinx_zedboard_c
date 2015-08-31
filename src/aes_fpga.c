@@ -1,4 +1,5 @@
 #include "aes_fpga.h"
+#include "memmgr.h"
 
 struct FPGA_AES{
 	const char* key;
@@ -84,6 +85,17 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 
 //assume that the iv is 16 bits, as is supposed to be
 int Aes_encrypt_cbc_memcpy(FPGA_AES *cipher, const char *input, size_t len, char *output, char* iv){
+	Aes_encrypt_cbc_run(cipher, input, len, output, iv, 1);
+}
+
+int Aes_encrypt_cbc_memmgr(FPGA_AES *cipher, const char *input, size_t len, char *output, char* iv){
+	Aes_encrypt_cbc_run(cipher, input, len, output, iv, 0);
+}
+
+//mode: choose between use memcpy or memmgr aes functions
+//	0: memmgr (default)
+//	1: memcpy
+int Aes_encrypt_cbc_run(FPGA_AES *cipher, const char *input, size_t len, char *output, char *iv, int mode){
 	int i, j;	
 	char *current_iv = iv;
 	char current_data[16];
@@ -93,8 +105,14 @@ int Aes_encrypt_cbc_memcpy(FPGA_AES *cipher, const char *input, size_t len, char
 		for(j=0; j<16; j++){
 			current_data[j] = current_iv[j] ^ input[i*16 + j];
 		}
-		if(Aes_encrypt_memcpy(cipher, current_data, 16, current_out) != 0){
-			return -1;
+		if(mode == 1){
+			if(Aes_encrypt_memcpy(cipher, current_data, 16, current_out) != 0){
+				return -1;
+			}
+		} else{
+			if(Aes_encrypt_memmgr(cipher, current_data, 16, current_out) != 0){
+				return -1;
+			}
 		}
 		current_iv = current_out;
 		current_out = current_out + 16;
@@ -118,33 +136,90 @@ int Aes_encrypt_memcpy(FPGA_AES *cipher, const char *input, size_t len, char *ou
 	}
 	unsigned src = cipher->shared_mem_base;
 	//printf("\nSource: 0x%02x", src);
-	unsigned dest = src+len;
+	unsigned dest = src+len*sizeof(char);
 	//printf("\nDest: 0x%02x", dest);
 
-//	memcpy((void*)(mem->ptr), (const void*)(input), len);
-	for(i=0; i<iterLen; i++){
-		for(j=0; j<16; j++){
-			((char*)mem->ptr)[i*16+j] = input[i*16 + (15-j)];
-		}
-	}
+	memcpy((void*)(mem->ptr), (const void*)(input), len);
 
+	Aes_encrypt_run(cipher, input, len, output, src, dest);
 
-	aes_encrypt(cipher, len, src, dest);
-
-	char *aes_out = ((char*)(mem->ptr)) + len;
-	char *output_rw = output;
-	
-//	memcpy((void*)(output), (const void*)(aes_out), len);
-	for(i=0; i<iterLen; i++){
-		for(j=0; j<16; j++){
-			output_rw[i*16+j] = aes_out[i*16 + (15-j)];
-		}
-	}
+	memcpy((const void*)(output), (void*)(mem->ptr) + len*sizeof(char), len);
 
 	cleanupSharedMemoryPointer(mem);
 	return 0;
 }
 
+int Aes_encrypt_memmgr(FPGA_AES *cipher, const char *input, size_t len, char *ouput){
+	void* in, out;
+	unsigned src, dest;
+	int iterLen;
+	char tmp;
+	in = (void*)input;
+	out = (void*)output;
+	//check that the input was allocated by the 
+	memmgr_assert(input);
+	memmgr_asser(output);
+	src = lookupBufferPhysicalAddress((void*)input);
+	printf("\nLookup of source address: %08x", src);
+	dest = lookup((void*)output);
+	printf("\nLookup of destination address: %08x", dest);
+
+//	iterLen = len/16;
+	//byte reverse the input	
+//	for(i=0; i<iterLen; i++){
+		//swap bytes at front with bytes at back, till we hit the middle
+//		byteReverseBuffer16(input+i);
+//	}
+//	byteReverseBuffer16(input, len);
+
+
+//	aes_encrypt(cipher, len, src, dest);
+
+//	char *aes_out = ((char*)(mem->ptr)) + len;
+//	char *output_rw = output;
+	
+//	memcpy((void*)(output), (const void*)(aes_out), len);
+//	for(i=0; i<iterLen; i++){
+	//	for(j=0; j<16; j++){
+	//		output_rw[i*16+j] = aes_out[i*16 + (15-j)];
+	//	}
+//		byteReverseBuffer16(
+//	}
+//	byteReverseBuffer16(output, len);
+
+	Aes_encrypt_run(cipher, input, len, output, src, dest);
+
+	//TODO: may need to byte-reverse the input again
+	return 0;
+}
+
+//assume that the input is in the correct memory region now
+//byte reverse the input pointer, call fpga and reverse output
+int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *output, unsigned src, unsigned dest){
+	byteReverseBuffer16(input, len);
+
+	aes_encrypt(cipher, len, src, dest);
+
+	byteReverseBuffer16(output, len);
+	return 0;
+}
+
+//byte reverse every 16 bytes of a char buffer 
+//length is the total length of char buffer
+//there will be length/16 buffer reversals
+void byteReverseBuffer16(char* buffer, int length){
+	int i, j, tmp, iterLen, bufferIndex;
+	iterLen = length/16;
+	for(i=0; i<iterLen; i++){
+		bufferIndex = 16*i;
+		for(j=0; j<8; j++){
+	//		((char*)mem->ptr)[i*16+j] = input[i*16 + (15-j)];
+			tmp = buffer[bufferIndex + j];
+			buffer[bufferIndex + j] = buffer[bufferIndex + 15-j];
+			buffer[bufferIndex + 15-j] = tmp;
+		}
+	}
+}
 
 //create a new FPGA AES struct, with info on the shared memory region
 FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char* device_name, char* rst_device){

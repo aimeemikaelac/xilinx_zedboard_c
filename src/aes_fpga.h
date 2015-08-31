@@ -16,6 +16,10 @@ int Aes_encrypt_memcpy(FPGA_AES *cipher, const char *input, size_t len, char *ou
 
 int Aes_encrypt_cbc_memcpy(FPGA_AES *cipher, const char *input, size_t len, char *output, char* iv);
 
+int Aes_encrypt_cbc_memmgr(FPGA_AES *cipher, const char *input, size_t len, char *output, char *iv);
+
+int Aes_encrypt_memmgr(FPGA_AES *cipher, const char *input, size_t len, char *output);
+
 FPGA_AES *fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char *device_name, char *rst_device);
 
 void fpga_aes_free(FPGA_AES *cipher);

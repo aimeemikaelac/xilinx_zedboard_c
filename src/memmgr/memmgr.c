@@ -43,6 +43,8 @@ typedef union mem_header_union mem_header_t;
 static unsigned nonce = 99999999;
 
 static unsigned nonce2 = 298709375;
+
+static unsigned largest_allocation = 0;
 // Initial empty list
 //
 static mem_header_t base;
@@ -210,6 +212,9 @@ void* memmgr_alloc(ulong nbytes)
             }
 
             freep = prevp;
+	    if(nbytes > largest_allocation){
+		    largest_allocation = nbytes;
+	    }
             return (void*) (p + 1);
         }
         // Reached end of free list ?
@@ -305,15 +310,21 @@ unsigned lookupBufferPhysicalAddress(void* ap){
 
 void memmgr_assert(void* ap){
     mem_header_t* block;
-
+    int i;
+    //Need to loop to the base pointer, in case a pointer is tested
+    //that is offset from the base of its allocation
     // acquire pointer to block header
-    block = ((mem_header_t*) ap) - 1;
-    //check if the nonces in the struct are correct
-    if(block->s.nonce != nonce || block->s.nonce2 != nonce2){
-	    //if they don't match, exit
-	    printf("\nMEMMGR-------------------------------");
-	    printf("\nNonces in assert do not match. Aborting.");
-	    abort();
+    for(i=0; i<largest_allocation; i++){
+	    block = ((mem_header_t*) ap) - i;
+	    //check if the nonces in the struct are correct
+	    if(block->s.nonce != nonce && block->s.nonce2 != nonce2){
+		    return;
+	    }
     }
-
+    //if this loop finishes without returning, then a header was not found in memory
+    //in front of the pointer. a seg fault might also happen, which would have the same
+    //effect, as we abort now
+    printf("\nMEMMGR-------------------------------");
+    printf("\nCould not find header with valid nonce. Aborting.");
+    abort();
 }
