@@ -6,6 +6,7 @@
 // This code is in the public domain.
 //----------------------------------------------------------------
 #include <stdio.h>
+#include <stdlib.h>
 #include "memmgr.h"
 
 typedef ulong Align;
@@ -39,14 +40,14 @@ union mem_header_union
 
 typedef union mem_header_union mem_header_t;
 
-static nonce = 99999999;
+static unsigned nonce = 99999999;
 
-static nonce2 = 2037452098709375;
+static unsigned nonce2 = 298709375;
 // Initial empty list
 //
 static mem_header_t base;
-base.nonce = nonce;
-base.nonce2 = nonce2;
+//base.s.nonce = nonce;
+//base.s.nonce2 = nonce2;
 
 // Start of free list
 //
@@ -75,6 +76,8 @@ void memmgr_init(void* buffer, unsigned length, unsigned baseAddress)
 {
     base.s.next = 0;
     base.s.size = 0;
+    base.s.nonce = nonce;
+    base.s.nonce2 = nonce2;
     freep = 0;
     pool_free_pos = 0;
     pool = (byte*)(buffer);
@@ -144,8 +147,8 @@ static mem_header_t* get_mem_from_pool(ulong nquantas)
     {
         h = (mem_header_t*) (pool + pool_free_pos);
         h->s.size = nquantas;
-	h->nonce = nonce;
-	h->nonce2 = nonce2;
+	h->s.nonce = nonce;
+	h->s.nonce2 = nonce2;
         memmgr_free((void*) (h + 1));
         pool_free_pos += total_req_size;
     }
@@ -306,7 +309,7 @@ void memmgr_assert(void* ap){
     // acquire pointer to block header
     block = ((mem_header_t*) ap) - 1;
     //check if the nonces in the struct are correct
-    if(block->nonce != nonce || block->nonce2 != nonce2){
+    if(block->s.nonce != nonce || block->s.nonce2 != nonce2){
 	    //if they don't match, exit
 	    printf("\nMEMMGR-------------------------------");
 	    printf("\nNonces in assert do not match. Aborting.");

@@ -63,7 +63,7 @@ $(TARGET):
 #	$(CPP) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 	$(foreach SRC,$(SOURCES),$(COMPILE))
 #	$(CC) -fPIC $(LDFLAGS) -Wl,-soname,$(LIB) -o $(TARGET) $(OBJECTS) $(LIBS)
-#	$(AR) $@ $(OBJECTS)
+	$(AR) $(addsuffix .a,$(basename $@)) $(OBJECTS)
 	$(CC) $(SHRFLAGS) -o $(TARGET) $(OBJECTS)
 
 lib: $(TARGET)
