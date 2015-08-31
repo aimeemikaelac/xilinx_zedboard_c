@@ -91,6 +91,10 @@ void memmgr_free(void* ap);
 //
 void memmgr_print_stats();
 
+//Assert that a pointer was allocated here
+//
+void memmgr_assert(void* ap);
+
 //Lookup the physical address of a buffer
 //
 unsigned lookupBufferPhysicalAddress(void* ap);

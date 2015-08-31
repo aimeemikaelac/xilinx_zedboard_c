@@ -21,6 +21,14 @@ union mem_header_union
         // Size of the block (in quantas of sizeof(mem_header_t))
         //
         ulong size; 
+
+	// Nonce to use to check if struct is valid in the assert
+	//
+	unsigned nonce;
+
+	// Second nonce to use to check if struct is valid in assert
+	//
+	unsigned nonce2
 	
     } s;
 
@@ -31,9 +39,14 @@ union mem_header_union
 
 typedef union mem_header_union mem_header_t;
 
+static nonce = 99999999;
+
+static nonce2 = 2037452098709375;
 // Initial empty list
 //
 static mem_header_t base;
+base.nonce = nonce;
+base.nonce2 = nonce2;
 
 // Start of free list
 //
@@ -54,6 +67,7 @@ static byte *pool = 0;
 static unsigned base_address = 0;
 
 static ulong pool_free_pos = 0;
+
 
 //length should be entire length of the shared memory region for the 
 //memory allocation to work right
@@ -130,6 +144,8 @@ static mem_header_t* get_mem_from_pool(ulong nquantas)
     {
         h = (mem_header_t*) (pool + pool_free_pos);
         h->s.size = nquantas;
+	h->nonce = nonce;
+	h->nonce2 = nonce2;
         memmgr_free((void*) (h + 1));
         pool_free_pos += total_req_size;
     }
@@ -284,4 +300,17 @@ unsigned lookupBufferPhysicalAddress(void* ap){
 }
 
 
+void memmgr_assert(void* ap){
+    mem_header_t* block;
 
+    // acquire pointer to block header
+    block = ((mem_header_t*) ap) - 1;
+    //check if the nonces in the struct are correct
+    if(block->nonce != nonce || block->nonce2 != nonce2){
+	    //if they don't match, exit
+	    printf("\nMEMMGR-------------------------------");
+	    printf("\nNonces in assert do not match. Aborting.");
+	    abort();
+    }
+
+}
