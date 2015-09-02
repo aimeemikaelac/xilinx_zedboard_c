@@ -21,6 +21,7 @@ GPIO 		:= $(SRC_DIR)/gpio-dev-mem-test.c
 QAM		:= $(SRC_DIR)/qam_runner.cpp
 FPGA		:= $(SRC_DIR)/aes_fpga_test.c
 AES_FPGA	:= $(SRC_DIR)/aes_fpga.c
+AES_MEMMGR	:= $(SRC_DIR)/memmgr_aes_test.c
 
 SOURCES		:= $(wildcard $(SRC_DIR)/**/*.c*)# $(SRC_DIR)/*.c*)
 SRCS		:= $(addprefix $(OUT_DIR)/,$(notdir $(SOURCES)))
@@ -38,6 +39,9 @@ AR		:= ar rcs
 all: lib
 
 aes: $(AES)
+	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
+
+aes_memmgr: $(AES_MEMMGR)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 gpio: $(GPIO)
