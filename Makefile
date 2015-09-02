@@ -11,8 +11,7 @@ CFLAGS		:= -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast #-MMD -include $(OB
 LDFLAGS		:= -fPIC -c
 SHRFLAGS	:= -shared -Wl,-soname,libuio.so
 LIBS 		:= -lcrypto -lssl -lstdc++ -lm -ldl -lc
-INCLUDES	:= $(SRC_DIR)/user_mmap_driver $(SRC_DIR)/xilinx_aes_uio_driver $(SRC_DIR)/xilinx_qam_uio_driver\
-			$(SRC_DIR)/fixed_point $(SRC_DIR)/xilinx_axi_reset_uio_driver $(SRC_DIR)/aes_fpga #$(SRC_DIR)/test_direct_dma_uio_driver 
+INCLUDES	:= $(SRC_DIR)/user_mmap_driver $(SRC_DIR)/xilinx_aes_uio_driver $(SRC_DIR)/xilinx_qam_uio_driver $(SRC_DIR)/memmgr $(SRC_DIR)/fixed_point $(SRC_DIR)/xilinx_axi_reset_uio_driver $(SRC_DIR)/aes_fpga #$(SRC_DIR)/test_direct_dma_uio_driver 
 INCL		:= $(foreach d, $(INCLUDES), -I$d/)
 DRIVERS		:= $(foreach d, $(INCLUDES), $(wildcard $d/*.c))
 AES 		:= $(SRC_DIR)/aes_runner.c
@@ -59,8 +58,8 @@ aes_fpga: $(AES_FPGA)
 #$(OUT_DIR)/%.o: $(SOURCES)
 #	$(CC) -c -fPIC -o $@ $^ $(LIBS) $(CFLAGS)
 
-COMPILE = $(CC) $(LDFLAGS) $(CFLAGS) -o $(addprefix $(OUT_DIR)/,$(addsuffix .o,$(basename $(notdir $(SRC))))) $(SRC); #$(INCL) $(LIBS);
-$(TARGET):
+COMPILE = $(CC) $(LDFLAGS) $(CFLAGS) -o $(addprefix $(OUT_DIR)/,$(addsuffix .o,$(basename $(notdir $(SRC))))) $(SRC) $(INCL); #$(LIBS);
+$(TARGET): out_dir
 #	$(info $$SOURCES is [${SOURCES}])
 #	$(info $$_OBJS is [${_OBJS}])
 #	$(info $$OBJECTS is [${OBJECTS}])
@@ -71,6 +70,9 @@ $(TARGET):
 	$(CC) $(SHRFLAGS) -o $(TARGET) $(OBJECTS)
 
 lib: $(TARGET)
+
+out_dir:
+	mkdir -p $(OUT_DIR)
 
 clean_object:
 	rm -rf *.o

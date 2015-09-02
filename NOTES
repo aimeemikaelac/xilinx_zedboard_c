@@ -1,0 +1,12 @@
+To manually set the reset device:
+	./gpio.o -g 0x43c10014 -o 1
+
+And manually unset:
+	./gpio.o -g 0x43c10014 -o 0
+
+Build the .gpio.o binary:
+	make gpio
+
+To call:
+	cd output
+	./gpio <arguments>
