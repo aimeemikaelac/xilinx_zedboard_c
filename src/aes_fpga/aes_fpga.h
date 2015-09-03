@@ -15,6 +15,8 @@ struct FPGA_AES{
         char* device;
         char* rst_device;
         unsigned shared_mem_base;
+	char* iv;
+	int iv_length;
 };
 
 typedef struct FPGA_AES FPGA_AES;
@@ -40,7 +42,9 @@ int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t
 
 int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *output, unsigned src, unsigned dest);
 
-FPGA_AES *fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char *device_name, char *rst_device);
+int Aes_encrypt_ctr_run(FPGA_AES *cipher, const char *input, size_t len, char* output, unsigned src, unsigned dest);
+
+FPGA_AES *fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char *device_name, char *rst_device, char* iv, int iv_length);
 
 void fpga_aes_free(FPGA_AES *cipher);
 

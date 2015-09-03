@@ -184,6 +184,63 @@ int Aes_encrypt_cbc_run(FPGA_AES *cipher, const char *input, size_t len, char *o
 	return 0;
 }
 
+//TODO: assuming iv[0] is least significant bit
+int incrementIv(char* iv, iv_length){
+	int i;
+	char current;
+	//start at beginning
+	for(i=0; i<iv_length; i++){
+		//increment this bit
+		iv[i] = iv[i] + 1;
+		//if the incrementation does not rollover, i.e. 0xff + 1 == 0x00,
+		//then we can a stop, else increment next bit. if is for examle, 0x00ffff,
+		//then the first iteration will result in 0x00ff00, the second will result
+		//in 0x000000, the third will result in 0x010000
+		if(iv[i] != 0x0){
+			break;
+		}
+	}
+}
+
+//implements ctr in software on top of AES in hardware
+//assumes that the buffers are accessible by the FPGA -> e.g. in correct
+//memory address to match the src and dest addresses
+//TODO: for ctr mode, the input does not need to be in the FPGA for now,
+//nut a precomputed count value could be, else this will be slow
+//TODO: implement ctr in hardware so that this is not a problem
+//TODO: need to determine if iv[0] or iv[iv_length] is the least significant
+//bit for incrementing
+int Aes_encrypt_ctr_run(FPGA_AES *cipher, const char *input, size_t len, char* output, unsigned src, unsigned dest){
+	int i, j;
+	char temp[cipher->iv_length];
+	char iv[cipher->iv_length]
+	int numEncryptions = len/16;
+	char* current = iv;
+	//store a local copy of iv
+	for(i=0; i<cipher->iv_length; i++){
+		iv[i] = cipher->iv[i];
+	}
+//	char tempOut[cipher->iv_length];
+	for(i=0; i<numEncryptions; i++){
+		//TODO: assuming for now that iv_length is the same as a single 
+		//aes encryption. for now, 16 bytes
+		
+		//for ctr, encrypt the iv, then xor with the pt. then increment the 
+		//iv and xor the next ouput with the next pt set
+		//need to put counter into the current input segment and
+		//store the pt
+		for(j=0; j<16; j++){
+			temp[j] = input[i*16+j];
+			input[i*16+j] = iv[i];
+		}
+		Aes_encrypt_run(cipher, input, iv_length, output, src, dest);
+		for(j=0; j<16; j++){
+			output[i*16 + j] = output[i*16+j]^temp[j];
+		}
+		incrementIv(iv, cipher->iv_length);
+	}
+}
+
 //memcpy to the shared memory from the source and memcpy back to the dest
 //this function does not need src and dest addresses, as it can allocate
 //wherever it needs to in the shared mem area
@@ -275,7 +332,7 @@ int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *outpu
 
 
 //create a new FPGA AES struct, with info on the shared memory region
-FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char* device_name, char* rst_device){
+FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char* device_name, char* rst_device, char* iv, int iv_length){
 	FPGA_AES *cipher = NULL;
 	if((cipher=malloc(sizeof(FPGA_AES))) == NULL){
 		return NULL;
@@ -285,6 +342,8 @@ FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base
 	cipher->device = device_name;
 	cipher->rst_device = rst_device;
 	cipher->shared_mem_base = shared_mem_base;
+	cipher->iv = iv;
+	cipher->iv_length = iv_length;
 	return cipher;
 }
 
