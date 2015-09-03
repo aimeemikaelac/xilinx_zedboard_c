@@ -28,6 +28,36 @@ void byteReverseBuffer16(char* buffer, int length){
 	}
 }
 
+void byteReverseBuffer8(char* buffer, int length){
+	int i, j, tmp, iterLen, bufferIndex;
+//	need to use ceiling of division:
+	iterLen = length/8 + (length % 8 != 0);
+	for(i=0; i<iterLen; i++){
+		bufferIndex = 8*i;
+		for(j=0; j<4; j++){
+			tmp = buffer[bufferIndex + j];
+			buffer[bufferIndex + j] = buffer[bufferIndex + 7-j];
+			buffer[bufferIndex + 7-j] = tmp;
+		}
+	}
+
+}
+
+void byteReverseBuffer4(char* buffer, int length){
+	int i, j, tmp, iterLen, bufferIndex;
+//	need to use ceiling of division:
+	iterLen = length/4 + (length % 4 != 0);
+	for(i=0; i<iterLen; i++){
+		bufferIndex = 4*i;
+		for(j=0; j<2; j++){
+			tmp = buffer[bufferIndex + j];
+			buffer[bufferIndex + j] = buffer[bufferIndex + 3-j];
+			buffer[bufferIndex + 3-j] = tmp;
+		}
+	}
+
+}
+
 //data must be aligned to 16 bytes and zero-padded if needed
 //len is provided as number of bytes to encrypt
 int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_addr){
@@ -38,8 +68,11 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 		printf("\nCould not initialize axi reset device: %s", cipher->rst_device);
 		return -1;
 	}
+	printf("\nResetting");
 	XReset_axi_SetIn_reset(&reset_axi, 1);
+	printf("\nReset asserted");
 	XReset_axi_SetIn_reset(&reset_axi, 0);
+	printf("\nReset deasserted");
 	XReset_axi_Release(&reset_axi);
 
 	XAes aes_device;
@@ -72,6 +105,10 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 	unsigned dest = dst_addr;
 	//TODO: take ceil of len/16
 	unsigned data_length = len/16;
+	
+	printf("\nNumber of FPGA iterations: %i", data_length);
+
+	printf("\nStarting AES");	
 
 	XAes_Start(&aes_device);
 
@@ -91,13 +128,21 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 
 	XAes_Set_length_r_vld(&aes_device);
 
-//	printf("\nWaiting for fabric");
+	printf("\nWaiting for fabric");
+
+	int count = 0;
+
+	while(XAes_IsDone(&aes_device) != 1){
+		count++;
+	}
+	
+	printf("\nIterations of while loop while waiting: %i", count);
 
 	int finished = XAes_Get_return(&aes_device);
 
-	while(XAes_IsDone(&aes_device) != 1){}
-
 	XAes_Release(&aes_device);
+
+	printf("\nFinished");
 
 	return finished;
 }
@@ -217,10 +262,14 @@ int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t
 //byte reverse the input pointer, call fpga and reverse output
 int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *output, unsigned src, unsigned dest){
 	byteReverseBuffer16((char*)input, len);
+//	byteReverseBuffer4((char*)input, len);
+//	byteReverseBuffer8((char*)input, len);
 
 	aes_encrypt(cipher, len, src, dest);
 
 	byteReverseBuffer16(output, len);
+//	byteReverseBuffer4(output, len);
+//	byteReverseBuffer8(output, len);
 	return 0;
 }
 

@@ -10,6 +10,10 @@
 struct FPGA_AES;
 typedef struct FPGA_AES FPGA_AES;
 
+void byteReverseBuffer8(char* buffer, int length);
+
+void byteReverseBuffer16(char* buffer, int length);
+
 int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_addr);
 
 //need to follow convention: *to, *from, len, for simplicity

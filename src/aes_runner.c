@@ -89,7 +89,8 @@ int main(int argc, char** argv){
 	fclose(openssl_fabric_log);
 	int source = SHARED_MEM_BASE;
 	int length = SHARED_MEM_LENGTH;
-	shared_memory shared_system_mem = getUioMemoryArea("/dev/uio1",0x80000);//getSharedMemoryArea(source, length);//getUioMemoryArea("/dev/uio1", length);//=
+//	shared_memory shared_system_mem = getUioMemoryArea("/dev/uio1",0x80000);//getSharedMemoryArea(source, length);//getUioMemoryArea("/dev/uio1", length);//=
+	shared_memory shared_system_mem = getSharedMemoryArea(SHARED_MEM_BASE, 0x80000);
 	if(shared_system_mem == NULL){
 		printf("Error getting shared system memory pointer");
 		return -1;

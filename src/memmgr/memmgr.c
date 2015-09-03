@@ -29,7 +29,11 @@ union mem_header_union
 
 	// Second nonce to use to check if struct is valid in assert
 	//
-	unsigned nonce2
+	unsigned nonce2;
+
+	// Offset from pool start
+	//
+	unsigned offset;
 	
     } s;
 
@@ -85,6 +89,8 @@ void memmgr_init(void* buffer, unsigned length, unsigned baseAddress)
     pool = (byte*)(buffer);
     POOL_SIZE = length;
     base_address = baseAddress;
+
+    printf("\nPool pointer: %p", pool);
 }
 
 
@@ -101,7 +107,7 @@ void memmgr_print_stats()
 
     while (p < (mem_header_t*) (pool + pool_free_pos))
     {
-        printf(    "  * Addr: 0x%8lu; Size: %8lu\n",
+        printf(    "  * Addr: 0x%8p; Size: %8lu\n",
                 p, p->s.size);
 
         p += p->s.size;
@@ -115,7 +121,7 @@ void memmgr_print_stats()
 
         while (1)
         {
-            printf(    "  * Addr: 0x%8lu; Size: %8lu; Next: 0x%8lu\n", 
+            printf(    "  * Addr: 0x%8p; Size: %8lu; Next: 0x%8p\n", 
                     p, p->s.size, p->s.next);
 
             p = p->s.next;
@@ -151,6 +157,7 @@ static mem_header_t* get_mem_from_pool(ulong nquantas)
         h->s.size = nquantas;
 	h->s.nonce = nonce;
 	h->s.nonce2 = nonce2;
+	h->s.offset = pool_free_pos + sizeof(mem_header_t);
         memmgr_free((void*) (h + 1));
         pool_free_pos += total_req_size;
     }
@@ -176,6 +183,7 @@ void* memmgr_alloc(ulong nbytes)
     mem_header_t* p;
     mem_header_t* prevp;
 
+	//printf("\nmemmgr-------------------------------------------\n");
     // Calculate how many quantas are required: we need enough to house all
     // the requested bytes, plus the header. The -1 and +1 are there to make sure
     // that if nbytes is a multiple of nquantas, we don't allocate too much
@@ -190,12 +198,14 @@ void* memmgr_alloc(ulong nbytes)
         base.s.next = freep = prevp = &base;
         base.s.size = 0;
     }
-
+//	printf("\nPool: %p", pool);
+//	printf("\nmemmgr-------------------------------------------\n");
     for (p = prevp->s.next; ; prevp = p, p = p->s.next)
     {
         // big enough ?
         if (p->s.size >= nquantas) 
         {
+//	printf("\nmemmgr-------------------------------------------\n");
             // exactly ?
             if (p->s.size == nquantas)
             {
@@ -247,7 +257,6 @@ void memmgr_free(void* ap)
 {
     mem_header_t* block;
     mem_header_t* p;
-
     // acquire pointer to block header
     block = ((mem_header_t*) ap) - 1;
 
@@ -294,15 +303,20 @@ void memmgr_free(void* ap)
 
 //looks up the physical address of a buffer that was allocated by the
 //memmgr_alloc function in the shared memory region indicated by uioDev
+//needs to be the base pointer, else will fail
 unsigned lookupBufferPhysicalAddress(void* ap){
+	mem_header_t* block;
 	unsigned base_ptr, buffer_ptr, offset;
 	//get the base address from the uio device
 	unsigned baseAddress = base_address;
-	//calculate the offset from the base by subtracting the buffer from the base ptr
-	//address
-	base_ptr = (unsigned)pool;
-	buffer_ptr = (unsigned)ap;
-	offset = buffer_ptr - base_ptr;
+	//lookup the header for the block
+    	block = ((mem_header_t*) ap) - 1;
+	printf("\nPointer address being looked up: %p", ap);
+	//base_ptr = (unsigned)pool;
+	//buffer_ptr = (unsigned)ap;
+	//calculate the address using the header's offset
+//	offset = buffer_ptr - base_ptr;
+	offset = block->s.offset;
 
 	return baseAddress + offset;
 }
