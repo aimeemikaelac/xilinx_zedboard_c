@@ -1,13 +1,13 @@
 #include "aes_fpga.h"
 #include "memmgr.h"
-
+/*
 struct FPGA_AES{
 	const char* key;
 	int key_length_bits;
 	char* device;
 	char* rst_device;
 	unsigned shared_mem_base;
-};
+};*/
 
 //byte reverse every 16 bytes of a char buffer 
 //length is the total length of char buffer

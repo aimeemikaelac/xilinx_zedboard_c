@@ -7,7 +7,16 @@
 #include "xaes.h"
 #include "xreset_axi.h"
 
-struct FPGA_AES;
+//struct FPGA_AES;
+
+struct FPGA_AES{
+        const char* key;
+        int key_length_bits;
+        char* device;
+        char* rst_device;
+        unsigned shared_mem_base;
+};
+
 typedef struct FPGA_AES FPGA_AES;
 
 void byteReverseBuffer8(char* buffer, int length);
@@ -28,6 +37,8 @@ int Aes_encrypt_cbc_memmgr(FPGA_AES *cipher, char* iv, char* output, const char 
 
 //int Aes_encrypt_memmgr(FPGA_AES *cipher, const char *input, size_t len, char *output);
 int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t len);
+
+int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *output, unsigned src, unsigned dest);
 
 FPGA_AES *fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char *device_name, char *rst_device);
 
