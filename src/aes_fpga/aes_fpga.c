@@ -68,11 +68,11 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 		printf("\nCould not initialize axi reset device: %s", cipher->rst_device);
 		return -1;
 	}
-	printf("\nResetting");
+//	printf("\nResetting");
 	XReset_axi_SetIn_reset(&reset_axi, 1);
-	printf("\nReset asserted");
+//	printf("\nReset asserted");
 	XReset_axi_SetIn_reset(&reset_axi, 0);
-	printf("\nReset deasserted");
+//	printf("\nReset deasserted");
 	XReset_axi_Release(&reset_axi);
 
 	XAes aes_device;
@@ -106,9 +106,9 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 	//TODO: take ceil of len/16
 	unsigned data_length = len/16;
 	
-	printf("\nNumber of FPGA iterations: %i", data_length);
+//	printf("\nNumber of FPGA iterations: %i", data_length);
 
-	printf("\nStarting AES");	
+//	printf("\nStarting AES");	
 
 	XAes_Start(&aes_device);
 
@@ -128,7 +128,7 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 
 	XAes_Set_length_r_vld(&aes_device);
 
-	printf("\nWaiting for fabric");
+//	printf("\nWaiting for fabric");
 
 	int count = 0;
 
@@ -136,13 +136,13 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 		count++;
 	}
 	
-	printf("\nIterations of while loop while waiting: %i", count);
+//	printf("\nIterations of while loop while waiting: %i", count);
 
 	int finished = XAes_Get_return(&aes_device);
 
 	XAes_Release(&aes_device);
 
-	printf("\nFinished");
+//	printf("\nFinished");
 
 	return finished;
 }
