@@ -185,7 +185,7 @@ int Aes_encrypt_cbc_run(FPGA_AES *cipher, const char *input, size_t len, char *o
 }
 
 //TODO: assuming iv[0] is least significant bit
-int incrementIv(char* iv, iv_length){
+int incrementIv(char* iv, int iv_length){
 	int i;
 	char current;
 	//start at beginning
@@ -210,10 +210,10 @@ int incrementIv(char* iv, iv_length){
 //TODO: implement ctr in hardware so that this is not a problem
 //TODO: need to determine if iv[0] or iv[iv_length] is the least significant
 //bit for incrementing
-int Aes_encrypt_ctr_run(FPGA_AES *cipher, const char *input, size_t len, char* output, unsigned src, unsigned dest){
+int Aes_encrypt_ctr_run(FPGA_AES *cipher, char *input, size_t len, char* output, unsigned src, unsigned dest){
 	int i, j;
 	char temp[cipher->iv_length];
-	char iv[cipher->iv_length]
+	char iv[cipher->iv_length];
 	int numEncryptions = len/16;
 	char* current = iv;
 	//store a local copy of iv
@@ -233,7 +233,7 @@ int Aes_encrypt_ctr_run(FPGA_AES *cipher, const char *input, size_t len, char* o
 			temp[j] = input[i*16+j];
 			input[i*16+j] = iv[i];
 		}
-		Aes_encrypt_run(cipher, input, iv_length, output, src, dest);
+		Aes_encrypt_run(cipher, input, cipher->iv_length, output, src, dest);
 		for(j=0; j<16; j++){
 			output[i*16 + j] = output[i*16+j]^temp[j];
 		}
