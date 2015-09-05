@@ -237,7 +237,10 @@ int Aes_encrypt_ctr_run(FPGA_AES *cipher, char *input, size_t len, char* output,
 		for(j=0; j<16; j++){
 			output[i*16 + j] = output[i*16+j]^temp[j];
 		}
-		incrementIv(iv, cipher->iv_length);
+		//increment by the number of bytes encrypted
+		for(i=0; i<cipher->iv_length; i++){
+			incrementIv(iv, cipher->iv_length);
+		}
 	}
 }
 
