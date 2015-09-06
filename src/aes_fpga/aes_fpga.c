@@ -104,9 +104,10 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 	unsigned source = src_addr;
 	unsigned dest = dst_addr;
 	//TODO: take ceil of len/16
-	unsigned data_length = len/16;
+	unsigned data_length = len/16 + (len % 16 != 0);//len/16;
+//	unsigned data_length = len/16;
 	
-//	printf("\nNumber of FPGA iterations: %i", data_length);
+	printf("\nNumber of FPGA iterations: %i", data_length);
 
 //	printf("\nStarting AES");	
 
@@ -187,20 +188,43 @@ int Aes_encrypt_cbc_run(FPGA_AES *cipher, const char *input, size_t len, char *o
 //TODO: assuming iv[0] is least significant bit
 int incrementIv(char* iv, int iv_length){
 	int i;
-	char current;
+	unsigned int current;
 	//start at beginning
-	for(i=0; i<iv_length; i++){
+//	for(i=0; i<iv_length; i++){
+	for(i=iv_length-1; i>=0; i--){
 		//increment this bit
-		iv[i] = iv[i] + 1;
+		current = (unsigned int)iv[i];
+//		current = current + 1;
+		current = current + 1;
+		iv[i] = (unsigned char)current;
 		//if the incrementation does not rollover, i.e. 0xff + 1 == 0x00,
 		//then we can a stop, else increment next bit. if is for examle, 0x00ffff,
 		//then the first iteration will result in 0x00ff00, the second will result
 		//in 0x000000, the third will result in 0x010000
-		if(iv[i] != 0x0){
+		if(current < 0xff){
 			break;
 		}
 	}
 }
+
+int printIv(char* iv, int iv_length){
+	int i;
+	int current = 0;
+	char* currentChar = (char*)(&current);
+	printf("\n0x");
+	for(i=iv_length-1; i>=0; i--){
+//	for(i=0; i<iv_length; i++){
+		printf("%02x", iv[i]);
+		current+=(int)iv[i];
+	}
+//	printf("\nInt value: %i", current);
+//	printf("\nRepresentation:\n0x");
+//	for(i=0; i<sizeof(int)/sizeof(char); i++){
+//		printf("%02x", currentChar[i]);
+//	}
+//	printf("\nSizeof(int): %i, Sizeof(long): %i", sizeof(int), sizeof(long));
+}
+
 
 //implements ctr in software on top of AES in hardware
 //assumes that the buffers are accessible by the FPGA -> e.g. in correct
@@ -213,35 +237,57 @@ int incrementIv(char* iv, int iv_length){
 int Aes_encrypt_ctr_run(FPGA_AES *cipher, char *input, size_t len, char* output, unsigned src, unsigned dest){
 	int i, j;
 	char temp[cipher->iv_length];
-	char iv[cipher->iv_length];
+	unsigned char iv[cipher->iv_length];
 	int numEncryptions = len/16;
 	char* current = iv;
+	char* current_in = input;
+	char* current_out = output;
+	unsigned current_src = src;
+	unsigned current_dest = dest;
 	//store a local copy of iv
 	for(i=0; i<cipher->iv_length; i++){
 		iv[i] = cipher->iv[i];
 	}
 //	char tempOut[cipher->iv_length];
+//	printf("\nNumber of CTR encryptions: %i", numEncryptions);
+//	printf("\nCipher iv length: %i", cipher->iv_length);
 	for(i=0; i<numEncryptions; i++){
 		//TODO: assuming for now that iv_length is the same as a single 
 		//aes encryption. for now, 16 bytes
+		
+//		printf("\nCurrent source: 0x%08x", current_src);
+//		printf("\nCurrent dest: 0x%08x", current_dest);
+//		printf("\nCurrent input: %p", current_in);
+//		printf("\nCurrent output: %p", current_out);
+		printf("\nCurrent iv:");
+		printIv(iv, cipher->iv_length);
 		
 		//for ctr, encrypt the iv, then xor with the pt. then increment the 
 		//iv and xor the next ouput with the next pt set
 		//need to put counter into the current input segment and
 		//store the pt
 		for(j=0; j<16; j++){
-			temp[j] = input[i*16+j];
-			input[i*16+j] = iv[i];
+			temp[j] = current_in[j];
+			current_in[j] = iv[j];
 		}
-		Aes_encrypt_run(cipher, input, cipher->iv_length, output, src, dest);
+		Aes_encrypt_run(cipher, current_in, 16, current_out, current_src, current_dest);
 		for(j=0; j<16; j++){
-			output[i*16 + j] = output[i*16+j]^temp[j];
+			current_out[j] = current_out[j]^temp[j];
+		}
+		//need to change the input back to its original state
+		for(j=0; j<16; j++){
+			current_in[j] = temp[j];
 		}
 		//increment by the number of bytes encrypted
-		for(i=0; i<cipher->iv_length; i++){
+	//	for(j=0; j<16; j++){
 			incrementIv(iv, cipher->iv_length);
-		}
+	//	}
+		current_in = current_in + 16;
+		current_out = current_out + 16;
+		current_src = current_src + 16;
+		current_dest = current_dest + 16;
 	}
+	return 0;
 }
 
 //memcpy to the shared memory from the source and memcpy back to the dest
