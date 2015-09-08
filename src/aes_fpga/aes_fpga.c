@@ -1,5 +1,6 @@
 #include "aes_fpga.h"
 #include "memmgr.h"
+#include <openssl/evp.h>
 /*
 struct FPGA_AES{
 	const char* key;
@@ -223,6 +224,40 @@ int printIv(char* iv, int iv_length){
 //		printf("%02x", currentChar[i]);
 //	}
 //	printf("\nSizeof(int): %i, Sizeof(long): %i", sizeof(int), sizeof(long));
+}
+
+int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, unsigned src, unsigned dest){
+	int i, num;
+//	int numEncryptions = len/16 + (len%16 != 0);
+	int numBytesExtra = len%16;
+	int numFullSegments = len/16;
+	//Encrypt all of the full 16 byte segments
+	//do not want to use the fpga if we do not have any full segments
+	if(numFullSegments > 0){
+		//TODO: have the FPGA return the counter, so we don't have to
+		//calculate it
+		Aes_encrypt_run(cipher, input, numFullSegments, output, src, dest, 2);
+	}
+	//Encrypt the last segment by calculating the counter
+	//TODO: farm this part to a thread
+	if(numBytesExtra > 0){
+		char local_iv[16];
+		char temp[16];
+		for(i=0; i<16; i++){
+			local_iv[i] = cipher->iv[i];
+		}
+		//calculate IV
+		for(i=0; i<numFullSegments; i++){
+			incrementIv(local_iv, 16);
+		}
+		//call openssl aes ctr and output to the correct place, reading from the 
+		//last segment that is not full
+		EVP_CIPHER_CTX ctx;
+		EVP_EncryptInit(&ctx, EVP_aes_128_ctr(), cipher->key, local_iv);
+		EVP_EncryptUpdate(&ctx, output+(numFullSegments*16), &num, input+(numFullSegments*16), numBytesExtra);
+		EVP_EncryptFinal_ex(&ctx, temp, &num);
+	}
+	return 0;
 }
 
 
