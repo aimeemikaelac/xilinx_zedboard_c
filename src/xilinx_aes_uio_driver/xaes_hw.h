@@ -43,15 +43,31 @@
 // 0x30 : Control signal of key_in_V
 //        bit 0  - key_in_V_ap_vld (Read/Write/SC)
 //        others - reserved
-// 0x34 : Data signal of destinationAddress
+// 0x34 : Data signal of iv_V
+//        bit 31~0 - iv_V[31:0] (Read/Write)
+// 0x38 : Data signal of iv_V
+//        bit 31~0 - iv_V[63:32] (Read/Write)
+// 0x3c : Data signal of iv_V
+//        bit 31~0 - iv_V[95:64] (Read/Write)
+// 0x40 : Data signal of iv_V
+//        bit 31~0 - iv_V[127:96] (Read/Write)
+// 0x44 : Control signal of iv_V
+//        bit 0  - iv_V_ap_vld (Read/Write/SC)
+//        others - reserved
+// 0x48 : Data signal of destinationAddress
 //        bit 31~0 - destinationAddress[31:0] (Read/Write)
-// 0x38 : Control signal of destinationAddress
+// 0x4c : Control signal of destinationAddress
 //        bit 0  - destinationAddress_ap_vld (Read/Write/SC)
 //        others - reserved
-// 0x3c : Data signal of length_r
-//        bit 31~0 - length_r[31:0] (Read/Write)
-// 0x40 : Control signal of length_r
-//        bit 0  - length_r_ap_vld (Read/Write/SC)
+// 0x50 : Data signal of numBytes
+//        bit 31~0 - numBytes[31:0] (Read/Write)
+// 0x54 : Control signal of numBytes
+//        bit 0  - numBytes_ap_vld (Read/Write/SC)
+//        others - reserved
+// 0x58 : Data signal of mode
+//        bit 31~0 - mode[31:0] (Read/Write)
+// 0x5c : Control signal of mode
+//        bit 0  - mode_ap_vld (Read/Write/SC)
 //        others - reserved
 // (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
 
@@ -67,10 +83,16 @@
 #define XAES_AXILITES_ADDR_KEY_IN_V_DATA           0x20
 #define XAES_AXILITES_BITS_KEY_IN_V_DATA           128
 #define XAES_AXILITES_ADDR_KEY_IN_V_CTRL           0x30
-#define XAES_AXILITES_ADDR_DESTINATIONADDRESS_DATA 0x34
+#define XAES_AXILITES_ADDR_IV_V_DATA               0x34
+#define XAES_AXILITES_BITS_IV_V_DATA               128
+#define XAES_AXILITES_ADDR_IV_V_CTRL               0x44
+#define XAES_AXILITES_ADDR_DESTINATIONADDRESS_DATA 0x48
 #define XAES_AXILITES_BITS_DESTINATIONADDRESS_DATA 32
-#define XAES_AXILITES_ADDR_DESTINATIONADDRESS_CTRL 0x38
-#define XAES_AXILITES_ADDR_LENGTH_R_DATA           0x3c
-#define XAES_AXILITES_BITS_LENGTH_R_DATA           32
-#define XAES_AXILITES_ADDR_LENGTH_R_CTRL           0x40
+#define XAES_AXILITES_ADDR_DESTINATIONADDRESS_CTRL 0x4c
+#define XAES_AXILITES_ADDR_NUMBYTES_DATA           0x50
+#define XAES_AXILITES_BITS_NUMBYTES_DATA           32
+#define XAES_AXILITES_ADDR_NUMBYTES_CTRL           0x54
+#define XAES_AXILITES_ADDR_MODE_DATA               0x58
+#define XAES_AXILITES_BITS_MODE_DATA               32
+#define XAES_AXILITES_ADDR_MODE_CTRL               0x5c
 

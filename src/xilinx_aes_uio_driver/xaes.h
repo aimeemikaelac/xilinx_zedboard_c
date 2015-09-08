@@ -56,6 +56,13 @@ typedef struct {
     u32 word_3;
 } XAes_Key_in_v;
 
+typedef struct {
+    u32 word_0;
+    u32 word_1;
+    u32 word_2;
+    u32 word_3;
+} XAes_Iv_v;
+
 /***************** Macros (Inline Functions) Definitions *********************/
 #ifndef __linux__
 #define XAes_WriteReg(BaseAddress, RegOffset, Data) \
@@ -103,14 +110,22 @@ void XAes_Set_key_in_V(XAes *InstancePtr, XAes_Key_in_v Data);
 XAes_Key_in_v XAes_Get_key_in_V(XAes *InstancePtr);
 void XAes_Set_key_in_V_vld(XAes *InstancePtr);
 u32 XAes_Get_key_in_V_vld(XAes *InstancePtr);
+void XAes_Set_iv_V(XAes *InstancePtr, XAes_Iv_v Data);
+XAes_Iv_v XAes_Get_iv_V(XAes *InstancePtr);
+void XAes_Set_iv_V_vld(XAes *InstancePtr);
+u32 XAes_Get_iv_V_vld(XAes *InstancePtr);
 void XAes_Set_destinationAddress(XAes *InstancePtr, u32 Data);
 u32 XAes_Get_destinationAddress(XAes *InstancePtr);
 void XAes_Set_destinationAddress_vld(XAes *InstancePtr);
 u32 XAes_Get_destinationAddress_vld(XAes *InstancePtr);
-void XAes_Set_length_r(XAes *InstancePtr, u32 Data);
-u32 XAes_Get_length_r(XAes *InstancePtr);
-void XAes_Set_length_r_vld(XAes *InstancePtr);
-u32 XAes_Get_length_r_vld(XAes *InstancePtr);
+void XAes_Set_numBytes(XAes *InstancePtr, u32 Data);
+u32 XAes_Get_numBytes(XAes *InstancePtr);
+void XAes_Set_numBytes_vld(XAes *InstancePtr);
+u32 XAes_Get_numBytes_vld(XAes *InstancePtr);
+void XAes_Set_mode(XAes *InstancePtr, u32 Data);
+u32 XAes_Get_mode(XAes *InstancePtr);
+void XAes_Set_mode_vld(XAes *InstancePtr);
+u32 XAes_Get_mode_vld(XAes *InstancePtr);
 
 void XAes_InterruptGlobalEnable(XAes *InstancePtr);
 void XAes_InterruptGlobalDisable(XAes *InstancePtr);
