@@ -120,7 +120,7 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 
 	XAes_Set_destinationAddress(&aes_device, dest);
 
-	XAes_Set_length_r(&aes_device, data_length);
+//	XAes_Set_length_r(&aes_device, data_length);
 
 	XAes_Set_sourceAddress_vld(&aes_device);
 
@@ -128,7 +128,7 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 
 	XAes_Set_destinationAddress_vld(&aes_device);
 
-	XAes_Set_length_r_vld(&aes_device);
+//	XAes_Set_length_r_vld(&aes_device);
 
 //	printf("\nWaiting for fabric");
 

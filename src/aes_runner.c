@@ -133,7 +133,7 @@ int main(int argc, char** argv){
 //		printf("\nCould not allocate memory for key struct");
 //		return -1;
 //	}
-	u32 key_array[4];
+	u32 key_array[4];/*
 	for(i=0; i<4; i++){
 		u32 current = 0;
 		for(j=0; j<4; j++){
@@ -148,11 +148,25 @@ int main(int argc, char** argv){
 		}
 //		key_array[i] = reverse(current);
 		key_array[i] = current;
+	}*/
+	//-------------------------------------------
+	//Test if key reversal in hardware works
+	for(i=0; i<4; i++){
+		int curIndex = i*4;
+		u32 current = key[curIndex] + (key[curIndex+1]*0x100) + (key[curIndex+2]*0x10000) + (key[curIndex+3]*0x1000000);
+		key_array[i] = current;
 	}
+
 	key_in.word_0 = key_array[0];
 	key_in.word_1 = key_array[1];
 	key_in.word_2 = key_array[2];
 	key_in.word_3 = key_array[3];
+
+	XAes_Iv_v iv;
+	iv.word_0=0;
+	iv.word_1=0;
+	iv.word_2=0;
+	iv.word_3=0;
 
 //	printf("\nOriginal key:\n0x");
 	char bin_buffer[33];
@@ -177,15 +191,34 @@ int main(int argc, char** argv){
 	XAes_Start(aes_device);
 
 	XAes_Set_key_in_V(aes_device, key_in);
+//	XAes_Key_in_v currentKey = XAes_Get_key_in_V(aes_device);
+//	printf("\nCurrent key: 0x");
+//	printf("%08x", currentKey.word_0);
+//	printf("%08x", currentKey.word_1);
+//	printf("%08x", currentKey.word_2);
+//	printf("%08x", currentKey.word_3);
 //	writeKey(key);
 	XAes_Set_sourceAddress(aes_device, source);
+//	printf("\nCurrent source address: 0x%08x", XAes_Get_sourceAddress(aes_device));
 //	writeSourceAddress(source);
 	XAes_Set_destinationAddress(aes_device, dest);
+//	printf("\nCurrent destination address: 0x%08x", XAes_Get_destinationAddress(aes_device));
 //	writeDestinationAddress(dest);
-	XAes_Set_length_r(aes_device, data_length);
+	XAes_Set_numBytes(aes_device, data_length*16);
+//	printf("\nCurrent numBytes: 0x%08x", XAes_Get_numBytes(aes_device));
 //	writeLength(data_length);
 //	int current_data_length = XAes_Get_length_r(aes_device);
 //	printf("Current data length: %i\n", current_data_length);
+	XAes_Set_iv_V(aes_device, iv);
+//	XAes_Iv_v currentIv = XAes_Get_iv_V(aes_device);
+//	printf("\nCurrent iv: 0x");
+//	printf("%08x", currentIv.word_0);
+//	printf("%08x", currentIv.word_1);
+//	printf("%08x", currentIv.word_2);
+//	printf("%08x", currentIv.word_3);
+
+	XAes_Set_mode(aes_device, 0);
+//	printf("\nCurrent mode: %08x", XAes_Get_mode(aes_device));
 	
 	XAes_Set_sourceAddress_vld(aes_device);
 //	writeLengthValid();
@@ -193,9 +226,12 @@ int main(int argc, char** argv){
 //	writeDestinationAddressValid();
 	XAes_Set_destinationAddress_vld(aes_device);
 //	writeSourceAddressValid();
-	XAes_Set_length_r_vld(aes_device);
+	XAes_Set_numBytes_vld(aes_device);
 //	writeKeyValid();
 //	XAes_Start(aes_device);
+	XAes_Set_iv_V_vld(aes_device);
+
+	XAes_Set_mode_vld(aes_device);
 
 	printf("\nWaiting for fabric.");
 	while(XAes_IsDone(aes_device) != 1){
