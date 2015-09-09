@@ -1,4 +1,5 @@
 #include "user_mmap_driver.h"
+#include "aes_fpga.h"
 #include <openssl/rand.h>
 #include <openssl/aes.h>
 #include <stdio.h>
@@ -43,10 +44,11 @@ char *int2bin(int a, char *buffer, int buf_size) {
 
 int main(int argc, char** argv){
 	int i, j;
-	unsigned char data_to_encrypt[] = {0x01, 0x4B, 0xAF, 0x22, 0x78, 0xA6, 0x9D, 0x33, 0x1D, 0x51, 0x80, 0x10, 0x36, 0x43, 0xE9, 0x9A, '\0'};
+	unsigned char data_to_encrypt[]  = {0x01, 0x4B, 0xAF, 0x22, 0x78, 0xA6, 0x9D, 0x33, 0x1D, 0x51, 0x80, 0x10, 0x36, 0x43, 0xE9, 0x9A, '\0'};
 //	unsigned char key[] = {0xE8, 0xE9, 0xEA, 0xEB, 0xED, 0xEE, 0xEF, 0xF0, 0xF2, 0xF3, 0xF4, 0xF5, 0xF7, 0xF8, 0xF9, 0xFA, '\0'};
-	unsigned char key[] = {0xE8, 0xE9, 0xEA, 0xEB, 0xED, 0xEE, 0xEF, 0xF0, 0xF2, 0xF3, 0xF4, 0xF5, 0xF7, 0xF8, 0xF9, 0xFA, '\0'};
+	unsigned char key[]              = {0xE8, 0xE9, 0xEA, 0xEB, 0xED, 0xEE, 0xEF, 0xF0, 0xF2, 0xF3, 0xF4, 0xF5, 0xF7, 0xF8, 0xF9, 0xFA, '\0'};
 	unsigned char data_to_encrypt2[] = {0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, '\0'};
+	unsigned char default_iv[]         = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, '\0'};
 	int data_length;
 	if(argc == 2){
 		data_length = atoi(argv[1]);
@@ -102,144 +104,26 @@ int main(int argc, char** argv){
 		((char*)shared_system_mem->ptr)[i] = 0;
 	}
 
-	unsigned int output;
-	unsigned int current, currentTotal, k;
+	char bin_buffer[33];
+
+	char *sourceData = (char*)(shared_system_mem->ptr);
+	char *destData = sourceData + destOffset;
+
 	for(i=0; i<data_length; i++){
 		for(j=0; j<16; j++){
-			((char*)shared_system_mem->ptr)[i*16 + (15-j)] = data_to_encrypt3[i*16 + j];
+			sourceData[i*16 + j] = data_to_encrypt3[i*16 + j];
 		}
 	}
-
-//	cleanupSharedMemoryPointer(shared_system_mem);
-	XAes aes_device_struct;// = NULL;
-	XAes *aes_device = &aes_device_struct;
-//	aes_device = malloc(sizeof(XAes));
-//	if(aes_device == NULL){
-//		printf("\nCould not allocate memory for aes device");
-//		return -1;
-//	}
-//	if(XAes_Initialize(aes_device, "aestest") != XST_SUCCESS){
-//	printf("Test3------------------------------------\n");
-	//if(XAes_Initialize(aes_device, "qam") != XST_SUCCESS){
-	if(XAes_Initialize(aes_device, "aes-qam") != XST_SUCCESS){
-		printf("\nCould not initialize aes device");
+	//-----------------------Switch to using the aes_fpga library code
+	FPGA_AES *cipher = NULL;
+	if((cipher = fpga_aes_new(key, 16, SHARED_MEM_BASE, "aes-qam", "axi-reset", default_iv, 16)) == NULL){
+		printf("\nCould not allocated cipher");
 		return -1;
 	}
+	begin  = clock();
+	Aes_encrypt_run(cipher, sourceData, data_length*16, destData, SHARED_MEM_BASE, SHARED_MEM_BASE + destOffset, 0);
 
-//	printf("Test------------------------------------\n");
-	XAes_Key_in_v key_in;// = NULL;
-//	key_in = (XAes_Key_in_v*)malloc(sizeof(XAes_Key_in_v));
-//	if(key_in == NULL){
-//		printf("\nCould not allocate memory for key struct");
-//		return -1;
-//	}
-	u32 key_array[4];/*
-	for(i=0; i<4; i++){
-		u32 current = 0;
-		for(j=0; j<4; j++){
-			int key_part = key[15-i*4-j];
-//			char current_char = key[i*4+j];
-//			current_char = reverse(current_char);
-//			int key_part = key[i*4+j];
-			key_part = key_part << (8*j);
-//			key_part = key_part << (24-(8*j));
-			current += key_part;
-//			current = current << (32-8*j);
-		}
-//		key_array[i] = reverse(current);
-		key_array[i] = current;
-	}*/
-	//-------------------------------------------
-	//Test if key reversal in hardware works
-	for(i=0; i<4; i++){
-		int curIndex = i*4;
-		u32 current = key[curIndex] + (key[curIndex+1]*0x100) + (key[curIndex+2]*0x10000) + (key[curIndex+3]*0x1000000);
-		key_array[i] = current;
-	}
 
-	key_in.word_0 = key_array[0];
-	key_in.word_1 = key_array[1];
-	key_in.word_2 = key_array[2];
-	key_in.word_3 = key_array[3];
-
-	XAes_Iv_v iv;
-	iv.word_0=0;
-	iv.word_1=0;
-	iv.word_2=0;
-	iv.word_3=0;
-
-//	printf("\nOriginal key:\n0x");
-	char bin_buffer[33];
-	for(i=0; i<4; i++){
-		int current_int = 0;
-		for(j=0; j<4; j++){
-			current_int = current_int << 8;
-			current_int += key[i];
-		}
-		int2bin(current_int, bin_buffer, 32);
-		bin_buffer[32] = '\0';
-//		printf("%s", bin_buffer);
-	}
-
-//	printf("\nFabric key:\n0x");
-	for(i=0; i<4; i++){
-		int2bin(key_array[i], bin_buffer, 32);
-		bin_buffer[32] = '\0';
-//		printf("%s", bin_buffer);
-	}
-	begin = clock();
-	XAes_Start(aes_device);
-
-	XAes_Set_key_in_V(aes_device, key_in);
-//	XAes_Key_in_v currentKey = XAes_Get_key_in_V(aes_device);
-//	printf("\nCurrent key: 0x");
-//	printf("%08x", currentKey.word_0);
-//	printf("%08x", currentKey.word_1);
-//	printf("%08x", currentKey.word_2);
-//	printf("%08x", currentKey.word_3);
-//	writeKey(key);
-	XAes_Set_sourceAddress(aes_device, source);
-//	printf("\nCurrent source address: 0x%08x", XAes_Get_sourceAddress(aes_device));
-//	writeSourceAddress(source);
-	XAes_Set_destinationAddress(aes_device, dest);
-//	printf("\nCurrent destination address: 0x%08x", XAes_Get_destinationAddress(aes_device));
-//	writeDestinationAddress(dest);
-	XAes_Set_numBytes(aes_device, data_length*16);
-//	printf("\nCurrent numBytes: 0x%08x", XAes_Get_numBytes(aes_device));
-//	writeLength(data_length);
-//	int current_data_length = XAes_Get_length_r(aes_device);
-//	printf("Current data length: %i\n", current_data_length);
-	XAes_Set_iv_V(aes_device, iv);
-//	XAes_Iv_v currentIv = XAes_Get_iv_V(aes_device);
-//	printf("\nCurrent iv: 0x");
-//	printf("%08x", currentIv.word_0);
-//	printf("%08x", currentIv.word_1);
-//	printf("%08x", currentIv.word_2);
-//	printf("%08x", currentIv.word_3);
-
-	XAes_Set_mode(aes_device, 0);
-//	printf("\nCurrent mode: %08x", XAes_Get_mode(aes_device));
-	
-	XAes_Set_sourceAddress_vld(aes_device);
-//	writeLengthValid();
-	XAes_Set_key_in_V_vld(aes_device);
-//	writeDestinationAddressValid();
-	XAes_Set_destinationAddress_vld(aes_device);
-//	writeSourceAddressValid();
-	XAes_Set_numBytes_vld(aes_device);
-//	writeKeyValid();
-//	XAes_Start(aes_device);
-	XAes_Set_iv_V_vld(aes_device);
-
-	XAes_Set_mode_vld(aes_device);
-
-	printf("\nWaiting for fabric.");
-	while(XAes_IsDone(aes_device) != 1){
-//		printf(".");
-//		finished = XAes_GetFinished(aes_device);
-	}
-	int finished = XAes_Get_return(aes_device);
-//	XAes_SetFinishedAck(aes_device);
 	end = clock();
 	ticks = (double)(end - begin);
 	seconds = (double)(end - begin)/CLOCKS_PER_SEC;
@@ -306,7 +190,8 @@ int main(int argc, char** argv){
 //	printf("\n");
 	printf("\nNum incorrect: %i\n", incorrectCount);
 	cleanupSharedMemoryPointer(shared_system_mem);
-	XAes_Release(aes_device);
+	fpga_aes_free(cipher);
+//	XAes_Release(aes_device);
 //	free(aes_device);
 //	free(key_in);
 //	signalReadFinished();

@@ -61,7 +61,7 @@ void byteReverseBuffer4(char* buffer, int length){
 
 //data must be aligned to 16 bytes and zero-padded if needed
 //len is provided as number of bytes to encrypt
-int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_addr){
+int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_addr, int mode){
 	int i, j;
 	XReset_axi reset_axi;
 	if(XReset_axi_Initialize(&reset_axi, cipher->rst_device) != XST_SUCCESS){
@@ -86,8 +86,10 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 	}
 	
 	XAes_Key_in_v key_in;
+	XAes_Iv_v iv_in;
 	u32 key_array[4];
-	for(i=0; i<4; i++){
+	u32 iv_array[4];
+/*	for(i=0; i<4; i++){
 		u32 current = 0;
 	        for(j=0; j<4; j++){
 		        int key_part = cipher->key[15-i*4-j];
@@ -95,17 +97,34 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 		        current += key_part;
 		}
 		key_array[i] = current;
+	}*/
+	//FPGA should be able to perform key and iv reversal. Just fill up the struct
+	for(i=0; i<4; i++){
+		int curIndex = i*4;
+		u32 current_key = cipher->key[curIndex] + (cipher->key[curIndex+1]*0x100) + (cipher->key[curIndex+2]*0x10000) + (cipher->key[curIndex+3]*0x1000000);
+		u32 current_iv = cipher->iv[curIndex] + (cipher->iv[curIndex+1]*0x100) + (cipher->iv[curIndex+2]*0x10000) + (cipher->iv[curIndex+3]*0x1000000);
+		key_array[i] = current_key;
+		iv_array[i] = current_iv;
 	}
+
 
 	key_in.word_0 = key_array[0];
 	key_in.word_1 = key_array[1];
 	key_in.word_2 = key_array[2];
 	key_in.word_3 = key_array[3];
 
+	iv_in.word_0 = iv_array[0];
+	iv_in.word_1 = iv_array[1];
+	iv_in.word_2 = iv_array[2];
+	iv_in.word_3 = iv_array[3];
+
 	unsigned source = src_addr;
 	unsigned dest = dst_addr;
 	//TODO: take ceil of len/16
-	unsigned data_length = len/16 + (len % 16 != 0);//len/16;
+//	unsigned data_length = len/16 + (len % 16 != 0);//len/16;
+
+//	We will only perform encryptions of the block size in the FPGA for now
+	unsigned data_length = (len/16)*16;
 //	unsigned data_length = len/16;
 	
 	printf("\nNumber of FPGA iterations: %i", data_length);
@@ -120,6 +139,12 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 
 	XAes_Set_destinationAddress(&aes_device, dest);
 
+	XAes_Set_numBytes(&aes_device, data_length);
+
+	XAes_Set_iv_V(&aes_device, iv_in);
+
+	XAes_Set_mode(&aes_device, mode);
+
 //	XAes_Set_length_r(&aes_device, data_length);
 
 	XAes_Set_sourceAddress_vld(&aes_device);
@@ -127,6 +152,12 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 	XAes_Set_key_in_V_vld(&aes_device);
 
 	XAes_Set_destinationAddress_vld(&aes_device);
+
+	XAes_Set_numBytes_vld(&aes_device);
+
+	XAes_Set_iv_V_vld(&aes_device);
+
+	XAes_Set_mode_vld(&aes_device);
 
 //	XAes_Set_length_r_vld(&aes_device);
 
@@ -305,7 +336,7 @@ int Aes_encrypt_ctr_run(FPGA_AES *cipher, char *input, size_t len, char* output,
 			temp[j] = current_in[j];
 			current_in[j] = iv[j];
 		}
-		Aes_encrypt_run(cipher, current_in, 16, current_out, current_src, current_dest);
+		Aes_encrypt_run(cipher, current_in, 16, current_out, current_src, current_dest, 0);
 		for(j=0; j<16; j++){
 			current_out[j] = current_out[j]^temp[j];
 		}
@@ -346,7 +377,7 @@ int Aes_encrypt_memcpy(FPGA_AES *cipher, char* output, const char *input, size_t
 
 	memcpy((void*)(mem->ptr), (const void*)(input), len);
 
-	Aes_encrypt_run(cipher, input, len, output, src, dest);
+	Aes_encrypt_run(cipher, input, len, output, src, dest, 0);
 
 	memcpy((void*)(output), (void*)(mem->ptr) + len*sizeof(char), len);
 
@@ -393,7 +424,7 @@ int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t
 //	}
 //	byteReverseBuffer16(output, len);
 
-	Aes_encrypt_run(cipher, input, len, output, src, dest);
+	Aes_encrypt_run(cipher, input, len, output, src, dest, 0);
 
 	//TODO: may need to byte-reverse the input again
 	return 0;
@@ -401,14 +432,14 @@ int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t
 
 //assume that the input is in the correct memory region now
 //byte reverse the input pointer, call fpga and reverse output
-int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *output, unsigned src, unsigned dest){
+int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *output, unsigned src, unsigned dest, int mode){
 	byteReverseBuffer16((char*)input, len);
 //	byteReverseBuffer4((char*)input, len);
 //	byteReverseBuffer8((char*)input, len);
 
-	aes_encrypt(cipher, len, src, dest);
+	aes_encrypt(cipher, len, src, dest, mode);
 
-	byteReverseBuffer16(output, len);
+//	byteReverseBuffer16(output, len);
 //	byteReverseBuffer4(output, len);
 //	byteReverseBuffer8(output, len);
 	return 0;

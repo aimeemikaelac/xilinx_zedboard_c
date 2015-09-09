@@ -25,7 +25,7 @@ void byteReverseBuffer8(char* buffer, int length);
 
 void byteReverseBuffer16(char* buffer, int length);
 
-int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_addr);
+int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_addr, int mode);
 
 //need to follow convention: *to, *from, len, for simplicity
 //int Aes_encrypt_memcpy(FPGA_AES *cipher, const char *input, size_t len, char *output);
@@ -40,7 +40,7 @@ int Aes_encrypt_cbc_memmgr(FPGA_AES *cipher, char* iv, char* output, const char 
 //int Aes_encrypt_memmgr(FPGA_AES *cipher, const char *input, size_t len, char *output);
 int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t len);
 
-int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *output, unsigned src, unsigned dest);
+int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *output, unsigned src, unsigned dest, int mode);
 
 int Aes_encrypt_ctr_run(FPGA_AES *cipher, char *input, size_t len, char* output, unsigned src, unsigned dest);
 
