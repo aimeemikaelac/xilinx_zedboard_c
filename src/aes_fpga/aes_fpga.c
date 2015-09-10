@@ -1,6 +1,7 @@
 #include "aes_fpga.h"
 #include "memmgr.h"
 #include <openssl/evp.h>
+#include <pthread.h>
 /*
 struct FPGA_AES{
 	const char* key;
@@ -206,6 +207,22 @@ int incrementIv(char* iv, int iv_length){
 			break;
 		}
 	}
+}
+
+int addIv(char* iv, int iv_length, unsigned int num){
+	int i;
+	char carry =0;
+	for(i=0; i<iv_length; i++){
+		char low = iv[i];
+		char currentNum = (char)(num >> 8*i);
+		iv[i] = low + currentNum + carry;
+		if(iv[i] < low){
+			carry = 1;
+		} else{
+			carry = 0;
+		}
+	}
+	return 0;
 }
 
 int printIv(char* iv, int iv_length){
