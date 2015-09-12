@@ -119,7 +119,7 @@ int main(int argc, char** argv){
 //	}
 //	if(XAes_Initialize(aes_device, "aestest") != XST_SUCCESS){
 //	printf("Test3------------------------------------\n");
-	if(XAes_Initialize(aes_device, "qam") != XST_SUCCESS){
+	if(XAes_Initialize(aes_device, "aes-qam") != XST_SUCCESS){
 		printf("\nCould not initialize aes device");
 		return -1;
 	}
