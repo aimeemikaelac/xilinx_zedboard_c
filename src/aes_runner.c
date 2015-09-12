@@ -43,6 +43,47 @@ char *int2bin(int a, char *buffer, int buf_size) {
 	return buffer;
 }
 
+void checkFunction(char* encrypted_data_openssl, shared_memory shared_system_mem, int data_length, unsigned destOffset){
+	int i, j;
+	clock_t ticks;
+	printf("\nWaiting for checking...");
+//	int dummy = 0;
+//	for(i=0; i<data_length*100; i++){
+//		printf(".");
+//		for(j=0; j<1000; j++){
+//			dummy += i*j;
+//		}
+//	}
+	printf("\n");
+	char bin_buffer[33];
+	int incorrectCount = 0;
+//	printf("\nChar fabric\t|\tChar openssl\n");
+//	printf("\nOpenssl:\n");
+	printf("\nChecking");
+	ticks = clock();
+	for(i=0; i<data_length; i++){
+//		printf("0x");
+		for(j=0; j<16; j++){
+			char openssl = encrypted_data_openssl[i*16 + j];
+			int2bin(openssl, bin_buffer, 32);
+//			printf("%02x",openssl);
+			//char fabric = ((char*)shared_system_mem->ptr)[i*16 + (15- j) + destOffset];
+			char fabric = ((char*)shared_system_mem->ptr)[i*16 + j  + destOffset];
+//			printf("\n%02x\t\t|\t%02x", fabric, openssl);
+			if(openssl != fabric){
+				printf("\nChar at index %i is not encrypted correctly. It is %02x in openssl, %02x in fabric", i*16+j, openssl, fabric);
+				incorrectCount++;
+			} 
+		}
+//		printf(" ");
+//		printf("\n-------------------------------------");
+	}
+	ticks = clock() - ticks;
+	printf ("\nIt took %f clicks (%f seconds) to check.\n",(double)ticks,((double)ticks)/CLOCKS_PER_SEC);
+	printf("\nNum incorrect: %i\n", incorrectCount);
+
+}
+
 int main(int argc, char** argv){
 	int i, j;
 	unsigned char data_to_encrypt[]  = {0x01, 0x4B, 0xAF, 0x22, 0x78, 0xA6, 0x9D, 0x33, 0x1D, 0x51, 0x80, 0x10, 0x36, 0x43, 0xE9, 0x9A, '\0'};
@@ -80,6 +121,10 @@ int main(int argc, char** argv){
 	EVP_EncryptInit(&ctx, EVP_aes_128_ecb(), key, default_iv);
 
 	int num;
+
+	printf("\nStart testing ECB mode for OpenSSL and hardware");
+	printf("\n--------------------------------------------------------------------");
+
 	begin = clock();
 	EVP_EncryptUpdate(&ctx, encrypted_dest, &num, data_pointer, 16*data_length);
 	EVP_EncryptFinal_ex(&ctx, encrypted_dest+16*data_length, &num);
@@ -91,7 +136,7 @@ int main(int argc, char** argv){
 	end = clock();
 	double ticks = (double)(end - begin);
 	double seconds =(double)(end - begin)/CLOCKS_PER_SEC;
-	printf ("It took %f clicks (%f seconds) in openssl.\n",ticks,seconds);
+	printf ("\nIt took %f clicks (%f seconds) in openssl.\n",ticks,seconds);
 	FILE *openssl_fabric_log;
 	openssl_fabric_log = fopen("aes_openssl_results.csv", "a");
 	fprintf(openssl_fabric_log, "%f,%i\n", seconds, data_length);
@@ -134,55 +179,14 @@ int main(int argc, char** argv){
 	end = clock();
 	ticks = (double)(end - begin);
 	seconds = (double)(end - begin)/CLOCKS_PER_SEC;
-	printf ("It took %f clicks (%f seconds) in fabric for %i encryptions.\n",ticks,seconds, data_length);
+	printf ("\nIt took %f clicks (%f seconds) in fabric for %i encryptions.\n",ticks,seconds, data_length);
 	FILE *aes_fabric_log;
 	aes_fabric_log = fopen("aes_fabric_results.csv", "a");
 	fprintf(aes_fabric_log, "%f,%i\n", seconds, data_length);
 	fclose(aes_fabric_log);
-//	printf("\nDone waiting for fabric\n");
-//	for(i = 0; i<16; i++){
-//		printf("%02x", ((char*)shared_system_mem->ptr)[16+i]);
-//	}
-//	printf("\n");
-//	shared_system_mem = getSharedMemoryArea(source, length);
-//	printf("\nNo segfault");
-//	if(shared_system_mem == NULL){
-//		printf("Error getting shared system memory pointer");
-//		return -1;
-//	}
-	printf("\nWaiting for checking...");
-//	int dummy = 0;
-//	for(i=0; i<data_length*100; i++){
-//		printf(".");
-//		for(j=0; j<1000; j++){
-//			dummy += i*j;
-//		}
-//	}
-	printf("\n");
-	int incorrectCount = 0;
-//	printf("\nChar fabric\t|\tChar openssl\n");
-//	printf("\nOpenssl:\n");
-	printf("\nChecking");
-	ticks = clock();
-	for(i=0; i<data_length; i++){
-//		printf("0x");
-		for(j=0; j<16; j++){
-			char openssl = encrypted_data_openssl[i*16 + j];
-			int2bin(openssl, bin_buffer, 32);
-//			printf("%02x",openssl);
-			//char fabric = ((char*)shared_system_mem->ptr)[i*16 + (15- j) + destOffset];
-			char fabric = ((char*)shared_system_mem->ptr)[i*16 + j  + destOffset];
-//			printf("\n%02x\t\t|\t%02x", fabric, openssl);
-			if(openssl != fabric){
-				printf("\nChar at index %i is not encrypted correctly. It is %02x in openssl, %02x in fabric", i*16+j, openssl, fabric);
-				incorrectCount++;
-			} 
-		}
-//		printf(" ");
-//		printf("\n-------------------------------------");
-	}
-	ticks = clock() - ticks;
-	printf ("\nIt took %f clicks (%f seconds) to check.\n",(float)ticks,((float)ticks)/CLOCKS_PER_SEC);
+
+	checkFunction(encrypted_data_openssl, shared_system_mem, data_length, destOffset);
+	
 //	printf("\nFabric:\n");
 //	for(i=0; i<data_length; i++){
 //		printf("0x");
@@ -193,10 +197,60 @@ int main(int argc, char** argv){
 //		}
 //		printf(" ");
 //	}
+	printf("\nTesting CTR mode in OpenSSL and hardware");
+	printf("\n-----------------------------------------------------------");
+
+	for(i=0; i<data_length*16; i++){
+		encrypted_dest[i] = 0;
+		((char*)shared_system_mem->ptr)[i+destOffset] = 0;
+	}
+
+/*	printf("\nInput to ctr:\nFPGA: 0x");
+	for(i=0; i<16; i++){
+		printf("%02x", ((char*)shared_system_mem->ptr)[i]);
+	}
+	printf("\nOpenssl: 0x");
+	for(i=0; i<16; i++){
+		printf("%02x", data_pointer[i]);
+	}*/
+
+	begin = clock();
+	EVP_EncryptInit(&ctx, EVP_aes_128_ctr(), key, default_iv);
+	EVP_EncryptUpdate(&ctx, encrypted_dest, &num, data_pointer, 16*data_length);
+	EVP_EncryptFinal_ex(&ctx, encrypted_dest+16*data_length, &num);
+//	for(i=0; i<data_length; i++){
+//		AES_encrypt(data_pointer, encrypted_dest, &aes_key);	
+//		data_pointer = data_pointer + 16;
+//		encrypted_dest = encrypted_dest + 16;
+//	}
+	end = clock();
+	ticks = (double)(end - begin);
+	seconds =(double)(end - begin)/CLOCKS_PER_SEC;
+	printf ("\nIt took %f clicks (%f seconds) in openssl.\n",ticks,seconds);
+
+	begin  = clock();
+	//Aes_encrypt_run(cipher, sourceData, data_length*16, destData, SHARED_MEM_BASE, SHARED_MEM_BASE + destOffset, 0);
+	Aes_encrypt_ctr_hw(cipher, sourceData, data_length*16, destData, SHARED_MEM_BASE, SHARED_MEM_BASE + destOffset);
 
 
+	end = clock();
+
+	ticks = (double)(end - begin);
+	seconds = (double)(end - begin)/CLOCKS_PER_SEC;
+	printf ("\nIt took %f clicks (%f seconds) in fabric for %i encryptions.\n",ticks,seconds, data_length);
+
+/*	printf("\nDest offset: %i", destOffset);
+
+	printf("\nOutput of ctr:\nFPGA: 0x");
+	for(i=0; i<16; i++){
+		printf("%02x", ((char*)shared_system_mem->ptr)[destOffset+i]);
+	}
+	printf("\nOpenssl: 0x");
+	for(i=0; i<16; i++){
+		printf("%02x", encrypted_dest[i]);
+	}*/
+	checkFunction(encrypted_data_openssl, shared_system_mem, data_length, destOffset);
 //	printf("\n");
-	printf("\nNum incorrect: %i\n", incorrectCount);
 	cleanupSharedMemoryPointer(shared_system_mem);
 	fpga_aes_free(cipher);
 //	XAes_Release(aes_device);

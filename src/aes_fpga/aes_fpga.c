@@ -236,15 +236,22 @@ int printIv(char* iv, int iv_length){
 
 void* pthread_Ctr_hw_ex(void* ctr_thread_data_arg){
 	ctr_thread_data* thread_data_arg = (struct ctr_thread_data*)(ctr_thread_data_arg);
+//	printf("\nRunning ctr hw thread");
+//	printf("\nHw len: %i", thread_data_arg->len);
+//	byteReverseBuffer16(thread_data_arg->input, thread_data_arg->len);
 	Aes_encrypt_run(thread_data_arg->cipher, thread_data_arg->input, thread_data_arg->len, thread_data_arg->output, thread_data_arg->sourceAddress, thread_data_arg->destAddress, thread_data_arg->mode);
+//	byteReverseBuffer16(thread_data_arg->output, thread_data_arg->len);
+	pthread_exit(NULL);
 
 }
 
 int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, unsigned src, unsigned dest){
 	int i, num, rc = 0;
 //	int numEncryptions = len/16 + (len%16 != 0);
+//	printf("\nLength: %i", len);
 	int numBytesExtra = len%16;
 	int numFullSegments = len/16;
+//	printf("\nNum bytes extra: %i, Num full segments: %i", numBytesExtra,numFullSegments);
 	pthread_t aes_thread;
 	pthread_attr_t attr;
 	void* status;
@@ -263,9 +270,11 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 		aes_args.thread_id = 0;
 		aes_args.cipher = cipher;
 		aes_args.input = input;
-		aes_args.len = numFullSegments;
+		aes_args.len = numFullSegments*16;
 		aes_args.output = output;
+		printf("\nSource: 0x%08x", src);
 		aes_args.sourceAddress = src;
+		printf("\nDest: 0x%08x", dest);
 		aes_args.destAddress = dest;
 		aes_args.mode = 2;
 		rc = pthread_create(&aes_thread, &attr, pthread_Ctr_hw_ex, &aes_args);
