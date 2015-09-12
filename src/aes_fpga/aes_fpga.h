@@ -17,9 +17,26 @@ struct FPGA_AES{
         unsigned shared_mem_base;
 	char* iv;
 	int iv_length;
+	XReset_axi* reset_axi;
+	XAes* aes_device;
+	XAes_Key_in_v key_in;
+	XAes_Iv_v iv_in;
 };
 
+struct ctr_thread_data{
+	int thread_id;
+	struct FPGA_AES *cipher;
+	char* input;
+	size_t len;
+	char* output;
+	unsigned sourceAddress;
+	unsigned destAddress;
+	int mode;
+};
+
+
 typedef struct FPGA_AES FPGA_AES;
+typedef struct ctr_thread_data ctr_thread_data;
 
 void byteReverseBuffer8(char* buffer, int length);
 

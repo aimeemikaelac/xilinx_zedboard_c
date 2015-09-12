@@ -1,6 +1,7 @@
 #include "user_mmap_driver.h"
 #include "aes_fpga.h"
 #include <openssl/rand.h>
+#include <openssl/evp.h>
 #include <openssl/aes.h>
 #include <stdio.h>
 #include <time.h>
@@ -57,7 +58,7 @@ int main(int argc, char** argv){
 	}
 	printf("Data length: %i\n", data_length);
 	unsigned char data_to_encrypt3[16*data_length];
-	unsigned char encrypted_data_openssl[16*data_length];
+	unsigned char encrypted_data_openssl[16*data_length+16];
 
 	srand (time(NULL));
 
@@ -68,19 +69,25 @@ int main(int argc, char** argv){
 		}
 	}
 
-	AES_KEY aes_key;
-	AES_set_encrypt_key(key, 128, &aes_key);
+//	AES_KEY aes_key;
+//	AES_set_encrypt_key(key, 128, &aes_key);
 
 	unsigned char* data_pointer = data_to_encrypt3;
 	unsigned char* encrypted_dest = encrypted_data_openssl;
 
 	clock_t begin, end;
+	EVP_CIPHER_CTX ctx;
+	EVP_EncryptInit(&ctx, EVP_aes_128_ecb(), key, default_iv);
+
+	int num;
 	begin = clock();
-	for(i=0; i<data_length; i++){
-		AES_encrypt(data_pointer, encrypted_dest, &aes_key);	
-		data_pointer = data_pointer + 16;
-		encrypted_dest = encrypted_dest + 16;
-	}
+	EVP_EncryptUpdate(&ctx, encrypted_dest, &num, data_pointer, 16*data_length);
+	EVP_EncryptFinal_ex(&ctx, encrypted_dest+16*data_length, &num);
+//	for(i=0; i<data_length; i++){
+//		AES_encrypt(data_pointer, encrypted_dest, &aes_key);	
+//		data_pointer = data_pointer + 16;
+//		encrypted_dest = encrypted_dest + 16;
+//	}
 	end = clock();
 	double ticks = (double)(end - begin);
 	double seconds =(double)(end - begin)/CLOCKS_PER_SEC;

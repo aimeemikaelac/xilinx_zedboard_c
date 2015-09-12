@@ -64,60 +64,11 @@ void byteReverseBuffer4(char* buffer, int length){
 //len is provided as number of bytes to encrypt
 int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_addr, int mode){
 	int i, j;
-	XReset_axi reset_axi;
-	if(XReset_axi_Initialize(&reset_axi, cipher->rst_device) != XST_SUCCESS){
-//		__android_log_print(ANDROID_LOG_DEBUG, "ndktest_jni", "\nCould not initialize axi reset device");
-		printf("\nCould not initialize axi reset device: %s", cipher->rst_device);
-		return -1;
-	}
 //	printf("\nResetting");
-	XReset_axi_SetIn_reset(&reset_axi, 1);
+	XReset_axi_SetIn_reset(cipher->reset_axi, 1);
 //	printf("\nReset asserted");
-	XReset_axi_SetIn_reset(&reset_axi, 0);
+	XReset_axi_SetIn_reset(cipher->reset_axi, 0);
 //	printf("\nReset deasserted");
-	XReset_axi_Release(&reset_axi);
-
-	XAes aes_device;
-
-	if(XAes_Initialize(&aes_device, cipher->device) != XST_SUCCESS){
-
-//	         __android_log_print(ANDROID_LOG_DEBUG, "ndktest_jni", "\nCould not initialize aes device");
-	         printf("\nCould not initialize aes device: %s", cipher->device);
-	         return -2;
-	}
-	
-	XAes_Key_in_v key_in;
-	XAes_Iv_v iv_in;
-	u32 key_array[4];
-	u32 iv_array[4];
-/*	for(i=0; i<4; i++){
-		u32 current = 0;
-	        for(j=0; j<4; j++){
-		        int key_part = cipher->key[15-i*4-j];
-	        	key_part = key_part << (8*j);
-		        current += key_part;
-		}
-		key_array[i] = current;
-	}*/
-	//FPGA should be able to perform key and iv reversal. Just fill up the struct
-	for(i=0; i<4; i++){
-		int curIndex = i*4;
-		u32 current_key = cipher->key[curIndex] + (cipher->key[curIndex+1]*0x100) + (cipher->key[curIndex+2]*0x10000) + (cipher->key[curIndex+3]*0x1000000);
-		u32 current_iv = cipher->iv[curIndex] + (cipher->iv[curIndex+1]*0x100) + (cipher->iv[curIndex+2]*0x10000) + (cipher->iv[curIndex+3]*0x1000000);
-		key_array[i] = current_key;
-		iv_array[i] = current_iv;
-	}
-
-
-	key_in.word_0 = key_array[0];
-	key_in.word_1 = key_array[1];
-	key_in.word_2 = key_array[2];
-	key_in.word_3 = key_array[3];
-
-	iv_in.word_0 = iv_array[0];
-	iv_in.word_1 = iv_array[1];
-	iv_in.word_2 = iv_array[2];
-	iv_in.word_3 = iv_array[3];
 
 	unsigned source = src_addr;
 	unsigned dest = dst_addr;
@@ -132,33 +83,33 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 
 //	printf("\nStarting AES");	
 
-	XAes_Start(&aes_device);
+	XAes_Start(cipher->aes_device);
 
-	XAes_Set_key_in_V(&aes_device, key_in);
+	XAes_Set_key_in_V(cipher->aes_device, cipher->key_in);
 
-	XAes_Set_sourceAddress(&aes_device, source);
+	XAes_Set_sourceAddress(cipher->aes_device, source);
 
-	XAes_Set_destinationAddress(&aes_device, dest);
+	XAes_Set_destinationAddress(cipher->aes_device, dest);
 
-	XAes_Set_numBytes(&aes_device, data_length);
+	XAes_Set_numBytes(cipher->aes_device, data_length);
 
-	XAes_Set_iv_V(&aes_device, iv_in);
+	XAes_Set_iv_V(cipher->aes_device, cipher->iv_in);
 
-	XAes_Set_mode(&aes_device, mode);
+	XAes_Set_mode(cipher->aes_device, mode);
 
 //	XAes_Set_length_r(&aes_device, data_length);
 
-	XAes_Set_sourceAddress_vld(&aes_device);
+	XAes_Set_sourceAddress_vld(cipher->aes_device);
 
-	XAes_Set_key_in_V_vld(&aes_device);
+	XAes_Set_key_in_V_vld(cipher->aes_device);
 
-	XAes_Set_destinationAddress_vld(&aes_device);
+	XAes_Set_destinationAddress_vld(cipher->aes_device);
 
-	XAes_Set_numBytes_vld(&aes_device);
+	XAes_Set_numBytes_vld(cipher->aes_device);
 
-	XAes_Set_iv_V_vld(&aes_device);
+	XAes_Set_iv_V_vld(cipher->aes_device);
 
-	XAes_Set_mode_vld(&aes_device);
+	XAes_Set_mode_vld(cipher->aes_device);
 
 //	XAes_Set_length_r_vld(&aes_device);
 
@@ -166,15 +117,13 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 
 	int count = 0;
 
-	while(XAes_IsDone(&aes_device) != 1){
+	while(XAes_IsDone(cipher->aes_device) != 1){
 		count++;
 	}
 	
 //	printf("\nIterations of while loop while waiting: %i", count);
 
-	int finished = XAes_Get_return(&aes_device);
-
-	XAes_Release(&aes_device);
+	int finished = XAes_Get_return(cipher->aes_device);
 
 //	printf("\nFinished");
 
@@ -274,7 +223,7 @@ int printIv(char* iv, int iv_length){
 //	printf("\nSizeof(int): %i, Sizeof(long): %i", sizeof(int), sizeof(long));
 }
 
-struct ctr_thread_data{
+/*struct ctr_thread_data{
 	int thread_id;
 	FPGA_AES *cipher;
 	char* input;
@@ -283,11 +232,11 @@ struct ctr_thread_data{
 	unsigned sourceAddress;
 	unsigned destAddress;
 	int mode;
-};
+};*/
 
 void* pthread_Ctr_hw_ex(void* ctr_thread_data_arg){
-	struct thread_data* = (struct ctr_thread_data*)(ctr_thread_data_arg);
-	Aes_encrypt_run(thread_data->cipher, thread_data->input, thread_data->len, thread_data->output, thread_data->sourceAddress, thread_data->destAddress, thread_data->mode);
+	ctr_thread_data* thread_data_arg = (struct ctr_thread_data*)(ctr_thread_data_arg);
+	Aes_encrypt_run(thread_data_arg->cipher, thread_data_arg->input, thread_data_arg->len, thread_data_arg->output, thread_data_arg->sourceAddress, thread_data_arg->destAddress, thread_data_arg->mode);
 
 }
 
@@ -310,7 +259,7 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 		//TODO: have the FPGA return the counter, so we don't have to
 		//calculate it
 		//Aes_encrypt_run(cipher, input numFullSegments, output, src, dest, 2);
-		struct str_thread_data aes_args;
+		ctr_thread_data aes_args;
 		aes_args.thread_id = 0;
 		aes_args.cipher = cipher;
 		aes_args.input = input;
@@ -348,7 +297,7 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 	if(numFullSegments > 0){
 		rc = pthread_join(aes_thread, &status);
 		if(rc){
-			printf("\nError encuntered when joining aes pthread. Return code is: %d", rc);
+			printf("\nError encountered when joining aes pthread. Return code is: %d", rc);
 			abort();
 		}
 	}
@@ -513,6 +462,7 @@ int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *outpu
 
 //create a new FPGA AES struct, with info on the shared memory region
 FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char* device_name, char* rst_device, char* iv, int iv_length){
+	int i;
 	FPGA_AES *cipher = NULL;
 	if((cipher=malloc(sizeof(FPGA_AES))) == NULL){
 		return NULL;
@@ -524,11 +474,93 @@ FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base
 	cipher->shared_mem_base = shared_mem_base;
 	cipher->iv = iv;
 	cipher->iv_length = iv_length;
+
+	XReset_axi *reset_axi = NULL;
+	reset_axi = malloc(sizeof(XReset_axi));
+
+	if(reset_axi == NULL){
+		printf("\nCould not malloc reset axi struct");
+		free(cipher);
+		return NULL;
+	}
+
+	if(XReset_axi_Initialize(reset_axi, cipher->rst_device) != XST_SUCCESS){
+//		__android_log_print(ANDROID_LOG_DEBUG, "ndktest_jni", "\nCould not initialize axi reset device");
+		printf("\nCould not initialize axi reset device: %s", cipher->rst_device);
+		free(cipher);
+		free(reset_axi);
+		return NULL;
+	}
+
+	XAes *aes_device = NULL;
+	aes_device = malloc(sizeof(XAes));
+
+	if(aes_device == NULL){
+		printf("\nCould not malloc aes device struct");
+		free(cipher);
+		XReset_axi_Release(reset_axi);
+		free(reset_axi);
+		return NULL;
+	}
+
+	if(XAes_Initialize(aes_device, cipher->device) != XST_SUCCESS){
+//	         __android_log_print(ANDROID_LOG_DEBUG, "ndktest_jni", "\nCould not initialize aes device");
+	         printf("\nCould not initialize aes device: %s", cipher->device);
+		 free(cipher);
+		 XReset_axi_Release(reset_axi);
+		 free(reset_axi);
+		 free(aes_device);
+	         return NULL;
+	}
+	cipher->reset_axi = reset_axi;
+	cipher->aes_device = aes_device;
+
+	XAes_Key_in_v key_in;
+	XAes_Iv_v iv_in;
+	u32 key_array[4];
+	u32 iv_array[4];
+/*	for(i=0; i<4; i++){
+		u32 current = 0;
+	        for(j=0; j<4; j++){
+		        int key_part = cipher->key[15-i*4-j];
+	        	key_part = key_part << (8*j);
+		        current += key_part;
+		}
+		key_array[i] = current;
+	}*/
+	//FPGA should be able to perform key and iv reversal. Just fill up the struct
+	for(i=0; i<4; i++){
+		int curIndex = i*4;
+		u32 current_key = cipher->key[curIndex] + (cipher->key[curIndex+1]*0x100) + (cipher->key[curIndex+2]*0x10000) + (cipher->key[curIndex+3]*0x1000000);
+		u32 current_iv = cipher->iv[curIndex] + (cipher->iv[curIndex+1]*0x100) + (cipher->iv[curIndex+2]*0x10000) + (cipher->iv[curIndex+3]*0x1000000);
+		key_array[i] = current_key;
+		iv_array[i] = current_iv;
+	}
+
+
+	key_in.word_0 = key_array[0];
+	key_in.word_1 = key_array[1];
+	key_in.word_2 = key_array[2];
+	key_in.word_3 = key_array[3];
+
+	iv_in.word_0 = iv_array[0];
+	iv_in.word_1 = iv_array[1];
+	iv_in.word_2 = iv_array[2];
+	iv_in.word_3 = iv_array[3];
+
+	cipher->key_in = key_in;
+	cipher->iv_in = iv_in;
+
 	return cipher;
 }
 
 
 //free an fpga aes struct
 void fpga_aes_free(FPGA_AES *cipher){
+	XReset_axi_Release(cipher->reset_axi);
+	XAes_Release(cipher->aes_device);
+	free(cipher->reset_axi);
+	free(cipher->aes_device);
 	free(cipher);
+	cipher = NULL;
 }
