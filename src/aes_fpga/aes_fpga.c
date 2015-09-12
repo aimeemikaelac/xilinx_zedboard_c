@@ -1,6 +1,7 @@
 #include "aes_fpga.h"
 #include "memmgr.h"
 #include <openssl/evp.h>
+#include <pthread.h>
 /*
 struct FPGA_AES{
 	const char* key;
@@ -239,6 +240,22 @@ int incrementIv(char* iv, int iv_length){
 	}
 }
 
+int addIv(char* iv, int iv_length, unsigned int num){
+	int i;
+	char carry =0;
+	for(i=0; i<iv_length; i++){
+		char low = iv[i];
+		char currentNum = (char)(num >> 8*i);
+		iv[i] = low + currentNum + carry;
+		if(iv[i] < low){
+			carry = 1;
+		} else{
+			carry = 0;
+		}
+	}
+	return 0;
+}
+
 int printIv(char* iv, int iv_length){
 	int i;
 	int current = 0;
@@ -257,17 +274,56 @@ int printIv(char* iv, int iv_length){
 //	printf("\nSizeof(int): %i, Sizeof(long): %i", sizeof(int), sizeof(long));
 }
 
+struct ctr_thread_data{
+	int thread_id;
+	FPGA_AES *cipher;
+	char* input;
+	size_t len;
+	char* output;
+	unsigned sourceAddress;
+	unsigned destAddress;
+	int mode;
+};
+
+void* pthread_Ctr_hw_ex(void* ctr_thread_data_arg){
+	struct thread_data* = (struct ctr_thread_data*)(ctr_thread_data_arg);
+	Aes_encrypt_run(thread_data->cipher, thread_data->input, thread_data->len, thread_data->output, thread_data->sourceAddress, thread_data->destAddress, thread_data->mode);
+
+}
+
 int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, unsigned src, unsigned dest){
-	int i, num;
+	int i, num, rc = 0;
 //	int numEncryptions = len/16 + (len%16 != 0);
 	int numBytesExtra = len%16;
 	int numFullSegments = len/16;
+	pthread_t aes_thread;
+	pthread_attr_t attr;
+	void* status;
+	//initialize pthread variables
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
+
 	//Encrypt all of the full 16 byte segments
 	//do not want to use the fpga if we do not have any full segments
 	if(numFullSegments > 0){
 		//TODO: have the FPGA return the counter, so we don't have to
 		//calculate it
-		Aes_encrypt_run(cipher, input, numFullSegments, output, src, dest, 2);
+		//Aes_encrypt_run(cipher, input numFullSegments, output, src, dest, 2);
+		struct str_thread_data aes_args;
+		aes_args.thread_id = 0;
+		aes_args.cipher = cipher;
+		aes_args.input = input;
+		aes_args.len = numFullSegments;
+		aes_args.output = output;
+		aes_args.sourceAddress = src;
+		aes_args.destAddress = dest;
+		aes_args.mode = 2;
+		rc = pthread_create(&aes_thread, &attr, pthread_Ctr_hw_ex, &aes_args);
+		if(rc){
+			printf("\nError creating aes pthread. Return code is %d", rc);
+			abort();
+		}
 	}
 	//Encrypt the last segment by calculating the counter
 	//TODO: farm this part to a thread
@@ -278,9 +334,10 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 			local_iv[i] = cipher->iv[i];
 		}
 		//calculate IV
-		for(i=0; i<numFullSegments; i++){
-			incrementIv(local_iv, 16);
-		}
+	//	for(i=0; i<numFullSegments; i++){
+	//		incrementIv(local_iv, 16);
+	//	}
+		addIv(temp, 16, numFullSegments);
 		//call openssl aes ctr and output to the correct place, reading from the 
 		//last segment that is not full
 		EVP_CIPHER_CTX ctx;
@@ -288,6 +345,14 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 		EVP_EncryptUpdate(&ctx, output+(numFullSegments*16), &num, input+(numFullSegments*16), numBytesExtra);
 		EVP_EncryptFinal_ex(&ctx, temp, &num);
 	}
+	if(numFullSegments > 0){
+		rc = pthread_join(aes_thread, &status);
+		if(rc){
+			printf("\nError encuntered when joining aes pthread. Return code is: %d", rc);
+			abort();
+		}
+	}
+
 	return 0;
 }
 
