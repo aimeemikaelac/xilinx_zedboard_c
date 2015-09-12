@@ -91,8 +91,8 @@ int main(int argc, char** argv){
 	fclose(openssl_fabric_log);
 	int source = SHARED_MEM_BASE;
 	int length = SHARED_MEM_LENGTH;
-//	shared_memory shared_system_mem = getUioMemoryArea("/dev/uio1",0x80000);//getSharedMemoryArea(source, length);//getUioMemoryArea("/dev/uio1", length);//=
-	shared_memory shared_system_mem = getSharedMemoryArea(SHARED_MEM_BASE, 0x80000);
+	shared_memory shared_system_mem = getUioMemoryArea("/dev/uio1",0x80000);//getSharedMemoryArea(source, length);//getUioMemoryArea("/dev/uio1", length);//=
+//	shared_memory shared_system_mem = getSharedMemoryArea(SHARED_MEM_BASE, 0x80000);
 	if(shared_system_mem == NULL){
 		printf("Error getting shared system memory pointer");
 		return -1;
@@ -163,7 +163,8 @@ int main(int argc, char** argv){
 			char openssl = encrypted_data_openssl[i*16 + j];
 			int2bin(openssl, bin_buffer, 32);
 //			printf("%02x",openssl);
-			char fabric = ((char*)shared_system_mem->ptr)[i*16 + (15- j) + destOffset];
+			//char fabric = ((char*)shared_system_mem->ptr)[i*16 + (15- j) + destOffset];
+			char fabric = ((char*)shared_system_mem->ptr)[i*16 + j  + destOffset];
 //			printf("\n%02x\t\t|\t%02x", fabric, openssl);
 			if(openssl != fabric){
 				printf("\nChar at index %i is not encrypted correctly. It is %02x in openssl, %02x in fabric", i*16+j, openssl, fabric);

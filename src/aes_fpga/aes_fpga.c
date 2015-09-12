@@ -127,7 +127,7 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 	unsigned data_length = (len/16)*16;
 //	unsigned data_length = len/16;
 	
-	printf("\nNumber of FPGA iterations: %i", data_length);
+//	printf("\nNumber of FPGA iterations: %i", data_length);
 
 //	printf("\nStarting AES");	
 
@@ -433,7 +433,7 @@ int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t
 //assume that the input is in the correct memory region now
 //byte reverse the input pointer, call fpga and reverse output
 int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *output, unsigned src, unsigned dest, int mode){
-	byteReverseBuffer16((char*)input, len);
+	//byteReverseBuffer16((char*)input, len);
 //	byteReverseBuffer4((char*)input, len);
 //	byteReverseBuffer8((char*)input, len);
 
