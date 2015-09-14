@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <openssl/evp.h>
 #include "user_mmap_driver.h"
 #include "xaes.h"
 #include "xreset_axi.h"
@@ -21,9 +22,15 @@ struct FPGA_AES{
 	XAes* aes_device;
 	XAes_Key_in_v key_in;
 	XAes_Iv_v iv_in;
+	int mode;
+	EVP_CIPHER_CTX *ctx;
+	unsigned bytesProcessed;
+	unsigned char buf[16]; //store original pt for partial encryptions
+	unsigned currentBlockStart;
+	int num;
 };
 
-struct ctr_thread_data{
+struct ctr_hw_thread_data{
 	int thread_id;
 	struct FPGA_AES *cipher;
 	char* input;
@@ -34,9 +41,20 @@ struct ctr_thread_data{
 	int mode;
 };
 
+struct ctr_sw_thread_data{
+	int thread_id;
+	char* output;
+	char* input;
+	int offset;
+	int numBytes;
+	int increment;
+	struct FPGA_AES *cipher;
+};
+
 
 typedef struct FPGA_AES FPGA_AES;
-typedef struct ctr_thread_data ctr_thread_data;
+typedef struct ctr_hw_thread_data ctr_hw_thread_data;
+typedef struct ctr_sw_thread_data ctr_sw_thread_data;
 
 void byteReverseBuffer8(char* buffer, int length);
 
@@ -61,7 +79,7 @@ int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *outpu
 
 int Aes_encrypt_ctr_run(FPGA_AES *cipher, char *input, size_t len, char* output, unsigned src, unsigned dest);
 
-FPGA_AES *fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char *device_name, char *rst_device, char* iv, int iv_length);
+FPGA_AES *fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char *device_name, char *rst_device, char* iv, int iv_length, int mode);
 
 void fpga_aes_free(FPGA_AES *cipher);
 
