@@ -372,13 +372,13 @@ int main(int argc, char** argv){
 
 
 
-	printf("\nBeginning increment by 2 CTR test for OpenSSL");
+	printf("\nBeginning increment by 5 CTR test for OpenSSL");
 	printf("\n-----------------------------------------------");
 
 	begin=clock();
 	
 	EVP_EncryptInit(&ctx, EVP_aes_128_ctr(), key, default_iv);
-	EVP_EncryptUpdate(&ctx, encrypted_dest, &num, data_pointer, (data_length-1)*16+2);
+	EVP_EncryptUpdate(&ctx, encrypted_dest, &num, data_pointer, (data_length-1)*16+5);
 //	printf("\nCurrent evp partial block: 0x");
 //	for(j=0; j<16; j++){
 //		printf("%02x", ctx.buf[j]);
@@ -397,7 +397,7 @@ int main(int argc, char** argv){
 	seconds =(double)(end - begin)/CLOCKS_PER_SEC;
 	printf ("\nIt took %f clicks (%f seconds) in openssl.\n",ticks,seconds);
 
-	printf("\nBeginning increment by 2 CTR test for fabric");
+	printf("\nBeginning increment by 5 CTR test for fabric");
 	printf("\n-----------------------------------------------");
 
 	cipher = NULL;
@@ -409,7 +409,7 @@ int main(int argc, char** argv){
 	begin = clock();
 //	for(i=0; i<data_length*16; i++){
 //		Aes_encrypt_run(cipher, sourceData+i, 1, destData+i, SHARED_MEM_BASE+i, SHARED_MEM_BASE + destOffset+i, 0);
-	Aes_encrypt_ctr_hw(cipher, sourceData, (data_length-1)*16+2, destData, source, source + destOffset);
+	Aes_encrypt_ctr_hw(cipher, sourceData, (data_length-1)*16+5, destData, source, source + destOffset);
 //	}
 
 	end=clock();
@@ -417,7 +417,7 @@ int main(int argc, char** argv){
 	ticks = (double)(end - begin);
 	seconds = (double)(end - begin)/CLOCKS_PER_SEC;
 	printf ("\nIt took %f clicks (%f seconds) in fabric for %i encryptions.\n",ticks,seconds, data_length);
-	checkFunction(encrypted_data_openssl, shared_system_mem, (data_length-1)*16+2, destOffset, 5);
+	checkFunction(encrypted_data_openssl, shared_system_mem, (data_length-1)*16+5, destOffset, 5);
 
 
 
