@@ -310,13 +310,13 @@ unsigned lookupBufferPhysicalAddress(void* ap){
 	//get the base address from the uio device
 	unsigned baseAddress = base_address;
 	//lookup the header for the block
-    	block = ((mem_header_t*) ap) - 1;
+    //	block = ((mem_header_t*) ap) - 1;
 	printf("\nPointer address being looked up: %p", ap);
-	//base_ptr = (unsigned)pool;
-	//buffer_ptr = (unsigned)ap;
+	base_ptr = (unsigned)pool;
+	buffer_ptr = (unsigned)ap;
 	//calculate the address using the header's offset
-//	offset = buffer_ptr - base_ptr;
-	offset = block->s.offset;
+	offset = buffer_ptr - base_ptr;
+//	offset = block->s.offset;
 
 	return baseAddress + offset;
 }

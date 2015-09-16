@@ -75,6 +75,8 @@ int Aes_encrypt_cbc_memmgr(FPGA_AES *cipher, char* iv, char* output, const char 
 //int Aes_encrypt_memmgr(FPGA_AES *cipher, const char *input, size_t len, char *output);
 int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t len);
 
+int Aes_encrypt_memmgr_with_iv(FPGA_AES *cipher, char* output, unsigned outputLen, char *input, unsigned inputLen);
+
 int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *output, unsigned src, unsigned dest, int mode);
 
 int Aes_encrypt_ctr_run(FPGA_AES *cipher, char *input, size_t len, char* output, unsigned src, unsigned dest);

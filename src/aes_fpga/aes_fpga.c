@@ -396,7 +396,7 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 	//check if we are still in the valid area
 	//or if we need to scroll forward to fill the last block
 	if(cipher->num > 0 && (src < cipher->currentBlockStart + 16 && src > cipher->currentBlockStart || cipher->currentBlockStart + cipher->num + len == src)){
-		printf("\nScrolling");
+//		printf("\nScrolling");
 		//if for some reason we are not at the place we left off,
 		//just put us in the correct place
 		if(src != cipher->currentBlockStart + cipher->num){
@@ -408,7 +408,7 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 //		printf("\nNum is now: %i", cipher->num);
 		
 		while(scrollIndex < len && cipher->num<16){
-			printf("\nReplacing %02x with %02x", output[scrollIndex], cipher->buf[cipher->num]);
+//			printf("\nReplacing %02x with %02x", output[scrollIndex], cipher->buf[cipher->num]);
 			output[scrollIndex] = cipher->buf[cipher->num];
 			scrollIndex++;
 			cipher->num++;
@@ -430,7 +430,7 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 //		printf("\nScrolled by: %i", scrollIndex);
 		//if we hve hit the length limit, then return
 		if(scrollIndex >= len){
-			return 0;
+			return len;
 		}
 	}
 	//we are not in the correct place. need to reset num
@@ -442,7 +442,7 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 		cipher->num = 0;
 		cipher->currentBlockStart = src;
 	}
-	printf("\nCurrent cipher block start: 0x%08x", cipher->currentBlockStart);
+//	printf("\nCurrent cipher block start: 0x%08x", cipher->currentBlockStart);
 //	printf("\nOriginal output mid: 0x");
 //	for(i=0; i<16; i++){
 //		printf("%02x", (output-(src-cipher->currentBlockStart))[i]);
@@ -461,10 +461,10 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 	//if there are numBytes extra, grab the bytes already in the final segment
 	//and store them
 	if(numBytesExtra > 0){
-		printf("\nStoring bytes: 0x");
+//		printf("\nStoring bytes: 0x");
 		for(i=0; i<16; i++){
 			storage[i] = currentOutput[offset+i];
-			printf("%02x", storage[i]);
+//			printf("%02x", storage[i]);
 		}
 	}
 
@@ -473,9 +473,9 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 //	printf("\nScroll index: %i", scrollIndex);
 //	printf("\nNum bytes extra: %i", numBytesExtra);
 //	printf("\nNum full segments: %i", numFullSegments);
-	printf("\nCurrent src: 0x%08x, dest: 0x%08x", currentSrc, currentDest);
+//	printf("\nCurrent src: 0x%08x, dest: 0x%08x", currentSrc, currentDest);
 //	printf("\nnum segments total: %i", numSegmentsTotal);
-	printf("\nOffset: %i", offset);
+//	printf("\nOffset: %i", offset);
 //	printf("\nOriginal input: %p, current: %p", input, currentInput);
 //	printf("\nOriginal output: %p, current: %p", output, currentOutput);
 //	printf("\nCurrent FPGA input: 0x");
@@ -487,26 +487,26 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 	
 	Aes_encrypt_run(cipher, currentInput, numSegmentsTotal*16, currentOutput, currentSrc, currentDest, 2);
 	addIvOpenssl(cipher->iv, 16, numSegmentsTotal);
-		printf("\nOriginal output 1st full segment: 0x");
-		for(i=0; i<16; i++){
-			printf("%02x", currentOutput[i]);
-		}
+//		printf("\nOriginal output 1st full segment: 0x");
+//		for(i=0; i<16; i++){
+//			printf("%02x", currentOutput[i]);
+//		}
 
 	//if there numBytes extra after scrolling, store the encrypted output into the buffer
 	//put the original contents of the output back for what was not encrypted
 	if(numBytesExtra > 0){
-		printf("\nExtra bytes: %i", numBytesExtra);
-		printf("\nCurrent cipher block start: 0x%08x", cipher->currentBlockStart);
+//		printf("\nExtra bytes: %i", numBytesExtra);
+//		printf("\nCurrent cipher block start: 0x%08x", cipher->currentBlockStart);
 		cipher->currentBlockStart = newBlockStart;//currentSrc;//+offset;
-		printf("\nNew cipher block start: 0x%08x", cipher->currentBlockStart);
-		printf("\nOriginal output: 0x");
-		for(i=0; i<16; i++){
-			printf("%02x", currentOutput[offset+i]);
-		}
+//		printf("\nNew cipher block start: 0x%08x", cipher->currentBlockStart);
+//		printf("\nOriginal output: 0x");
+//		for(i=0; i<16; i++){
+//			printf("%02x", currentOutput[offset+i]);
+//		}
 		for(i=0; i<16; i++){
 			cipher->buf[i] = currentOutput[offset+i];
 			if(i >= numBytesExtra){
-				printf("\nExtra bytes. Restoring %02x from storage. Overwriting %02x", storage[i], currentOutput[offset+i]);
+//				printf("\nExtra bytes. Restoring %02x from storage. Overwriting %02x", storage[i], currentOutput[offset+i]);
 				currentOutput[offset+i] = storage[i];
 			}
 		}
@@ -578,7 +578,7 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 //	}
 
 
-	return 0;
+	return len;
 }
 
 
@@ -675,6 +675,13 @@ int Aes_encrypt_memcpy(FPGA_AES *cipher, char* output, const char *input, size_t
 	return 0;
 }
 
+int Aes_encrypt_memmgr_with_iv(FPGA_AES *cipher, char* output, unsigned outputLen, char* input, unsigned inputLen){
+	assert(outputLen >= inputLen + cipher->iv_length);
+	memcpy(output, cipher->iv, cipher->iv_length);
+	int bytesEncrypted = Aes_encrypt_memmgr(cipher, output + cipher->iv_length, input, inputLen);
+	return bytesEncrypted > 0? bytesEncrypted + cipher->iv_length : bytesEncrypted;
+}
+
 int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t len){
 	void* in;
 	void* out;
@@ -687,9 +694,9 @@ int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t
 	memmgr_assert((void*)input);
 	memmgr_assert((void*)output);
 	src = lookupBufferPhysicalAddress((void*)input);
-	printf("\nLookup of source address: %08x", src);
+	printf("\nLookup of source address: 0x%08x", src);
 	dest = lookupBufferPhysicalAddress((void*)output);
-	printf("\nLookup of destination address: %08x", dest);
+	printf("\nLookup of destination address: 0x%08x", dest);
 
 //	iterLen = len/16;
 	//byte reverse the input	
@@ -714,10 +721,10 @@ int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t
 //	}
 //	byteReverseBuffer16(output, len);
 
-	Aes_encrypt_run(cipher, input, len, output, src, dest, 0);
+	int bytesWritten = Aes_encrypt_ctr_hw(cipher, (char*)input, len, output, src, dest);
 
 	//TODO: may need to byte-reverse the input again
-	return 0;
+	return bytesWritten;
 }
 
 //assume that the input is in the correct memory region now
