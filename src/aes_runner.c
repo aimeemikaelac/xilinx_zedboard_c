@@ -43,7 +43,7 @@ char *int2bin(int a, char *buffer, int buf_size) {
 	return buffer;
 }
 
-void checkFunction(char* encrypted_data_openssl, shared_memory shared_system_mem, int bytesToCheck, unsigned destOffset, unsigned hardwareOffset){
+int checkFunction(char* encrypted_data_openssl, shared_memory shared_system_mem, int bytesToCheck, unsigned destOffset, unsigned hardwareOffset){
 	int i, j;
 	clock_t ticks;
 	printf("\nWaiting for checking...");
@@ -81,7 +81,7 @@ void checkFunction(char* encrypted_data_openssl, shared_memory shared_system_mem
 	ticks = clock() - ticks;
 	printf ("\nIt took %f clicks (%f seconds) to check.\n",(double)ticks,((double)ticks)/CLOCKS_PER_SEC);
 	printf("\nNum incorrect: %i\n", incorrectCount);
-
+	return incorrectCount;
 }
 
 int main(int argc, char** argv){
@@ -121,6 +121,8 @@ int main(int argc, char** argv){
 	EVP_EncryptInit(&ctx, EVP_aes_128_ecb(), key, default_iv);
 
 	int num;
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	printf("\nStart testing ECB mode for OpenSSL and hardware");
 	printf("\n--------------------------------------------------------------------");
@@ -198,6 +200,8 @@ int main(int argc, char** argv){
 //		}
 //		printf(" ");
 //	}
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	printf("\nTesting CTR mode in OpenSSL and hardware");
 	printf("\n-----------------------------------------------------------");
 
@@ -306,6 +310,8 @@ int main(int argc, char** argv){
 	checkFunction(encrypted_data_openssl, shared_system_mem, data_length, destOffset);
 */
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	printf("\nBeginning increment by 1 CTR test for OpenSSL");
 	printf("\n-----------------------------------------------");
 
@@ -371,6 +377,8 @@ int main(int argc, char** argv){
 	checkFunction(encrypted_data_openssl, shared_system_mem, data_length*16, destOffset, 5);
 
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	printf("\nBeginning increment by 5 CTR test for OpenSSL");
 	printf("\n-----------------------------------------------");
@@ -419,7 +427,88 @@ int main(int argc, char** argv){
 	printf ("\nIt took %f clicks (%f seconds) in fabric for %i encryptions.\n",ticks,seconds, data_length);
 	checkFunction(encrypted_data_openssl, shared_system_mem, (data_length-1)*16+5, destOffset, 5);
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	printf("\nWeird Tor increment by all i's test");
+	printf("\n--------------------------------------------------------------------------------------------------------------------------------");
+	int k;
+	for(k=1; k<32; k++){
+		//reset outputs
+		for(i=0; i<data_length*16; i++){
+			encrypted_dest[i] = 0;
+			((char*)shared_system_mem->ptr)[i+destOffset] = 0;
+		}
+		printf("\nOriginal inputs: ");
+		for(i=0; i<data_length*16; i++){
+			if(i%16==0){
+				printf(" 0x");
+			}
+			printf("%02x", ((char*)shared_system_mem->ptr)[i]);
+		//	printf("%02x", encrypted_dest[i]);
+		}
+		printf("\nOriginal outputs: ");
+		for(i=0; i+k<data_length*16; i++){
+			if(i%16==0){
+				printf(" 0x");
+			}
+		//	printf("%02x", ((char*)shared_system_mem->ptr)[i+destOffset]);
+			printf("%02x", encrypted_dest[i]);
+		}
+		printf("\nBeginning OpenSSL test for incrementing by %i", k);
+		printf("\n----------------------------------------------------");
+		begin = clock();
+		EVP_EncryptInit(&ctx, EVP_aes_128_ctr(), key, default_iv);
+		int numToCheck = 0;
+		for(i=0; i+k<data_length*16; i+=k){
+			printf("\nCurrent openssl offset: %i", i);
+			EVP_EncryptUpdate(&ctx, encrypted_dest+i, &num, data_pointer+i, k);
+			numToCheck += k;
+		}
+	
+		EVP_EncryptFinal_ex(&ctx, encrypted_dest+16*data_length, &num);
+	
+		end=clock();
+	
+	printf("\nOpenSSL ctr first 32 bytes of output: 0x");
+	for(i=0; i<32; i++){
+		if(i==16){
+			printf(" 0x");
+		}
+		printf("%02x", encrypted_dest[i]);
+	}
+		ticks = (double)(end - begin);
+		seconds =(double)(end - begin)/CLOCKS_PER_SEC;
+		printf ("\nIt took %f clicks (%f seconds) in openssl.\n",ticks,seconds);
+		
+	
+		cipher = NULL;
+		if((cipher = fpga_aes_new(key, 16, SHARED_MEM_BASE, "aes-qam", "axi-reset", default_iv, 16, 2)) == NULL){
+			printf("\nCould not allocated cipher");
+			return -1;
+		}
 
+		printf("\nBeginning fabric test for incrementing by %i", k);
+	
+		begin = clock();
+		for(i=0; i<data_length*16; i+=k){
+			Aes_encrypt_ctr_hw(cipher, sourceData+i, k, destData+i, source+i, source + destOffset + i);
+		}
+	
+		end=clock();
+	
+		ticks = (double)(end - begin);
+		seconds = (double)(end - begin)/CLOCKS_PER_SEC;
+		printf ("\nIt took %f clicks (%f seconds) in fabric for %i encryptions.\n",ticks,seconds, data_length);
+		printf("\nDatalength * 16: %i", data_length*16);
+		printf("\nK: %i, i: %i", k, i);
+//		int numToCheck = ((data_length*16)/k)*k;
+		printf("\nNum to check: %i", numToCheck);
+		int curIncorrect = checkFunction(encrypted_data_openssl, shared_system_mem, numToCheck, destOffset, 5);
+		if(curIncorrect > 0){
+			printf("\nFailed in increment by i test for: %i increment value. Halting further tests\n", k);
+			break;
+		}
+	}
 
 
 //	printf("\n");

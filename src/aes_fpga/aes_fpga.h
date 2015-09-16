@@ -79,6 +79,8 @@ int Aes_encrypt_run(FPGA_AES *cipher, const char *input, size_t len, char *outpu
 
 int Aes_encrypt_ctr_run(FPGA_AES *cipher, char *input, size_t len, char* output, unsigned src, unsigned dest);
 
+int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char* output, unsigned src, unsigned dest);
+
 FPGA_AES *fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char *device_name, char *rst_device, char* iv, int iv_length, int mode);
 
 void fpga_aes_free(FPGA_AES *cipher);
