@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "memmgr.h"
+#include "user_mmap_driver.h"
 
 typedef ulong Align;
 
@@ -75,6 +76,10 @@ static unsigned base_address = 0;
 
 static ulong pool_free_pos = 0;
 
+static session = 0;
+
+static shared_memory shared_mem = NULL;
+
 
 //length should be entire length of the shared memory region for the 
 //memory allocation to work right
@@ -89,10 +94,32 @@ void memmgr_init(void* buffer, unsigned length, unsigned baseAddress)
     pool = (byte*)(buffer);
     POOL_SIZE = length;
     base_address = baseAddress;
+    session = 1;
 
-    printf("\nPool pointer: %p", pool);
+//    printf("\nPool pointer: %p", pool);
+
 }
 
+void memmgr_init_check(void* buffer, unsigned length, unsigned baseAddress){
+	if(session == 0	){
+		memmgr_init(buffer, length, baseAddress);
+	}
+}
+
+int memmgr_init_check_shared_mem(unsigned length, char* uioDevice, unsigned baseAddress){
+	if(shared_mem == NULL){
+		shared_mem = getUioMemoryArea(uioDevice, length);
+		if(shared_mem == NULL){
+			printf("\nError getting UIO shared memory area");
+			return -1;
+		}
+	}
+	//for now, create a new session if one does not exist. 
+	//assume that a session does not exist
+	//TODO: catch if a session already exists and take ? some action?
+	memmgr_init_check((void*)(shared_mem->ptr), length, baseAddress);
+	return 0;
+}
 
 void memmgr_print_stats()
 {
@@ -257,6 +284,9 @@ void memmgr_free(void* ap)
 {
     mem_header_t* block;
     mem_header_t* p;
+    if(ap == NULL){
+	    return;
+    }
     // acquire pointer to block header
     block = ((mem_header_t*) ap) - 1;
 
@@ -311,7 +341,7 @@ unsigned lookupBufferPhysicalAddress(void* ap){
 	unsigned baseAddress = base_address;
 	//lookup the header for the block
     //	block = ((mem_header_t*) ap) - 1;
-	printf("\nPointer address being looked up: %p", ap);
+//	printf("\nPointer address being looked up: %p", ap);
 	base_ptr = (unsigned)pool;
 	buffer_ptr = (unsigned)ap;
 	//calculate the address using the header's offset

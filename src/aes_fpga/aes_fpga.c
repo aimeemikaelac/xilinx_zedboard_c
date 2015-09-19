@@ -694,9 +694,9 @@ int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t
 	memmgr_assert((void*)input);
 	memmgr_assert((void*)output);
 	src = lookupBufferPhysicalAddress((void*)input);
-	printf("\nLookup of source address: 0x%08x", src);
+//	printf("\nLookup of source address: 0x%08x", src);
 	dest = lookupBufferPhysicalAddress((void*)output);
-	printf("\nLookup of destination address: 0x%08x", dest);
+//	printf("\nLookup of destination address: 0x%08x", dest);
 
 //	iterLen = len/16;
 	//byte reverse the input	

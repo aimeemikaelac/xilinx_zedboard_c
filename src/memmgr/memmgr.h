@@ -74,7 +74,7 @@ typedef unsigned long ulong;
 
 
 // Initialize the memory manager. This function should be called
-// only once in the beginning of the program.
+// only once in the beginning of the program. Creates a new session
 //
 void memmgr_init(void* buffer, unsigned length, unsigned baseAddress);
 
@@ -98,6 +98,14 @@ void memmgr_assert(void* ap);
 //Lookup the physical address of a buffer
 //
 unsigned lookupBufferPhysicalAddress(void* ap);
+
+//initialize the memmgr if there is no exisiting session
+//
+void memmgr_init_check(void* buffer, unsigned length, unsigned baseAddredd);
+
+//initialize the memmgr to use a uio buffer, if a session does not already exist
+//
+int memmgr_init_check_shared_mem(unsigned length, char* uioDevice, unsigned baseAddress);
 
 
 #endif // MEMMGR_H
