@@ -85,6 +85,7 @@ static shared_memory shared_mem = NULL;
 //memory allocation to work right
 void memmgr_init(void* buffer, unsigned length, unsigned baseAddress)
 {
+    printf("\nIn memmgr main init()");
     base.s.next = 0;
     base.s.size = 0;
     base.s.nonce = nonce;
@@ -101,13 +102,16 @@ void memmgr_init(void* buffer, unsigned length, unsigned baseAddress)
 }
 
 void memmgr_init_check(void* buffer, unsigned length, unsigned baseAddress){
+	printf("\nIn memmgr check()");
 	if(session == 0	){
 		memmgr_init(buffer, length, baseAddress);
 	}
 }
 
 int memmgr_init_check_shared_mem(unsigned length, char* uioDevice, unsigned baseAddress){
+	printf("\nAm in memmmgr check shared()");
 	if(shared_mem == NULL){
+		printf("\nAccessing new uio memory region");
 		shared_mem = getUioMemoryArea(uioDevice, length);
 		if(shared_mem == NULL){
 			printf("\nError getting UIO shared memory area");
@@ -210,6 +214,16 @@ void* memmgr_alloc(ulong nbytes)
     mem_header_t* p;
     mem_header_t* prevp;
 
+    printf("\nmemmgr attempting to allocate: %lu bytes", nbytes);
+
+    if(pool == NULL){
+	    printf("\nPool is null. cannot allocate in memmgr");
+	    return NULL;
+    } else if(session == 0){
+	    printf("\nNot in a session. Will not allocate in memmgr");
+	    return NULL;
+    }
+
 	//printf("\nmemmgr-------------------------------------------\n");
     // Calculate how many quantas are required: we need enough to house all
     // the requested bytes, plus the header. The -1 and +1 are there to make sure
@@ -252,6 +266,7 @@ void* memmgr_alloc(ulong nbytes)
 	    if(nbytes > largest_allocation){
 		    largest_allocation = nbytes;
 	    }
+	    printf("\nmemmgr  allocated: %lu bytes", nbytes);
             return (void*) (p + 1);
         }
         // Reached end of free list ?
@@ -358,6 +373,18 @@ void memmgr_assert(void* ap){
     //Need to loop to the base pointer, in case a pointer is tested
     //that is offset from the base of its allocation
     // acquire pointer to block header
+    //
+    //should actually only need to check that the input pointer is
+    //betweent he base pointer and the base pointer + the length
+    unsigned basePointer = (unsigned)pool;
+    unsigned poolEnd = basePointer + POOL_SIZE;
+    unsigned currentPointer = (unsigned)ap;
+    if(currentPointer > poolEnd || currentPointer < basePointer){
+	    printf("\nMEMMGR------------------------------");
+	    printf("\nPointer is not in the correct memory area. Aborting");
+	    abort();
+    }
+
     for(i=0; i<largest_allocation; i++){
 	    block = ((mem_header_t*) ap) - i;
 	    //check if the nonces in the struct are correct
@@ -371,4 +398,33 @@ void memmgr_assert(void* ap){
     printf("\nMEMMGR-------------------------------");
     printf("\nCould not find header with valid nonce. Aborting.");
     abort();
+}
+
+void memmgr_destroy(){
+	/*
+	 * Need to clear everything set by the init() function
+    base.s.next = 0;
+    base.s.size = 0;
+    base.s.nonce = nonce;
+    base.s.nonce2 = nonce2;
+    freep = 0;
+    pool_free_pos = 0;
+    pool = (byte*)(buffer);
+    POOL_SIZE = length;
+    base_address = baseAddress;
+    session = 1;
+    */
+	printf("\nAm in memmgr destroy()");
+	session = 0;
+	if(shared_mem != NULL){
+		cleanupSharedMemoryPointer(shared_mem);
+		shared_mem = NULL;
+	}
+	POOL_SIZE = 0;
+	pool = NULL;
+	base.s.next = 0;
+	base.s.size = 0;
+	freep = 0;
+	pool_free_pos = 0;
+	base_address = 0;
 }

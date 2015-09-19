@@ -107,5 +107,10 @@ void memmgr_init_check(void* buffer, unsigned length, unsigned baseAddredd);
 //
 int memmgr_init_check_shared_mem(unsigned length, char* uioDevice, unsigned baseAddress);
 
+//will kill the memmgr, close the session, and un-map the shared memory
+//if is not null
+//
+void memmgr_destroy();
+
 
 #endif // MEMMGR_H
