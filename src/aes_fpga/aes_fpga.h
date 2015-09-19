@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <openssl/evp.h>
+//#include <openssl/evp.h>
 #include "user_mmap_driver.h"
 #include "xaes.h"
 #include "xreset_axi.h"
@@ -23,7 +23,6 @@ struct FPGA_AES{
 	XAes_Key_in_v key_in;
 	XAes_Iv_v iv_in;
 	int mode;
-	EVP_CIPHER_CTX *ctx;
 	unsigned bytesProcessed;
 	unsigned char buf[16]; //store original pt for partial encryptions
 	unsigned currentBlockStart;
@@ -84,6 +83,8 @@ int Aes_encrypt_ctr_run(FPGA_AES *cipher, char *input, size_t len, char* output,
 int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char* output, unsigned src, unsigned dest);
 
 FPGA_AES *fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base, char *device_name, char *rst_device, char* iv, int iv_length, int mode);
+
+FPGA_AES *fpga_aes_new_short_16(char *key, char* iv, int mode);
 
 void fpga_aes_free(FPGA_AES *cipher);
 

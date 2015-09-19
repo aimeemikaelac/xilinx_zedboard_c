@@ -1,5 +1,6 @@
 #include "aes_fpga.h"
 #include "memmgr.h"
+#include "user_mmap_driver.h"
 //#include <openssl/evp.h>
 #include <pthread.h>
 /*
@@ -308,7 +309,7 @@ void* pthread_Ctr_hw_ex(void* ctr_thread_data_arg){
 	pthread_exit(NULL);
 
 }
-
+/*
 void* pthread_Ctr_sw_ex(void* ctr_thread_data_arg){
 	ctr_sw_thread_data* thread_data_arg = (ctr_sw_thread_data*)(ctr_thread_data_arg);
 	char incrementVal[] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}; 
@@ -352,7 +353,7 @@ void* pthread_Ctr_sw_ex(void* ctr_thread_data_arg){
 	//printIv(thread_data_arg->cipher->iv, 16);
 //	EVP_EncryptFinal_ex(thread_data_arg->cipher->ctx, temp, &num);
 	pthread_exit(NULL);
-}
+}*/
 
 
 int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, unsigned src, unsigned dest){
@@ -810,7 +811,7 @@ FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base
 	}
 	cipher->reset_axi = reset_axi;
 	cipher->aes_device = aes_device;
-
+/*
 	EVP_CIPHER_CTX *ctx = NULL;
 	ctx = malloc(sizeof(EVP_CIPHER_CTX));
 	if(ctx == NULL){
@@ -823,6 +824,7 @@ FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base
 		free(iv_local);
 		return NULL;
 	}
+	
 	if(mode == 2){
 		EVP_EncryptInit(ctx, EVP_aes_128_ctr(), key, iv);
 	} else if(mode == 1){
@@ -831,7 +833,7 @@ FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base
 		EVP_EncryptInit(ctx, EVP_aes_128_ecb(), key, iv);
 	}
 
-	cipher->ctx = ctx;
+	cipher->ctx = ctx;*/
 
 	cipher->mode = mode;
 
@@ -878,13 +880,17 @@ FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base
 	return cipher;
 }
 
+FPGA_AES* fpga_aes_new_short_16(char* key, char* iv, int mode){
+	return fpga_aes_new(key, 16, BASE_ADDRESS, AES_DEVICE, RST_DEVICE, iv, 16, 2);
+}
+
 
 //free an fpga aes struct
 void fpga_aes_free(FPGA_AES *cipher){
 	XReset_axi_Release(cipher->reset_axi);
 	XAes_Release(cipher->aes_device);
 	free(cipher->iv);
-	free(cipher->ctx);
+//	free(cipher->ctx);
 	free(cipher->reset_axi);
 	free(cipher->aes_device);
 	free(cipher);

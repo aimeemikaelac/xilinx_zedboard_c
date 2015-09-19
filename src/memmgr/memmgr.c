@@ -85,7 +85,7 @@ static shared_memory shared_mem = NULL;
 //memory allocation to work right
 void memmgr_init(void* buffer, unsigned length, unsigned baseAddress)
 {
-    printf("\nIn memmgr main init()");
+//    printf("\nIn memmgr main init()");
     base.s.next = 0;
     base.s.size = 0;
     base.s.nonce = nonce;
@@ -102,16 +102,16 @@ void memmgr_init(void* buffer, unsigned length, unsigned baseAddress)
 }
 
 void memmgr_init_check(void* buffer, unsigned length, unsigned baseAddress){
-	printf("\nIn memmgr check()");
+//	printf("\nIn memmgr check()");
 	if(session == 0	){
 		memmgr_init(buffer, length, baseAddress);
 	}
 }
 
 int memmgr_init_check_shared_mem(unsigned length, char* uioDevice, unsigned baseAddress){
-	printf("\nAm in memmmgr check shared()");
+//	printf("\nAm in memmmgr check shared()");
 	if(shared_mem == NULL){
-		printf("\nAccessing new uio memory region");
+//		printf("\nAccessing new uio memory region");
 		shared_mem = getUioMemoryArea(uioDevice, length);
 		if(shared_mem == NULL){
 			printf("\nError getting UIO shared memory area");
@@ -214,7 +214,7 @@ void* memmgr_alloc(ulong nbytes)
     mem_header_t* p;
     mem_header_t* prevp;
 
-    printf("\nmemmgr attempting to allocate: %lu bytes", nbytes);
+   // printf("\nmemmgr attempting to allocate: %lu bytes", nbytes);
 
     if(pool == NULL){
 	    printf("\nPool is null. cannot allocate in memmgr");
@@ -266,7 +266,7 @@ void* memmgr_alloc(ulong nbytes)
 	    if(nbytes > largest_allocation){
 		    largest_allocation = nbytes;
 	    }
-	    printf("\nmemmgr  allocated: %lu bytes", nbytes);
+//	    printf("\nmemmgr  allocated: %lu bytes", nbytes);
             return (void*) (p + 1);
         }
         // Reached end of free list ?
