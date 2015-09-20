@@ -29,7 +29,7 @@ OBJECTS		:= $(addprefix $(OUT_DIR)/,$(notdir $(SOURCES:.c=.o)))
 #OBJECTS		:= $(patsubt %/%%/%,$(OUT_DIR)/%,$(_OBJS))
 
 
-CC		:= gcc 
+CC		:= gcc
 CPP		:= g++ -fpic -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast
 AR		:= ar rcs
 
