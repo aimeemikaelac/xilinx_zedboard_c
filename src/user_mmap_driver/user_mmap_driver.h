@@ -16,6 +16,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+//define the variables that will likely be true for calls to the fpga functions
+#define AES_DEVICE "aes-qam"
+#define UIO_DEVICE "/dev/uio1"
+#define RST_DEVICE "axi-reset"
+#define SHARED_SIZE 0x800000
+//base address of /dev/uio1
+#define BASE_ADDRESS 0x1f410000
+
 #ifdef __cplusplus
 extern "C" {
 #endif

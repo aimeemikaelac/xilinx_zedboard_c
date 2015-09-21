@@ -10,7 +10,8 @@ EXECFLAGS	:= -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -static
 CFLAGS		:= -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast #-MMD -include $(OBJFILES:.o=.d)
 LDFLAGS		:= -fPIC -c
 SHRFLAGS	:= -shared -Wl,-soname,libuio.so
-LIBS 		:= -lcrypto -lssl -lstdc++ -lm -ldl -lc
+LIBS 		:= -lssl -lcrypto -lm -ldl -lpthread
+CPP_LIBS	:= -lstdc++ -lc
 INCLUDES	:= $(SRC_DIR)/user_mmap_driver $(SRC_DIR)/xilinx_aes_uio_driver $(SRC_DIR)/xilinx_qam_uio_driver $(SRC_DIR)/memmgr $(SRC_DIR)/fixed_point $(SRC_DIR)/xilinx_axi_reset_uio_driver $(SRC_DIR)/aes_fpga #$(SRC_DIR)/test_direct_dma_uio_driver 
 INCL		:= $(foreach d, $(INCLUDES), -I$d/)
 DRIVERS		:= $(foreach d, $(INCLUDES), $(wildcard $d/*.c))
@@ -28,7 +29,7 @@ OBJECTS		:= $(addprefix $(OUT_DIR)/,$(notdir $(SOURCES:.c=.o)))
 #OBJECTS		:= $(patsubt %/%%/%,$(OUT_DIR)/%,$(_OBJS))
 
 
-CC		:= gcc 
+CC		:= gcc
 CPP		:= g++ -fpic -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast
 AR		:= ar rcs
 
@@ -44,7 +45,7 @@ aes_memmgr: $(AES_MEMMGR)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 gpio: $(GPIO)
-	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
+	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS) $(CPP_LIBS)
 
 qam: $(QAM)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
