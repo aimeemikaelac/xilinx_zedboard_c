@@ -24,9 +24,22 @@ struct FPGA_AES{
 	XAes_Iv_v iv_in;
 	int mode;
 	unsigned bytesProcessed;
-	unsigned char buf[16]; //store original pt for partial encryptions
+	unsigned char previous_storage[16]; //store original pt for partial encryptions
+	unsigned char output_storage[16];
 	unsigned currentBlockStart;
-	int num;
+	int last_location;
+	unsigned lastSource;
+	unsigned lastDest;
+	int lastMode;
+	int lastBytes;
+	int keyWritten;
+	int ivWritten;
+	int updateKey;
+	int updateSourceAddress;
+	int updateDestAddress;
+	int updateNumBytes;
+	int updateIv;
+	int updateMode;
 };
 
 struct ctr_hw_thread_data{
@@ -87,5 +100,7 @@ FPGA_AES *fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base
 FPGA_AES *fpga_aes_new_short_16(char *key, char* iv, int mode);
 
 void fpga_aes_free(FPGA_AES *cipher);
+
+void printIvFpga(FPGA_AES *cipher);
 
 #endif

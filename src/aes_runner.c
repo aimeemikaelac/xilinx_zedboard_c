@@ -145,8 +145,8 @@ int main(int argc, char** argv){
 	fclose(openssl_fabric_log);
 	unsigned source = SHARED_MEM_BASE+5;
 	unsigned length = SHARED_MEM_LENGTH-5;
-	shared_memory shared_system_mem = getUioMemoryArea("/dev/uio1",0x80000);//getSharedMemoryArea(source, length);//getUioMemoryArea("/dev/uio1", length);//=
-//	shared_memory shared_system_mem = getSharedMemoryArea(SHARED_MEM_BASE, 0x80000);
+//	shared_memory shared_system_mem = getUioMemoryArea("/dev/uio1",0x80000);//getSharedMemoryArea(source, length);//getUioMemoryArea("/dev/uio1", length);//=
+	shared_memory shared_system_mem = getSharedMemoryArea(SHARED_MEM_BASE, 0x800000);
 	if(shared_system_mem == NULL){
 		printf("Error getting shared system memory pointer");
 		return -1;
@@ -438,7 +438,7 @@ int main(int argc, char** argv){
 			encrypted_dest[i] = 0;
 			((char*)shared_system_mem->ptr)[i+destOffset] = 0;
 		}
-		printf("\nOriginal inputs: ");
+/*		printf("\nOriginal inputs: ");
 		for(i=0; i<data_length*16; i++){
 			if(i%16==0){
 				printf(" 0x");
@@ -453,14 +453,14 @@ int main(int argc, char** argv){
 			}
 		//	printf("%02x", ((char*)shared_system_mem->ptr)[i+destOffset]);
 			printf("%02x", encrypted_dest[i]);
-		}
+		}*/
 		printf("\nBeginning OpenSSL test for incrementing by %i", k);
 		printf("\n----------------------------------------------------");
 		begin = clock();
 		EVP_EncryptInit(&ctx, EVP_aes_128_ctr(), key, default_iv);
 		int numToCheck = 0;
 		for(i=0; i+k<data_length*16; i+=k){
-			printf("\nCurrent openssl offset: %i", i);
+//			printf("\nCurrent openssl offset: %i", i);
 			EVP_EncryptUpdate(&ctx, encrypted_dest+i, &num, data_pointer+i, k);
 			numToCheck += k;
 		}
@@ -469,13 +469,13 @@ int main(int argc, char** argv){
 	
 		end=clock();
 	
-	printf("\nOpenSSL ctr first 32 bytes of output: 0x");
+/*	printf("\nOpenSSL ctr first 32 bytes of output: 0x");
 	for(i=0; i<32; i++){
 		if(i==16){
 			printf(" 0x");
 		}
 		printf("%02x", encrypted_dest[i]);
-	}
+	}*/
 		ticks = (double)(end - begin);
 		seconds =(double)(end - begin)/CLOCKS_PER_SEC;
 		printf ("\nIt took %f clicks (%f seconds) in openssl.\n",ticks,seconds);

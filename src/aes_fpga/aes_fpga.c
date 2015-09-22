@@ -3,6 +3,13 @@
 #include "user_mmap_driver.h"
 //#include <openssl/evp.h>
 #include <pthread.h>
+#include <byteswap.h>
+#include <pthread.h>
+
+#define U32_LOOKUP(a) word_a
+
+static pthread_mutex_t fpga_lock = PTHREAD_MUTEX_INITIALIZER;
+
 /*
 struct FPGA_AES{
 	const char* key;
@@ -66,13 +73,15 @@ void byteReverseBuffer4(char* buffer, int length){
 int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_addr, int mode){
 	int i, j;
 //	printf("\nResetting");
-	XReset_axi_SetIn_reset(cipher->reset_axi, 1);
+//	XReset_axi_SetIn_reset(cipher->reset_axi, 1);
 //	printf("\nReset asserted");
-	XReset_axi_SetIn_reset(cipher->reset_axi, 0);
+//	XReset_axi_SetIn_reset(cipher->reset_axi, 0);
 //	printf("\nReset deasserted");
 
+	pthread_mutex_lock(&fpga_lock);
 	unsigned source = src_addr;
 	unsigned dest = dst_addr;
+//	printf("\nAes final fpga call: Source address: 0x%08x, Dest address: 0x%08x", source, dest);
 	//TODO: take ceil of len/16
 //	unsigned data_length = len/16 + (len % 16 != 0);//len/16;
 
@@ -83,7 +92,7 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 //	printf("\nNumber of FPGA iterations: %i", data_length);
 
 //	printf("\nStarting AES");	
-	u32 iv_array[4];
+/*	u32 iv_array[4];
 	for(i=0; i<4; i++){
 		int curIndex = i*4;
 		u32 current_iv = cipher->iv[curIndex] + (cipher->iv[curIndex+1]*0x100) + (cipher->iv[curIndex+2]*0x10000) + (cipher->iv[curIndex+3]*0x1000000);
@@ -94,28 +103,52 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 	cipher->iv_in.word_0 = iv_array[0];
 	cipher->iv_in.word_1 = iv_array[1];
 	cipher->iv_in.word_2 = iv_array[2];
-	cipher->iv_in.word_3 = iv_array[3];
+	cipher->iv_in.word_3 = iv_array[3];*/
+	cipher->lastSource = source;
+	cipher->lastDest = dest;
+	cipher->lastMode = mode;
+	cipher->lastBytes = len;
 
 	XAes_Start(cipher->aes_device);
 
-	XAes_Set_key_in_V(cipher->aes_device, cipher->key_in);
+	if(cipher->updateKey){
+		XAes_Set_key_in_V(cipher->aes_device, cipher->key_in);
+		cipher->keyWritten = 1;
+	//	printf("\nWriting key");
+	}
 
-	XAes_Set_sourceAddress(cipher->aes_device, source);
+	if(cipher->updateSourceAddress){
+		XAes_Set_sourceAddress(cipher->aes_device, source);
+	//	printf("\nWritiing source");
+	}
 
-	XAes_Set_destinationAddress(cipher->aes_device, dest);
+	if(cipher->updateDestAddress){
+		XAes_Set_destinationAddress(cipher->aes_device, dest);
+	//	printf("\nWritign dest");
+	}
 
-	XAes_Set_numBytes(cipher->aes_device, data_length);
+	if(cipher->updateNumBytes){
+		XAes_Set_numBytes(cipher->aes_device, data_length);
+	//	printf("\nWriting len");
+	}
 
-	XAes_Set_iv_V(cipher->aes_device, cipher->iv_in);
+	if(cipher->updateIv){
+		XAes_Set_iv_V(cipher->aes_device, cipher->iv_in);
+		cipher->ivWritten = 1;
+	//	printf("\nWriting iv");
+	}
 
-//	XAes_Iv_v iv_temp = XAes_Get_iv_V(cipher->aes_device);
-//	printf("\nCurrent iv in hardware:");
-//	printf("\n0x%08x", iv_temp.word_0);
-//	printf("\n0x%08x", iv_temp.word_1);
-//	printf("\n0x%08x", iv_temp.word_2);
-//	printf("\n0x%08x", iv_temp.word_3);
+/*	XAes_Iv_v iv_temp = XAes_Get_iv_V(cipher->aes_device);
+	printf("\nCurrent iv in hardware:");
+	printf("\n0x%08x", iv_temp.word_0);
+	printf("\n0x%08x", iv_temp.word_1);
+	printf("\n0x%08x", iv_temp.word_2);
+	printf("\n0x%08x", iv_temp.word_3);*/
 
-	XAes_Set_mode(cipher->aes_device, mode);
+	if(cipher->updateMode){
+		XAes_Set_mode(cipher->aes_device, mode);
+	//	printf("\nWriting mode");
+	}
 
 //	XAes_Set_length_r(&aes_device, data_length);
 
@@ -138,16 +171,17 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 	int count = 0;
 
 	while(XAes_IsDone(cipher->aes_device) != 1){
-		count++;
+//		count++;
 	}
 	
 //	printf("\nIterations of while loop while waiting: %i", count);
 
-	int finished = XAes_Get_return(cipher->aes_device);
+//	int finished = XAes_Get_return(cipher->aes_device);
 
 //	printf("\nFinished");
+	pthread_mutex_unlock(&fpga_lock);
 
-	return finished;
+	return 1;
 }
 
 //assume that the iv is 16 bits, as is supposed to be
@@ -209,6 +243,67 @@ int incrementIv(char* iv, int iv_length){
 	}
 }
 
+void printIvFpga(FPGA_AES *cipher){
+	printf("\n0x");
+	int i;
+	for(i=0; i<4; i++){
+		switch(i){
+			case 0:
+				printf("%08x", __bswap_32(cipher->iv_in.word_0));
+				break;
+			case 1:
+				printf("%08x", __bswap_32(cipher->iv_in.word_1));
+				break;
+			case 2:
+				printf("%08x", __bswap_32(cipher->iv_in.word_2));
+				break;
+			case 3:
+				printf("%08x", __bswap_32(cipher->iv_in.word_3));
+				break;
+			default:
+				return;
+		}
+	}
+}
+
+void addIvCipher(FPGA_AES *cipher, unsigned int num){
+	int i;
+	u32 *current;
+	u32 temp;
+	u32 orig;
+	unsigned int carry = 0;
+	unsigned int currentNum = num;
+	addIvOpenssl(cipher->iv, 16, num);
+//	printf("\nNum: 0x%08x, swapped num: %08x", num, currentNum);
+	for(i=3; i>=0; i--){
+		if(currentNum == 0 && carry == 0){
+			break;
+		}
+		switch(i){
+			case 0:
+				current = &(cipher->iv_in.word_0);
+				break;
+			case 1:
+				current = &(cipher->iv_in.word_1);
+				break;
+			case 2:
+				current = &(cipher->iv_in.word_2);
+				break;
+			case 3:
+				current = &(cipher->iv_in.word_3);
+				break;
+			default:
+				return;
+		}
+		orig = __bswap_32(*current);
+		temp = orig + currentNum +carry;
+		*current = __bswap_32(temp);
+		currentNum = 0;
+		carry = temp < orig? 1 : 0;
+	}
+}
+
+
 int addIv(char* iv, int iv_length, unsigned int num){
 	int i;
 	char carry =0;
@@ -232,12 +327,17 @@ int addIv(char* iv, int iv_length, unsigned int num){
 int addIvOpenssl(char* iv, int iv_length, unsigned int num){
 	int i;
 	char carry =0;
+	int numLocal = num;
 //	printIv(iv, 16);
 	for(i=iv_length-1; i>=0; i--){
+		if(numLocal == 0 && carry == 0){
+			break;
+		}
 //		printIv(iv, iv_length);
 		char low = iv[i];
 //		printf("\n%02x", (unsigned char)(num));
-		char currentNum = (char)(num >> 8*(iv_length-i-1));
+		char currentNum = (char)(numLocal);//(char)(num >> 8*(iv_length-i-1));
+		numLocal = numLocal >> 8;
 //		printf("\n%02x", (unsigned char)(currentNum));
 		iv[i] = low + currentNum + carry;
 		if(iv[i] < low){
@@ -288,16 +388,6 @@ int printIv(char* iv, int iv_length){
 //	printf("\nSizeof(int): %i, Sizeof(long): %i", sizeof(int), sizeof(long));
 }
 
-/*struct ctr_thread_data{
-	int thread_id;
-	FPGA_AES *cipher;
-	char* input;
-	size_t len;
-	char* output;
-	unsigned sourceAddress;
-	unsigned destAddress;
-	int mode;
-};*/
 
 void* pthread_Ctr_hw_ex(void* ctr_thread_data_arg){
 	ctr_hw_thread_data* thread_data_arg = (ctr_hw_thread_data*)(ctr_thread_data_arg);
@@ -309,75 +399,13 @@ void* pthread_Ctr_hw_ex(void* ctr_thread_data_arg){
 	pthread_exit(NULL);
 
 }
-/*
-void* pthread_Ctr_sw_ex(void* ctr_thread_data_arg){
-	ctr_sw_thread_data* thread_data_arg = (ctr_sw_thread_data*)(ctr_thread_data_arg);
-	char incrementVal[] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}; 
-	int num, i;
-	char local_iv[16];
-	char temp[16];
-	for(i=0; i<16; i++){
-		local_iv[i] = thread_data_arg->cipher->iv[i];
-	}
-	//calculate IV
-//	for(i=0; i<numFullSegments; i++){
-//		incrementIv(local_iv, 16);
-//	}
-	int offset = thread_data_arg->offset;
-	int numBytes = thread_data_arg->numBytes;
-	char* output = thread_data_arg->output;
-	char* input = thread_data_arg->input;
-//	printIv(thread_data_arg->cipher->ctx->iv, 16);
-//	printf("\nCalling add iv");
-//	for(i=0; i<thread_data_arg->increment; i++){
-//		addIvChar(local_iv, thread_data_arg->cipher->iv_length, incrementVal);//thread_data_arg->increment);
-//	}
-//	printf("\nbytes processed: %i, num bytes: %i", thread_data_arg->cipher->bytesProcessed, numBytes);
-	int bytesProcessed = thread_data_arg->cipher->bytesProcessed;
-//	addIvOpenssl(local_iv, 16, (bytesProcessed/16) + (bytesProcessed % 16 != 0));
-//	printIv(local_iv, 16);
-	//call openssl aes ctr and output to the correct place, reading from the 
-	//last segment that is not full
-	EVP_CIPHER_CTX ctx;
-	EVP_EncryptInit(&ctx, EVP_aes_128_ctr(), thread_data_arg->cipher->key, local_iv);
-//	printf("\n2. Bytes processd: %i, Openssl iv:", thread_data_arg->cipher->bytesProcessed);
-//	printIv(ctx.iv, 16);
-	EVP_EncryptUpdate(&ctx, output+(offset), &num, input+(offset), numBytes);
-//	printf("\nOffset: %i, numBytes: %i, input: %p, output: %p", offset, numBytes, input, output);
-//	EVP_EncryptUpdate(&ctx, output+offset, &num, input+offset, numBytes);
-//	printf("\n1. Bytes processd: %i, Openssl iv:", thread_data_arg->cipher->bytesProcessed);
-//	printIv(thread_data_arg->cipher->ctx->iv, 16);
-//	EVP_EncryptUpdate(thread_data_arg->cipher->ctx, thread_data_arg->output+(thread_data_arg->offset), &num, thread_data_arg->input+(thread_data_arg->offset), thread_data_arg->numBytes);
-//	printf("\n2. Bytes processd: %i, Openssl iv:", thread_data_arg->cipher->bytesProcessed);
-//	printIv(thread_data_arg->cipher->ctx->iv, 16);
-	//printIv(thread_data_arg->cipher->iv, 16);
-//	EVP_EncryptFinal_ex(thread_data_arg->cipher->ctx, temp, &num);
-	pthread_exit(NULL);
-}*/
 
 
 int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, unsigned src, unsigned dest){
-	int i, num, rc = 0;
-//	int numEncryptions = len/16 + (len%16 != 0);
-//	printf("\nLength: %i", len);
-//	printIv(cipher->iv, 16);
-//	printf("\nNum bytes extra: %i, Num full segments: %i", numBytesExtra,numFullSegments);
-//	pthread_t aes_thread;
-	pthread_t openssl_thread;
-	pthread_attr_t attr;
-	void* status;
-
-	int run_pthread = 0;
-	//store the original pt into the cipher's buffer
-	//this could segfault if the input buffer is read beyond,
-	//so this must be accounted for
-//	if(numBytesExtra > 0){
-//		for(i=0; i<16; i++){
-//			cipher->buf[i] = input[offset+i];
-//		}
-//	}
+	int i = 0, num, rc = 0;
 	cipher->bytesProcessed += len;
 	int scrollIndex = 0;
+//	printf("\nRunning aes ctr hardware for %i bytes", len);
 	//if num > 0, then we are still in a partial block from last encryption
 	//check if the source address < 16 + the last block address
 	//	if so, then just scroll forward through the encrypted bytes in the buffer
@@ -393,81 +421,113 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 //		printf("%02x", cipher->currentBlockStart[i]);
 //	}
 	int startingNewBlock = 0;
+
+//	printf("\nCurrent block start: 0x%08x, src: 0x%08x", cipher->currentBlockStart, src);
+//	printf("\nLast location: %i", cipher->last_location);
 	
 	//check if we are still in the valid area
 	//or if we need to scroll forward to fill the last block
-	if(cipher->num > 0 && (src < cipher->currentBlockStart + 16 && src > cipher->currentBlockStart || cipher->currentBlockStart + cipher->num + len == src)){
+//	if(cipher->num > 0 && (src < cipher->currentBlockStart + 16 && src > cipher->currentBlockStart || cipher->currentBlockStart + cipher->num + len == src)){
+	if(cipher->last_location > 0){
 //		printf("\nScrolling");
 		//if for some reason we are not at the place we left off,
 		//just put us in the correct place
-		if(src != cipher->currentBlockStart + cipher->num){
+//		if(src != cipher->currentBlockStart + cipher->num){
 //			printf("\nCorrecting num. Was: %i ", cipher->num);
-			cipher->num = src - cipher->currentBlockStart;
+//			cipher->num = src - cipher->currentBlockStart;
 //			printf("is now: %i", cipher->num);
-		}
+//		}
 
 //		printf("\nNum is now: %i", cipher->num);
 		
-		while(scrollIndex < len && cipher->num<16){
-//			printf("\nReplacing %02x with %02x", output[scrollIndex], cipher->buf[cipher->num]);
-			output[scrollIndex] = cipher->buf[cipher->num];
-			scrollIndex++;
-			cipher->num++;
-//			cipher->bytesProcessed++;
+//		while(scrollIndex < len && cipher->num<16){
+//		TODO: can remove this for loop and replace with a memcpy		
+		int blockRemaining = 16 - cipher->last_location;
+		int numToIncrement = blockRemaining < len? blockRemaining : len;
+//		printf("\nScrolling forward %i bytes", numToIncrement);
+
+		//need to now XOR the previous buffer with the output
+		for(i=0; i<numToIncrement; i++){
+//			printf("\nXORing %02x in output with %02x in storage", input[i], cipher->previous_storage[cipher->last_location+i]);
+			output[i] = input[i]^cipher->previous_storage[cipher->last_location+i];
 		}
+
+
+//		printf("\nnum to increment: %i", numToIncrement);
+//		memcpy(output, cipher->previous_storage + cipher->last_location, numToIncrement);
+		cipher->last_location += numToIncrement;
+		i = 0 + numToIncrement;
+//		while(i < len && cipher->last_location<16){
+//			printf("\nReplacing %02x with %02x", output[scrollIndex], cipher->buf[cipher->num]);
+//			output[i] = cipher->previous_storage[cipher->last_location];
+//			cipher->last_location++;
+//			i++;
+//			scrollIndex++;
+//			cipher->num++;
+//			cipher->bytesProcessed++;
+//		}
+//		printf("\ni: %i", i);
 		//if we have finished with the partial block, reset the counter
 		//also need to increment to iv
-		if(cipher->num == 16){
-			cipher->num = 0;
-			cipher->currentBlockStart = cipher->currentBlockStart + 16;
+		if(cipher->last_location >= 16){
+			cipher->last_location = 0;
+//			printf("\nIncrementing current block start");
+//			cipher->currentBlockStart += 16;
 			//incrementIv(cipher->iv, 16);
 //			addIvOpenssl(cipher->iv, 16, 1);
 //			addIv(cipher->iv, 16, 1);
 	//		for(i=0; i<16; i++){
 	//			cipher->iv[i] = 0xff;
 	//		}
-			startingNewBlock = 1;
-		}
+//			startingNewBlock = 1;
+		} 
+		//else{
+		//	cipher->last_location += i;
+		//}
 //		printf("\nScrolled by: %i", scrollIndex);
 		//if we hve hit the length limit, then return
-		if(scrollIndex >= len){
+		if(i >= len){
 			return len;
 		}
-	}
+	}//else{
+//		cipher->currentBlockStart = src;
+//	}
 	//we are not in the correct place. need to reset num
-	else if(cipher->num > 0){
+//	else if(cipher->num > 0){
 //		printf("\nI think i am in the incorrect place.");
 //		printf("\nCurrent block start: 0x%08x", cipher->currentBlockStart);
 //		printf("\nCurrent num: %i", cipher->num);
 //		printf("\nInput src address: 0x%08x", src);
-		cipher->num = 0;
-		cipher->currentBlockStart = src;
-	}
+//		cipher->num = 0;
+//		cipher->currentBlockStart = src;
+//	}
 //	printf("\nCurrent cipher block start: 0x%08x", cipher->currentBlockStart);
 //	printf("\nOriginal output mid: 0x");
 //	for(i=0; i<16; i++){
 //		printf("%02x", (output-(src-cipher->currentBlockStart))[i]);
 //	}
-	int currentLen = len - scrollIndex;//startingNewBlock == 1? scrollIndex : len - scrollIndex;
-	int numBytesExtra = currentLen%16;
-	int numFullSegments = currentLen/16;
-	int numSegmentsTotal = numFullSegments + (numBytesExtra != 0);
-	int offset = startingNewBlock? numFullSegments*16 : numFullSegments*16+scrollIndex;
-	unsigned currentSrc = src+scrollIndex;
-	unsigned newBlockStart = currentSrc + numFullSegments*16;
-	unsigned currentDest = dest+scrollIndex;
-	char* currentInput = input+scrollIndex;
-	char* currentOutput = output+scrollIndex;
-	char storage[16];
+	int remainingLength = len - i;//startingNewBlock == 1? scrollIndex : len - scrollIndex;
+	int extraBytes = remainingLength%16;
+	int fullBlocks = remainingLength/16;
+	int numSegmentsTotal = fullBlocks + (extraBytes != 0);
+//	int offset = startingNewBlock? numFullSegments*16 : numFullSegments*16+scrollIndex;
+	unsigned newSrc = src + i;
+//	unsigned newBlockStart = newSrc + numFullSegments*16;
+	unsigned newDest = dest+i;
+//        printf("\nSrc: 0x%08x, newSrc: 0x%08x, Dest: 0x%08x, newDest: 0x%08x", src, newSrc, dest, newDest);
+	int offset = fullBlocks*16;
+	char* newInput = input+i;
+	char* newOutput = output+i;
 	//if there are numBytes extra, grab the bytes already in the final segment
 	//and store them
-	if(numBytesExtra > 0){
+//	if(extraBytes > 0){
+//		memcpy(cipher->output_storage, newOutput+fullBlocks*16, 16);
 //		printf("\nStoring bytes: 0x");
-		for(i=0; i<16; i++){
-			storage[i] = currentOutput[offset+i];
+//		for(i=0; i<16; i++){
+//			storage[i] = currentOutput[offset+i];
 //			printf("%02x", storage[i]);
-		}
-	}
+//		}
+//	}
 
 	//increment the bytes starting at the scroll index
 	//calculate the number of segments here based on the scroll index
@@ -486,8 +546,24 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 	//need to increment the iv by the number of full segments that have been process
 	//by this cipher
 	
-	Aes_encrypt_run(cipher, currentInput, numSegmentsTotal*16, currentOutput, currentSrc, currentDest, 2);
-	addIvOpenssl(cipher->iv, 16, numSegmentsTotal);
+	//Aes_encrypt_run(cipher, newInput, numSegmentsTotal*16, newOutput, newSrc, newDest, 2);
+
+	//if we assume that there are multiple threads, then we always need to update these
+	//variables in the control registers
+	cipher->updateIv = 1;
+	cipher->updateKey = 1;
+	cipher->updateSourceAddress = 1;
+	cipher->updateDestAddress = 1;
+	cipher->updateNumBytes = 1;
+	cipher->updateMode = 1;
+//	cipher->updateKey = cipher->keyWritten? 0 : 1;
+//	cipher->updateSourceAddress = cipher->lastSource != newSrc? 1 : 0;
+//	cipher->updateDestAddress = cipher->lastDest != newDest? 1 : 0;
+//	cipher->updateNumBytes = numSegmentsTotal*16 != cipher->lastBytes? 1 : 0;
+//	cipher->updateMode = cipher->lastMode != 2? 1 : 0;
+	//only encrypt the full blocks. need to do the last encryption partly in software
+	aes_encrypt(cipher, fullBlocks*16, newSrc, newDest, 2);
+	addIvCipher(cipher, fullBlocks);
 //		printf("\nOriginal output 1st full segment: 0x");
 //		for(i=0; i<16; i++){
 //			printf("%02x", currentOutput[i]);
@@ -495,89 +571,78 @@ int Aes_encrypt_ctr_hw(FPGA_AES *cipher, char *input, size_t len, char *output, 
 
 	//if there numBytes extra after scrolling, store the encrypted output into the buffer
 	//put the original contents of the output back for what was not encrypted
-	if(numBytesExtra > 0){
+//	cipher->currentBlockStart += offset;
+	if(extraBytes > 0){
+//		printf("\nThere are extra bytes. extraBytes: %i", extraBytes);
+		//need to get the encrypted counter value
+		//1st put the current counter in a temp buffer
+		char* temp = memmgr_alloc(16);
+		char* temp_out = memmgr_alloc(16);
+		memcpy(temp,cipher->iv,16);
+/*		printf("\nValue of temp:");
+		for(i=0; i<16; i++){
+			printf("%02x", temp[i]);
+		}*/
+/*		cipher->updateMode = 1;
+		cipher->updateSourceAddress = 1;
+		cipher->updateDestAddress = 1;
+		cipher->updateNumBytes = 1;*/
+		//now call aes on this temp buffer
+		unsigned temp_address = lookupBufferPhysicalAddress(temp);
+		unsigned temp_out_address = lookupBufferPhysicalAddress(temp_out);
+//		printf("\nTemp address: 0x%08x, temp out address: 0x%08x", temp_address, temp_out_address);
+		aes_encrypt(cipher, 16, temp_address, temp_out_address, 0);
+		memcpy(cipher->previous_storage, temp_out, 16);
+/*		printf("\nKey: 0x");
+		for(i=0; i<16; i++){
+			printf("%02x", cipher->key[i]);
+		}
+		printf("\nlast counter: 0x");
+		for(i=0; i<16; i++){
+			printf("%02x", cipher->iv[i]);
+		}
+		printf("\nlast counter encrypted: 0x");
+		for(i=0; i<16; i++){
+			printf("%02x", cipher->previous_storage[i]);
+		}*/
+		memmgr_free(temp);
+		memmgr_free(temp_out);
+
+		//now xor the encrypted counter with the remaining input
+		for(i=0; i<extraBytes; i++){
+//			printf("\nXORing %02x in output with %02x in storage", (newOutput + offset)[i], cipher->previous_storage[i]);
+			(newOutput + offset)[i] = (newInput + offset)[i]^cipher->previous_storage[i];
+		}
+		//make sure to increment the counter the last time
+		addIvCipher(cipher, 1);
+
+
 //		printf("\nExtra bytes: %i", numBytesExtra);
 //		printf("\nCurrent cipher block start: 0x%08x", cipher->currentBlockStart);
-		cipher->currentBlockStart = newBlockStart;//currentSrc;//+offset;
+//		cipher->currentBlockStart = newBlockStart;//currentSrc;//+offset;
 //		printf("\nNew cipher block start: 0x%08x", cipher->currentBlockStart);
 //		printf("\nOriginal output: 0x");
 //		for(i=0; i<16; i++){
 //			printf("%02x", currentOutput[offset+i]);
 //		}
-		for(i=0; i<16; i++){
-			cipher->buf[i] = currentOutput[offset+i];
-			if(i >= numBytesExtra){
+//		memcpy(cipher->previous_storage, newOutput + offset, 16);
+	//	memcpy(newOutput + offset + extraBytes, cipher->output_storage + extraBytes, 16-extraBytes);
+		//TODO: this for loop can be replaced with a memcpy
+//		for(i=extraBytes; i<16; i++){
 //				printf("\nExtra bytes. Restoring %02x from storage. Overwriting %02x", storage[i], currentOutput[offset+i]);
-				currentOutput[offset+i] = storage[i];
-			}
-		}
+//			newOutput[16*fullBlocks + i] = cipher->output_storage[i];
+//		}
 //		printf("\nOriginal output end: 0x");
 //		for(i=0; i<16; i++){
 //			printf("%02x", currentOutput[offset+i]);
 //		}
-		cipher->num = numBytesExtra;
+		cipher->last_location = extraBytes;
 //		cipher->bytesProcessed+=numBytesExtra;
 	}
 
 
 	//Encrypt all of the full 16 byte segments
 	//do not want to use the fpga if we do not have any full segments
-//	if(numFullSegments > 0){
-		//TODO: have the FPGA return the counter, so we don't have to
-		//calculate it
-		//Aes_encrypt_run(cipher, input numFullSegments, output, src, dest, 2);
-/*		ctr_thread_data aes_args;
-		aes_args.thread_id = 0;
-		aes_args.cipher = cipher;
-		aes_args.input = input;
-		aes_args.len = numFullSegments*16;
-		aes_args.output = output;
-		printf("\nSource: 0x%08x", src);
-		aes_args.sourceAddress = src;
-		printf("\nDest: 0x%08x", dest);
-		aes_args.destAddress = dest;
-		aes_args.mode = 2;
-		rc = pthread_create(&aes_thread, &attr, pthread_Ctr_hw_ex, &aes_args);
-		if(rc){
-			printf("\nError creating aes pthread. Return code is %d", rc);
-			abort();
-		}*/
-//		Aes_encrypt_run(cipher, input, numFullSegments*16, output, src, dest, 2);
-//	}
-//	cipher->bytesProcessed += numFullSegments*16;
-	//Encrypt the last segment by calculating the counter
-	//TODO: farm this part to a thread
-//	cipher->bytesProcessed += numBytesExtra;
-//	if(numBytesExtra > 0){
-//		run_pthread = 1;
-		//initialize pthread variables
-/*		pthread_attr_init(&attr);
-		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-		ctr_sw_thread_data openssl_args;
-		openssl_args.thread_id = 0;
-		openssl_args.cipher = cipher;
-		openssl_args.input = input;
-		openssl_args.offset = numFullSegments*16;
-		openssl_args.output = output;
-		openssl_args.numBytes = numBytesExtra;
-		openssl_args.increment = numFullSegments;
-
-		rc = pthread_create(&openssl_thread, &attr, pthread_Ctr_sw_ex, &openssl_args);
-		if(rc){
-			printf("\nError creating openssl pthread. Return code is %d", rc);
-			abort();
-		}*/
-//	}
-//	if(run_pthread == 1){
-//		rc = pthread_join(aes_thread, &status);
-/*		rc = pthread_join(openssl_thread, &status);
-		if(rc){
-			//printf("\nError encountered when joining aes pthread. Return code is: %d", rc);
-			printf("\nError encountered when joining openssl pthread. Return code is: %d", rc);
-			abort();
-		}*/
-//	}
-
 
 	return len;
 }
@@ -723,6 +788,7 @@ int Aes_encrypt_memmgr(FPGA_AES *cipher, char* output, const char *input, size_t
 //	byteReverseBuffer16(output, len);
 
 	int bytesWritten = Aes_encrypt_ctr_hw(cipher, (char*)input, len, output, src, dest);
+//	printf("\nBytes encrypted: %i", len);
 
 	//TODO: may need to byte-reverse the input again
 	return bytesWritten;
@@ -762,9 +828,10 @@ FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base
 		printf("\nCould not alloc cipher iv");
 		return NULL;
 	}
-	for(i=0; i<iv_length; i++){
-		iv_local[i] = iv[i];
-	}
+//	for(i=0; i<iv_length; i++){
+//		iv_local[i] = iv[i];
+//	}
+	memcpy(iv_local, iv, iv_length);	
 	cipher->iv = iv_local;
 	cipher->iv_length = iv_length;
 
@@ -854,9 +921,9 @@ FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base
 	for(i=0; i<4; i++){
 		int curIndex = i*4;
 		u32 current_key = cipher->key[curIndex] + (cipher->key[curIndex+1]*0x100) + (cipher->key[curIndex+2]*0x10000) + (cipher->key[curIndex+3]*0x1000000);
-//		u32 current_iv = cipher->iv[curIndex] + (cipher->iv[curIndex+1]*0x100) + (cipher->iv[curIndex+2]*0x10000) + (cipher->iv[curIndex+3]*0x1000000);
+		u32 current_iv = cipher->iv[curIndex] + (cipher->iv[curIndex+1]*0x100) + (cipher->iv[curIndex+2]*0x10000) + (cipher->iv[curIndex+3]*0x1000000);
 		key_array[i] = current_key;
-//		iv_array[i] = current_iv;
+		iv_array[i] = current_iv;
 	}
 
 
@@ -865,17 +932,31 @@ FPGA_AES* fpga_aes_new(const char *key, size_t key_len, unsigned shared_mem_base
 	key_in.word_2 = key_array[2];
 	key_in.word_3 = key_array[3];
 
-//	iv_in.word_0 = iv_array[0];
-//	iv_in.word_1 = iv_array[1];
-//	iv_in.word_2 = iv_array[2];
-//	iv_in.word_3 = iv_array[3];
+	iv_in.word_0 = iv_array[0];
+	iv_in.word_1 = iv_array[1];
+	iv_in.word_2 = iv_array[2];
+	iv_in.word_3 = iv_array[3];
 
 	cipher->key_in = key_in;
 	cipher->iv_in = iv_in;
 
 	cipher->bytesProcessed = 0;
-	cipher->num=0;
+	cipher->last_location=0;
 	cipher->currentBlockStart = 0;
+
+	cipher->updateKey = 1;
+	cipher->updateSourceAddress = 1;
+	cipher->updateDestAddress = 1;
+	cipher->updateNumBytes = 1;
+	cipher->updateIv = 1;
+	cipher->updateMode = 1;
+	cipher->keyWritten = 0;
+	cipher->ivWritten = 0;
+
+	cipher->lastSource = 0;
+	cipher->lastDest = 0;
+	cipher->lastMode = -1;
+	cipher->lastBytes = -1;
 
 	return cipher;
 }
@@ -887,12 +968,14 @@ FPGA_AES* fpga_aes_new_short_16(char* key, char* iv, int mode){
 
 //free an fpga aes struct
 void fpga_aes_free(FPGA_AES *cipher){
-	XReset_axi_Release(cipher->reset_axi);
-	XAes_Release(cipher->aes_device);
-	free(cipher->iv);
-//	free(cipher->ctx);
-	free(cipher->reset_axi);
-	free(cipher->aes_device);
-	free(cipher);
-	cipher = NULL;
+	if(cipher != NULL){
+		XReset_axi_Release(cipher->reset_axi);
+		XAes_Release(cipher->aes_device);
+		free(cipher->iv);
+	//	free(cipher->ctx);
+		free(cipher->reset_axi);
+		free(cipher->aes_device);
+		free(cipher);
+		cipher = NULL;
+	}
 }

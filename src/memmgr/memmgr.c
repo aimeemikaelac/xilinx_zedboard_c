@@ -89,7 +89,7 @@ static pthread_mutexattr_t attr;
 
 
 void createLock(){
-	printf("\nInitializing memmgr reentrant lock");
+//	printf("\nInitializing memmgr reentrant lock");
 	if(initialized == 0){
 		pthread_mutexattr_init(&attr);
 		pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
@@ -123,7 +123,7 @@ void memmgr_init(void* buffer, unsigned length, unsigned baseAddress)
 	    return;
     }*/
     pthread_mutex_lock(&lock);
-    printf("\nIn critical section of main init function");
+  //  printf("\nIn critical section of main init function");
     if(session == 0){
 	    base.s.next = 0;
 	    base.s.size = 0;
@@ -146,7 +146,7 @@ void memmgr_init(void* buffer, unsigned length, unsigned baseAddress)
 
 void memmgr_init_check(void* buffer, unsigned length, unsigned baseAddress){
 	pthread_once(&create_lock_once, createLock);
-	printf("\nIn memmgr check()");
+//	printf("\nIn memmgr check()");
 	pthread_mutex_lock(&lock);
 	if(session == 0	){
 		memmgr_init(buffer, length, baseAddress);
@@ -154,19 +154,24 @@ void memmgr_init_check(void* buffer, unsigned length, unsigned baseAddress){
 	pthread_mutex_unlock(&lock);
 }
 
+int memmgr_init_shared_short(){
+	return memmgr_init_check_shared_mem(SHARED_SIZE, UIO_DEVICE, BASE_ADDRESS);
+}
+
 int memmgr_init_check_shared_mem(unsigned length, char* uioDevice, unsigned baseAddress){
 	pthread_once(&create_lock_once, createLock);
 	pthread_mutex_lock(&lock);
-	printf("\nAm in memmmgr check shared()");
+//	printf("\nAm in memmmgr check shared()");
 	if(session == 1){
-		printf("\nA session already exists. Not starting a new one");
+//		printf("\nA session already exists. Not starting a new one");
 		pthread_mutex_unlock(&lock);
 		return -2;
 	}
 
 	if(shared_mem == NULL){
 		printf("\nAccessing new uio memory region");
-		shared_mem = getUioMemoryArea(uioDevice, length);
+//		shared_mem = getUioMemoryArea(uioDevice, length);
+		shared_mem = getSharedMemoryArea(BASE_ADDRESS, SHARED_SIZE);		
 		if(shared_mem == NULL){
 			printf("\nError getting UIO shared memory area");
 			pthread_mutex_unlock(&lock);
@@ -286,7 +291,7 @@ void* memmgr_alloc(ulong nbytes)
     mem_header_t* p;
     mem_header_t* prevp;
 
-    printf("\nmemmgr attempting to allocate: %lu bytes", nbytes);
+//    printf("\nmemmgr attempting to allocate: %lu bytes", nbytes);
 
     if(pool == NULL){
 	    printf("\nPool is null. cannot allocate in memmgr");
@@ -343,7 +348,7 @@ void* memmgr_alloc(ulong nbytes)
 	    if(nbytes > largest_allocation){
 		    largest_allocation = nbytes;
 	    }
-	    printf("\nmemmgr  allocated: %lu bytes", nbytes);
+//	    printf("\nmemmgr  allocated: %lu bytes", nbytes);
             pthread_mutex_unlock(&lock);
             return (void*) (p + 1);
         }
