@@ -25,8 +25,7 @@
 //        bit 1  - Channel 1 (ap_ready)
 //        others - reserved
 // 0x10 : Data signal of ap_return
-//        bit 0  - ap_return[0] (Read)
-//        others - reserved
+//        bit 31~0 - ap_return[31:0] (Read)
 // 0x18 : Data signal of sourceAddress
 //        bit 31~0 - sourceAddress[31:0] (Read/Write)
 // 0x1c : Control signal of sourceAddress
@@ -76,7 +75,7 @@
 #define XAES_AXILITES_ADDR_IER                     0x08
 #define XAES_AXILITES_ADDR_ISR                     0x0c
 #define XAES_AXILITES_ADDR_AP_RETURN               0x10
-#define XAES_AXILITES_BITS_AP_RETURN               1
+#define XAES_AXILITES_BITS_AP_RETURN               32
 #define XAES_AXILITES_ADDR_SOURCEADDRESS_DATA      0x18
 #define XAES_AXILITES_BITS_SOURCEADDRESS_DATA      32
 #define XAES_AXILITES_ADDR_SOURCEADDRESS_CTRL      0x1c
