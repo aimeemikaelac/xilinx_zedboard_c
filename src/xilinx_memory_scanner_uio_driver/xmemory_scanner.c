@@ -119,16 +119,6 @@ u32 XMemory_scanner_Get_search_string_0_vld(XMemory_scanner *InstancePtr) {
     return Data & 0x1;
 }
 
-u32 XMemory_scanner_Get_search_string_0_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_0_CTRL);
-    return (Data >> 1) & 0x1;
-}
-
 void XMemory_scanner_Set_search_string_1(XMemory_scanner *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -161,16 +151,6 @@ u32 XMemory_scanner_Get_search_string_1_vld(XMemory_scanner *InstancePtr) {
 
     Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_1_CTRL);
     return Data & 0x1;
-}
-
-u32 XMemory_scanner_Get_search_string_1_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_1_CTRL);
-    return (Data >> 1) & 0x1;
 }
 
 void XMemory_scanner_Set_search_string_2(XMemory_scanner *InstancePtr, u32 Data) {
@@ -207,16 +187,6 @@ u32 XMemory_scanner_Get_search_string_2_vld(XMemory_scanner *InstancePtr) {
     return Data & 0x1;
 }
 
-u32 XMemory_scanner_Get_search_string_2_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_2_CTRL);
-    return (Data >> 1) & 0x1;
-}
-
 void XMemory_scanner_Set_search_string_3(XMemory_scanner *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -249,16 +219,6 @@ u32 XMemory_scanner_Get_search_string_3_vld(XMemory_scanner *InstancePtr) {
 
     Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_3_CTRL);
     return Data & 0x1;
-}
-
-u32 XMemory_scanner_Get_search_string_3_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_3_CTRL);
-    return (Data >> 1) & 0x1;
 }
 
 void XMemory_scanner_Set_search_string_4(XMemory_scanner *InstancePtr, u32 Data) {
@@ -295,16 +255,6 @@ u32 XMemory_scanner_Get_search_string_4_vld(XMemory_scanner *InstancePtr) {
     return Data & 0x1;
 }
 
-u32 XMemory_scanner_Get_search_string_4_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_4_CTRL);
-    return (Data >> 1) & 0x1;
-}
-
 void XMemory_scanner_Set_search_string_5(XMemory_scanner *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -337,16 +287,6 @@ u32 XMemory_scanner_Get_search_string_5_vld(XMemory_scanner *InstancePtr) {
 
     Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_5_CTRL);
     return Data & 0x1;
-}
-
-u32 XMemory_scanner_Get_search_string_5_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_5_CTRL);
-    return (Data >> 1) & 0x1;
 }
 
 void XMemory_scanner_Set_search_string_6(XMemory_scanner *InstancePtr, u32 Data) {
@@ -383,16 +323,6 @@ u32 XMemory_scanner_Get_search_string_6_vld(XMemory_scanner *InstancePtr) {
     return Data & 0x1;
 }
 
-u32 XMemory_scanner_Get_search_string_6_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_6_CTRL);
-    return (Data >> 1) & 0x1;
-}
-
 void XMemory_scanner_Set_search_string_7(XMemory_scanner *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -425,16 +355,6 @@ u32 XMemory_scanner_Get_search_string_7_vld(XMemory_scanner *InstancePtr) {
 
     Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_7_CTRL);
     return Data & 0x1;
-}
-
-u32 XMemory_scanner_Get_search_string_7_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_7_CTRL);
-    return (Data >> 1) & 0x1;
 }
 
 void XMemory_scanner_Set_search_string_8(XMemory_scanner *InstancePtr, u32 Data) {
@@ -471,16 +391,6 @@ u32 XMemory_scanner_Get_search_string_8_vld(XMemory_scanner *InstancePtr) {
     return Data & 0x1;
 }
 
-u32 XMemory_scanner_Get_search_string_8_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_8_CTRL);
-    return (Data >> 1) & 0x1;
-}
-
 void XMemory_scanner_Set_search_string_9(XMemory_scanner *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -513,16 +423,6 @@ u32 XMemory_scanner_Get_search_string_9_vld(XMemory_scanner *InstancePtr) {
 
     Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_9_CTRL);
     return Data & 0x1;
-}
-
-u32 XMemory_scanner_Get_search_string_9_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_9_CTRL);
-    return (Data >> 1) & 0x1;
 }
 
 void XMemory_scanner_Set_search_string_10(XMemory_scanner *InstancePtr, u32 Data) {
@@ -559,16 +459,6 @@ u32 XMemory_scanner_Get_search_string_10_vld(XMemory_scanner *InstancePtr) {
     return Data & 0x1;
 }
 
-u32 XMemory_scanner_Get_search_string_10_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_10_CTRL);
-    return (Data >> 1) & 0x1;
-}
-
 void XMemory_scanner_Set_search_string_11(XMemory_scanner *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -601,16 +491,6 @@ u32 XMemory_scanner_Get_search_string_11_vld(XMemory_scanner *InstancePtr) {
 
     Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_11_CTRL);
     return Data & 0x1;
-}
-
-u32 XMemory_scanner_Get_search_string_11_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_11_CTRL);
-    return (Data >> 1) & 0x1;
 }
 
 void XMemory_scanner_Set_search_string_12(XMemory_scanner *InstancePtr, u32 Data) {
@@ -647,16 +527,6 @@ u32 XMemory_scanner_Get_search_string_12_vld(XMemory_scanner *InstancePtr) {
     return Data & 0x1;
 }
 
-u32 XMemory_scanner_Get_search_string_12_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_12_CTRL);
-    return (Data >> 1) & 0x1;
-}
-
 void XMemory_scanner_Set_search_string_13(XMemory_scanner *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -689,16 +559,6 @@ u32 XMemory_scanner_Get_search_string_13_vld(XMemory_scanner *InstancePtr) {
 
     Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_13_CTRL);
     return Data & 0x1;
-}
-
-u32 XMemory_scanner_Get_search_string_13_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_13_CTRL);
-    return (Data >> 1) & 0x1;
 }
 
 void XMemory_scanner_Set_search_string_14(XMemory_scanner *InstancePtr, u32 Data) {
@@ -735,16 +595,6 @@ u32 XMemory_scanner_Get_search_string_14_vld(XMemory_scanner *InstancePtr) {
     return Data & 0x1;
 }
 
-u32 XMemory_scanner_Get_search_string_14_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_14_CTRL);
-    return (Data >> 1) & 0x1;
-}
-
 void XMemory_scanner_Set_search_string_15(XMemory_scanner *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -779,16 +629,6 @@ u32 XMemory_scanner_Get_search_string_15_vld(XMemory_scanner *InstancePtr) {
     return Data & 0x1;
 }
 
-u32 XMemory_scanner_Get_search_string_15_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_15_CTRL);
-    return (Data >> 1) & 0x1;
-}
-
 void XMemory_scanner_Set_search_string_16(XMemory_scanner *InstancePtr, u32 Data) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
@@ -821,16 +661,6 @@ u32 XMemory_scanner_Get_search_string_16_vld(XMemory_scanner *InstancePtr) {
 
     Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_16_CTRL);
     return Data & 0x1;
-}
-
-u32 XMemory_scanner_Get_search_string_16_ack(XMemory_scanner *InstancePtr) {
-    u32 Data;
-
-    Xil_AssertNonvoid(InstancePtr != NULL);
-    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    Data = XMemory_scanner_ReadReg(InstancePtr->Axilites_BaseAddress, XMEMORY_SCANNER_AXILITES_ADDR_SEARCH_STRING_16_CTRL);
-    return (Data >> 1) & 0x1;
 }
 
 u32 XMemory_scanner_Get_count_out(XMemory_scanner *InstancePtr) {
