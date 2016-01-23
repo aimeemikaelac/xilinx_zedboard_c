@@ -43,7 +43,7 @@ char *int2bin(int a, char *buffer, int buf_size) {
 	return buffer;
 }
 
-int checkFunction(char* encrypted_data_openssl, shared_memory shared_system_mem, int bytesToCheck, unsigned destOffset, unsigned hardwareOffset){
+int checkFunction(char* encrypted_data_openssl, char *destData, int bytesToCheck){//, unsigned destOffset, unsigned hardwareOffset){
 	int i, j;
 	clock_t ticks;
 	printf("\nWaiting for checking...");
@@ -68,7 +68,8 @@ int checkFunction(char* encrypted_data_openssl, shared_memory shared_system_mem,
 		int2bin(openssl, bin_buffer, 32);
 //			printf("%02x",openssl);
 			//char fabric = ((char*)shared_system_mem->ptr)[i*16 + (15- j) + destOffset];
-		char fabric = ((char*)shared_system_mem->ptr)[hardwareOffset + i + destOffset];
+//		char fabric = ((char*)shared_system_mem->ptr)[hardwareOffset + i + destOffset];
+		char fabric = destData[i];
 //			printf("\n%02x\t\t|\t%02x", fabric, openssl);
 		if(openssl != fabric){
 			printf("\nChar at index %i is not encrypted correctly. It is %02x in openssl, %02x in fabric", i, openssl, fabric);
@@ -92,10 +93,34 @@ int main(int argc, char** argv){
 	unsigned char data_to_encrypt2[] = {0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, '\0'};
 	unsigned char default_iv[]         = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, '\0'};
 	int data_length;
-	if(argc == 2){
+	int opt;
+	char *modeStr = "all";
+	int mode = 2;
+	char *lengthStr = "100";
+	while((opt = getopt(argc, argv, "l:m:")) != -1){
+		switch(opt){
+			case 'l':
+				lengthStr = optarg;
+				break;
+			case 'm':
+				modeStr = optarg;
+				break;
+			default:
+				abort();
+		}
+	}
+/*	if(argc == 2){
 		data_length = atoi(argv[1]);
 	} else{
 		data_length = 100;
+	}*/
+	data_length = atoi(lengthStr);
+	if(strcmp(modeStr, "ecb") == 0){
+		mode = 0;
+	} else if(strcmp(modeStr, "ctr") == 0){
+		mode = 1;
+	} else{
+		mode = 2;
 	}
 	printf("Data length: %i\n", data_length);
 	unsigned char data_to_encrypt3[16*data_length];
@@ -143,25 +168,34 @@ int main(int argc, char** argv){
 	openssl_fabric_log = fopen("aes_openssl_results.csv", "a");
 	fprintf(openssl_fabric_log, "%f,%i\n", seconds, data_length);
 	fclose(openssl_fabric_log);
-	unsigned source = SHARED_MEM_BASE+5;
-	unsigned length = SHARED_MEM_LENGTH-5;
+	//unsigned source = SHARED_MEM_BASE+5;
+	//unsigned length = SHARED_MEM_LENGTH-5;
 //	shared_memory shared_system_mem = getUioMemoryArea("/dev/uio1",0x80000);//getSharedMemoryArea(source, length);//getUioMemoryArea("/dev/uio1", length);//=
-	shared_memory shared_system_mem = getSharedMemoryArea(SHARED_MEM_BASE, 0x800000);
-	if(shared_system_mem == NULL){
+	//shared_memory shared_system_mem = getSharedMemoryArea(SHARED_MEM_BASE, 0x800000);
+	memmgr_init_shared_short();
+
+//	char *sourceData = (char*)(shared_system_mem->ptr)+5;
+//	char *destData = sourceData + destOffset;
+	char *sourceData = (char*)memmgr_alloc(data_length*16);
+	char *destData = (char*)memmgr_alloc(data_length*16);
+
+	unsigned source = lookupBufferPhysicalAddress(sourceData);
+	unsigned dest = lookupBufferPhysicalAddress(destData);
+
+	/*if(shared_system_mem == NULL){
 		printf("Error getting shared system memory pointer");
 		return -1;
-	}
+	}*/
 	int destOffset = 16*data_length +16;
-	int dest = source + destOffset;
+//	int dest = source + destOffset;
 
-	for(i=0; i<0x1000; i++){
-		((char*)shared_system_mem->ptr)[i] = 0;
+	for(i=0; i<data_length; i++){
+//		((char*)shared_system_mem->ptr)[i] = 0;
+		sourceData[i] = 0;
+		destData[i] = 0;
 	}
 
 	char bin_buffer[33];
-
-	char *sourceData = (char*)(shared_system_mem->ptr)+5;
-	char *destData = sourceData + destOffset;
 
 	for(i=0; i<data_length; i++){
 		for(j=0; j<16; j++){
@@ -174,8 +208,12 @@ int main(int argc, char** argv){
 		printf("\nCould not allocated cipher");
 		return -1;
 	}
+	printf("\nSource addr: 0x%08x", source);
+	printf("\nDest addr: 0x%08x", dest);
 	begin  = clock();
-	Aes_encrypt_run(cipher, sourceData, data_length*16, destData, source, source + destOffset, 0);
+	//Aes_encrypt_run(cipher, sourceData, data_length*16, destData, source, source + destOffset, 0);
+	Aes_encrypt_run(cipher, sourceData, data_length*16, destData, source, dest, 0);
+//	Aes_encrypt_memmgr(cipher, destData, sourceData, data_length*16);
 
 
 	end = clock();
@@ -187,8 +225,12 @@ int main(int argc, char** argv){
 	fprintf(aes_fabric_log, "%f,%i\n", seconds, data_length);
 	fclose(aes_fabric_log);
 
-	checkFunction(encrypted_data_openssl, shared_system_mem, data_length*16, destOffset, 5);
+	checkFunction(encrypted_data_openssl, destData, data_length*16);
 	fpga_aes_free(cipher);
+
+	if(mode == 0){
+		goto CLEANUP;
+	}
 	
 //	printf("\nFabric:\n");
 //	for(i=0; i<data_length; i++){
@@ -207,7 +249,8 @@ int main(int argc, char** argv){
 
 	for(i=0; i<data_length*16; i++){
 		encrypted_dest[i] = 0;
-		((char*)shared_system_mem->ptr)[i+destOffset] = 0;
+		//((char*)shared_system_mem->ptr)[i+destOffset] = 0;
+		destData[i] = 0;
 	}
 
 	begin = clock();
@@ -232,7 +275,7 @@ int main(int argc, char** argv){
 
 	begin  = clock();
 	//Aes_encrypt_run(cipher, sourceData, data_length*16, destData, SHARED_MEM_BASE, SHARED_MEM_BASE + destOffset, 0);
-	Aes_encrypt_ctr_hw(cipher, sourceData, data_length*16, destData, source, source + destOffset);
+	Aes_encrypt_ctr_hw(cipher, sourceData, data_length*16, destData, source, dest);
 
 
 	end = clock();
@@ -251,12 +294,17 @@ int main(int argc, char** argv){
 	for(i=0; i<16; i++){
 		printf("%02x", encrypted_dest[i]);
 	}*/
-	checkFunction(encrypted_data_openssl, shared_system_mem, data_length*16, destOffset, 5);
+	checkFunction(encrypted_data_openssl, destData, data_length*16);
 	fpga_aes_free(cipher);
+
+	if(mode == 1){
+		goto CLEANUP;
+	}
 
 	for(i=0; i<data_length*16; i++){
 		encrypted_dest[i] = 0;
-		((char*)shared_system_mem->ptr)[i+destOffset] = 0;
+//		((char*)shared_system_mem->ptr)[i+destOffset] = 0;
+		destData[i] = 0;
 	}
 
 /*	printf("\nInput to ctr:\nFPGA: 0x");
@@ -366,7 +414,8 @@ int main(int argc, char** argv){
 			printf("%02x",destData[(i/16)*16+j]);
 		}*/
 //		Aes_encrypt_run(cipher, sourceData+i, 1, destData+i, SHARED_MEM_BASE+i, SHARED_MEM_BASE + destOffset+i, 0);
-		Aes_encrypt_ctr_hw(cipher, sourceData+i, 1, destData+i, source+i, source + destOffset + i);
+//		Aes_encrypt_ctr_hw(cipher, sourceData+i, 1, destData+i, source+i, source + destOffset + i);
+		Aes_encrypt_memmgr(cipher, destData+i, sourceData+i, 1);
 	}
 
 	end=clock();
@@ -374,7 +423,11 @@ int main(int argc, char** argv){
 	ticks = (double)(end - begin);
 	seconds = (double)(end - begin)/CLOCKS_PER_SEC;
 	printf ("\nIt took %f clicks (%f seconds) in fabric for %i encryptions.\n",ticks,seconds, data_length);
-	checkFunction(encrypted_data_openssl, shared_system_mem, data_length*16, destOffset, 5);
+	checkFunction(encrypted_data_openssl, destData, data_length*16);
+
+
+
+
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -417,7 +470,8 @@ int main(int argc, char** argv){
 	begin = clock();
 //	for(i=0; i<data_length*16; i++){
 //		Aes_encrypt_run(cipher, sourceData+i, 1, destData+i, SHARED_MEM_BASE+i, SHARED_MEM_BASE + destOffset+i, 0);
-	Aes_encrypt_ctr_hw(cipher, sourceData, (data_length-1)*16+5, destData, source, source + destOffset);
+//	Aes_encrypt_ctr_hw(cipher, sourceData, (data_length-1)*16+5, destData, source, source + destOffset);
+	Aes_encrypt_memmgr(cipher, destData, sourceData, (data_length-1)*16+5);
 //	}
 
 	end=clock();
@@ -425,7 +479,7 @@ int main(int argc, char** argv){
 	ticks = (double)(end - begin);
 	seconds = (double)(end - begin)/CLOCKS_PER_SEC;
 	printf ("\nIt took %f clicks (%f seconds) in fabric for %i encryptions.\n",ticks,seconds, data_length);
-	checkFunction(encrypted_data_openssl, shared_system_mem, (data_length-1)*16+5, destOffset, 5);
+	checkFunction(encrypted_data_openssl, destData, (data_length-1)*16+5);
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -436,7 +490,8 @@ int main(int argc, char** argv){
 		//reset outputs
 		for(i=0; i<data_length*16; i++){
 			encrypted_dest[i] = 0;
-			((char*)shared_system_mem->ptr)[i+destOffset] = 0;
+			//((char*)shared_system_mem->ptr)[i+destOffset] = 0;
+			destData[i] = 0;
 		}
 /*		printf("\nOriginal inputs: ");
 		for(i=0; i<data_length*16; i++){
@@ -491,7 +546,8 @@ int main(int argc, char** argv){
 	
 		begin = clock();
 		for(i=0; i<data_length*16; i+=k){
-			Aes_encrypt_ctr_hw(cipher, sourceData+i, k, destData+i, source+i, source + destOffset + i);
+	//		Aes_encrypt_ctr_hw(cipher, sourceData+i, k, destData+i, source+i, source + destOffset + i);
+			Aes_encrypt_memmgr(cipher, destData+i, sourceData+i, k);
 		}
 	
 		end=clock();
@@ -503,7 +559,7 @@ int main(int argc, char** argv){
 		printf("\nK: %i, i: %i", k, i);
 //		int numToCheck = ((data_length*16)/k)*k;
 		printf("\nNum to check: %i", numToCheck);
-		int curIncorrect = checkFunction(encrypted_data_openssl, shared_system_mem, numToCheck, destOffset, 5);
+		int curIncorrect = checkFunction(encrypted_data_openssl, destData, numToCheck);
 		if(curIncorrect > 0){
 			printf("\nFailed in increment by i test for: %i increment value. Halting further tests\n", k);
 			break;
@@ -512,7 +568,10 @@ int main(int argc, char** argv){
 
 
 //	printf("\n");
-	cleanupSharedMemoryPointer(shared_system_mem);
+//	cleanupSharedMemoryPointer(shared_system_mem);
+CLEANUP:
+	memmgr_free(sourceData);
+	memmgr_free(destData);
 	fpga_aes_free(cipher);
 //	XAes_Release(aes_device);
 //	free(aes_device);

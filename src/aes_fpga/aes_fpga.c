@@ -77,8 +77,9 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 //	printf("\nReset asserted");
 //	XReset_axi_SetIn_reset(cipher->reset_axi, 0);
 //	printf("\nReset deasserted");
+//	printf("\nBefore lock");
 
-	pthread_mutex_lock(&fpga_lock);
+//	pthread_mutex_lock(&fpga_lock);
 	unsigned source = src_addr;
 	unsigned dest = dst_addr;
 //	printf("\nAes final fpga call: Source address: 0x%08x, Dest address: 0x%08x", source, dest);
@@ -108,6 +109,8 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 	cipher->lastDest = dest;
 	cipher->lastMode = mode;
 	cipher->lastBytes = len;
+
+//	printf("\nStarting");
 
 	XAes_Start(cipher->aes_device);
 
@@ -171,15 +174,19 @@ int aes_encrypt(FPGA_AES *cipher, size_t len, unsigned src_addr, unsigned dst_ad
 	int count = 0;
 
 	while(XAes_IsDone(cipher->aes_device) != 1){
-//		count++;
+		count++;
+		if(count % 1000000 == 0){
+			printf("\nWaiting");
+		}
 	}
+//	printf("\nHere3");
 	
 //	printf("\nIterations of while loop while waiting: %i", count);
 
 //	int finished = XAes_Get_return(cipher->aes_device);
 
 //	printf("\nFinished");
-	pthread_mutex_unlock(&fpga_lock);
+//	pthread_mutex_unlock(&fpga_lock);
 
 	return 1;
 }

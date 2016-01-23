@@ -7,12 +7,12 @@ int main(){
 	XMemory_scanner scanner;
 	XMemory_scanner_Initialize(&scanner, "memory-scanner");
 
-	unsigned char search_string[17] = {0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a};
+//	unsigned char search_string[17] = {0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a};
 	clock_t begin, end;
 	int i;
 	XMemory_scanner_Start(&scanner);
 
-	XMemory_scanner_Set_search_string_0(&scanner, search_string[0]);
+/*	XMemory_scanner_Set_search_string_0(&scanner, search_string[0]);
 	XMemory_scanner_Set_search_string_0_vld(&scanner);
 
 	XMemory_scanner_Set_search_string_1(&scanner, search_string[1]);
@@ -65,6 +65,16 @@ int main(){
 
 
 //	XMemory_scanner_Start(&scanner);
+*/
+	XMemory_scanner_Search_string_v search_string;
+	search_string.word_0 = 0x0a0a0a0a;
+	search_string.word_1 = 0x0a0a0a0a;
+	search_string.word_2 = 0x0a0a0a0a;
+	search_string.word_3 = 0x0a0a0a0a;
+
+	XMemory_scanner_Set_search_string_V(&scanner, search_string);
+	XMemory_scanner_Set_search_string_V_vld(&scanner);
+
 
 	double elapsed_secs;
 	int elapsed_secs_int, elapsed_secs_int_last = 0;
@@ -92,9 +102,13 @@ int main(){
 	printf("Fabric count: %i\n", fabric_count);
 
 	printf("Original search string: 0x");
-	for(i = 0; i<17; i++){
-		printf("%02x", search_string[i]);
-	}
+//	for(i = 0; i<17; i++){
+//		printf("%02x", search_string);
+//	}
+	printf("%08x", search_string.word_0);
+	printf("%08x", search_string.word_1);
+	printf("%08x", search_string.word_2);
+	printf("%08x", search_string.word_3);
 
 	XMemory_scanner_Release(&scanner);
 }
