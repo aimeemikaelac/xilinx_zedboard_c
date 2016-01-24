@@ -12,7 +12,7 @@ LDFLAGS		:= -fPIC -c
 SHRFLAGS	:= -shared -Wl,-soname,libuio.so
 LIBS 		:= -lssl -lcrypto -lm -ldl -lpthread
 CPP_LIBS	:= -lstdc++ -lc
-INCLUDES	:= $(SRC_DIR)/user_mmap_driver $(SRC_DIR)/xilinx_aes_uio_driver $(SRC_DIR)/xilinx_qam_uio_driver $(SRC_DIR)/memmgr $(SRC_DIR)/fixed_point $(SRC_DIR)/xilinx_axi_reset_uio_driver $(SRC_DIR)/aes_fpga $(SRC_DIR)/xilinx_memory_scanner_uio_driver #$(SRC_DIR)/test_direct_dma_uio_driver 
+INCLUDES	:= $(SRC_DIR)/user_mmap_driver $(SRC_DIR)/xilinx_aes_uio_driver $(SRC_DIR)/xilinx_qam_uio_driver $(SRC_DIR)/memmgr $(SRC_DIR)/fixed_point $(SRC_DIR)/xilinx_axi_reset_uio_driver $(SRC_DIR)/aes_fpga $(SRC_DIR)/xilinx_memory_scanner_uio_driver $(SRC_DIR)/xilinx_triple_aes_uio_driver #$(SRC_DIR)/test_direct_dma_uio_driver 
 INCL		:= $(foreach d, $(INCLUDES), -I$d/)
 DRIVERS		:= $(foreach d, $(INCLUDES), $(wildcard $d/*.c))
 AES 		:= $(SRC_DIR)/aes_runner.c
@@ -23,6 +23,7 @@ FPGA		:= $(SRC_DIR)/aes_fpga_test.c
 AES_FPGA	:= $(SRC_DIR)/aes_fpga.c
 AES_MEMMGR	:= $(SRC_DIR)/memmgr_aes_test.c
 MEM_SCAN	:= $(SRC_DIR)/memory_scanner_runner.c
+TRIPLE_AES	:= $(SRC_DIR)/triple_aes_test.c
 
 SOURCES		:= $(wildcard $(SRC_DIR)/**/*.c*)# $(SRC_DIR)/*.c*)
 SRCS		:= $(addprefix $(OUT_DIR)/,$(notdir $(SOURCES)))
@@ -58,6 +59,9 @@ fpga: $(FPGA)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 aes_fpga: $(AES_FPGA)
+	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
+
+triple_aes: $(TRIPLE_AES)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 #$(OUT_DIR)/%.o: $(SOURCES)
