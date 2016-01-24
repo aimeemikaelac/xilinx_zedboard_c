@@ -109,12 +109,24 @@ def upload_test(log, ip, port):
 #    socket.socket = socks.socksocket
 #    s = socks.socksocket()
 #    s.connect("128.138.202.145", 9000)
+    f = open(log, "a")
 
     start_time = timeit.default_timer()
 #    s.write(file_contents)
-    p = subprocess.Popen(["proxychains4 iperf -c "+ip+" -p " + str(port) + " -l 5M -y C >> "+log], shell=True)
+#    call_str = "-c "+ip+" -p " + str(port) + " --num 5M -y C >> "+log
+#    print "\n\n\n" + str(call_str)+"\n\n\n\n"
+    p = subprocess.Popen(["torsocks", "iperf", "-c", ip, "-p", str(port), "--num", "5M"])#, "-y", "C"]), stdout=f)
+#    print str(p)
+#    print str(p.pid)
+#    print str(p.poll())
+#    while p.poll() != None:
+#        time.sleep(5)
+#        print str(p.pid)
+#        time.sleep(2)
     p.wait()
+#    time.sleep(20)
     elapsed = timeit.default_timer() - start_time
+    f.close()
     print '------------------------------------------------------------------------\n\n\n\n\n'
     print 'Average KB/s: ' + str(send_bytes/1024/elapsed)
     print '\n\n\n\n\n------------------------------------------------------------------------'
@@ -127,6 +139,7 @@ def run_tor(binary, log, ip, port):
         controller = Controller.from_port(port=9051)
         create_circuit(controller)
         sent, elapsed =  upload_test(log, ip, port)
+        time.sleep(20)
         controller.close()
         return sent, elapsed
     except:
