@@ -2,13 +2,15 @@
 #include <time.h>
 #include "stdio.h"
 #include "math.h"
+#include <unistd.h>
 
 int main(){
 	XMemory_scanner scanner;
 	XMemory_scanner_Initialize(&scanner, "memory-scanner");
 
 //	unsigned char search_string[17] = {0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a};
-	clock_t begin, end;
+//	clock_t begin, end;
+	time_t begin, end, current;
 	int i;
 	XMemory_scanner_Start(&scanner);
 
@@ -79,23 +81,29 @@ int main(){
 	double elapsed_secs;
 	int elapsed_secs_int, elapsed_secs_int_last = 0;
 
-	begin = clock();
+	time(&begin);
 
 	printf("Waiting for fabric\n");
 
 	while(XMemory_scanner_Get_count_out_vld(&scanner) != 1){
-		elapsed_secs_int = ((clock() - begin)) / CLOCKS_PER_SEC;
+		usleep(200);
+		time(&current);
+		elapsed_secs_int = (int)floor(difftime(current, begin));
+		if(elapsed_secs_int < 0){
+			continue;
+		}
 		if(elapsed_secs_int_last != elapsed_secs_int && elapsed_secs_int % 10 == 0){
 			printf("%i s\n", elapsed_secs_int);
 			elapsed_secs_int_last = elapsed_secs_int;
 		}
 	}
 
-	end = clock();
+	time(&end);
 
 	u32 fabric_count = XMemory_scanner_Get_count_out(&scanner);
 
-	elapsed_secs = ((double)(end - begin)) / CLOCKS_PER_SEC;
+	elapsed_secs = difftime(end, begin);
+		//((double)(end - begin)) / CLOCKS_PER_SEC;
 
 	printf("Elapsed time in hardware: %f s\n", elapsed_secs);
 
@@ -108,7 +116,8 @@ int main(){
 	printf("%08x", search_string.word_0);
 	printf("%08x", search_string.word_1);
 	printf("%08x", search_string.word_2);
-	printf("%08x", search_string.word_3);
+	printf("%08x\n", search_string.word_3);
+
 
 	XMemory_scanner_Release(&scanner);
 }
