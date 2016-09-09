@@ -49,13 +49,6 @@ typedef struct {
     u32 IsReady;
 } XMemory_scanner;
 
-typedef struct {
-    u32 word_0;
-    u32 word_1;
-    u32 word_2;
-    u32 word_3;
-} XMemory_scanner_Search_string_v;
-
 /***************** Macros (Inline Functions) Definitions *********************/
 #ifndef __linux__
 #define XMemory_scanner_WriteReg(BaseAddress, RegOffset, Data) \
@@ -95,10 +88,74 @@ void XMemory_scanner_EnableAutoRestart(XMemory_scanner *InstancePtr);
 void XMemory_scanner_DisableAutoRestart(XMemory_scanner *InstancePtr);
 u32 XMemory_scanner_Get_return(XMemory_scanner *InstancePtr);
 
-void XMemory_scanner_Set_search_string_V(XMemory_scanner *InstancePtr, XMemory_scanner_Search_string_v Data);
-XMemory_scanner_Search_string_v XMemory_scanner_Get_search_string_V(XMemory_scanner *InstancePtr);
-void XMemory_scanner_Set_search_string_V_vld(XMemory_scanner *InstancePtr);
-u32 XMemory_scanner_Get_search_string_V_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_0(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_0(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_0_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_0_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_1(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_1(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_1_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_1_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_2(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_2(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_2_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_2_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_3(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_3(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_3_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_3_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_4(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_4(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_4_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_4_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_5(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_5(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_5_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_5_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_6(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_6(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_6_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_6_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_7(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_7(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_7_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_7_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_8(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_8(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_8_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_8_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_9(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_9(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_9_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_9_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_10(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_10(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_10_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_10_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_11(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_11(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_11_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_11_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_12(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_12(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_12_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_12_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_13(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_13(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_13_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_13_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_14(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_14(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_14_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_14_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_15(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_15(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_15_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_15_vld(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_16(XMemory_scanner *InstancePtr, u32 Data);
+u32 XMemory_scanner_Get_search_string_16(XMemory_scanner *InstancePtr);
+void XMemory_scanner_Set_search_string_16_vld(XMemory_scanner *InstancePtr);
+u32 XMemory_scanner_Get_search_string_16_vld(XMemory_scanner *InstancePtr);
 u32 XMemory_scanner_Get_count_out(XMemory_scanner *InstancePtr);
 u32 XMemory_scanner_Get_count_out_vld(XMemory_scanner *InstancePtr);
 
