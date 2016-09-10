@@ -1,20 +1,20 @@
-#include "xmemory_scanner.h"
+#include "xmemory_scanner_ddr.h"
 #include <time.h>
 #include "stdio.h"
 #include "math.h"
 #include <unistd.h>
 
 int main(){
-	XMemory_scanner scanner;
-	XMemory_scanner_Initialize(&scanner, "memory-scanner-ddr");
+	XMemory_scanner_ddr scanner;
+	XMemory_scanner_ddr_Initialize(&scanner, "memory-scanner-ddr");
 
-	unsigned char search_string[17] = {0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a};
+//	unsigned char search_string[17] = {0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a, 0x0a};
 //	clock_t begin, end;
 	time_t begin, end, current;
 	int i;
-	XMemory_scanner_Start(&scanner);
+	XMemory_scanner_ddr_Start(&scanner);
 
-	XMemory_scanner_Set_search_string_0(&scanner, search_string[0]);
+/*	XMemory_scanner_Set_search_string_0(&scanner, search_string[0]);
 	XMemory_scanner_Set_search_string_0_vld(&scanner);
 
 	XMemory_scanner_Set_search_string_1(&scanner, search_string[1]);
@@ -67,15 +67,15 @@ int main(){
 
 
 //	XMemory_scanner_Start(&scanner);
-
-/*	XMemory_scanner_Search_string_v search_string;
+*/
+	XMemory_scanner_ddr_Search_string_v search_string;
 	search_string.word_0 = 0x0a0a0a0a;
 	search_string.word_1 = 0x0a0a0a0a;
 	search_string.word_2 = 0x0a0a0a0a;
-	search_string.word_3 = 0x0a0a0a0a;*/
+	search_string.word_3 = 0x0a0a0a0a;
 
-/*	XMemory_scanner_Set_search_string_V(&scanner, search_string);
-	XMemory_scanner_Set_search_string_V_vld(&scanner);*/
+	XMemory_scanner_ddr_SetSearch_string_v(&scanner, search_string);
+	XMemory_scanner_ddr_SetSearch_string_vVld(&scanner);
 
 
 	double elapsed_secs;
@@ -85,7 +85,7 @@ int main(){
 
 	printf("Waiting for fabric\n");
 
-	while(XMemory_scanner_Get_count_out_vld(&scanner) != 1){
+	while(XMemory_scanner_ddr_GetCount_outVld(&scanner) != 1){
 		usleep(200);
 		time(&current);
 		elapsed_secs_int = (int)floor(difftime(current, begin));
@@ -100,7 +100,7 @@ int main(){
 
 	time(&end);
 
-	u32 fabric_count = XMemory_scanner_Get_count_out(&scanner);
+	u32 fabric_count = XMemory_scanner_ddr_GetCount_out(&scanner);
 
 	elapsed_secs = difftime(end, begin);
 		//((double)(end - begin)) / CLOCKS_PER_SEC;
@@ -113,11 +113,11 @@ int main(){
 //	for(i = 0; i<17; i++){
 //		printf("%02x", search_string);
 //	}
-/*	printf("%08x", search_string.word_0);
+	printf("%08x", search_string.word_0);
 	printf("%08x", search_string.word_1);
 	printf("%08x", search_string.word_2);
-	printf("%08x\n", search_string.word_3);*/
+	printf("%08x\n", search_string.word_3);
 
 
-	XMemory_scanner_Release(&scanner);
+	XMemory_scanner_ddr_Release(&scanner);
 }
