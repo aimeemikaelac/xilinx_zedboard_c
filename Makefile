@@ -25,6 +25,7 @@ AES_MEMMGR	:= $(SRC_DIR)/memmgr_aes_test.c
 MEM_SCAN	:= $(SRC_DIR)/memory_scanner_runner.c
 MEM_DDR		:= $(SRC_DIR)/memory_scanner_runner_ddr.c
 TRIPLE_AES	:= $(SRC_DIR)/triple_aes_test.c
+BBRAM		:= $(SRC_DIR)/zcu102_program_bbram.c
 
 SOURCES		:= $(wildcard $(SRC_DIR)/**/*.c*)# $(SRC_DIR)/*.c*)
 SRCS		:= $(addprefix $(OUT_DIR)/,$(notdir $(SOURCES)))
@@ -66,6 +67,9 @@ aes_fpga: $(AES_FPGA)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 triple_aes: $(TRIPLE_AES)
+	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
+
+bbram: $(BBRAM)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 #$(OUT_DIR)/%.o: $(SOURCES)
