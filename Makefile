@@ -12,7 +12,7 @@ LDFLAGS		:= -fPIC -c
 SHRFLAGS	:= -shared -Wl,-soname,libuio.so
 LIBS 		:= -lssl -lcrypto -lm -ldl -lpthread
 CPP_LIBS	:= -lstdc++ -lc
-INCLUDES	:= $(SRC_DIR)/user_mmap_driver $(SRC_DIR)/xilinx_aes_uio_driver $(SRC_DIR)/xilinx_qam_uio_driver $(SRC_DIR)/memmgr $(SRC_DIR)/fixed_point $(SRC_DIR)/xilinx_axi_reset_uio_driver $(SRC_DIR)/aes_fpga $(SRC_DIR)/xilinx_memory_scanner_uio_driver $(SRC_DIR)/xilinx_memory_scanner_ddr_uio_driver $(SRC_DIR)/xilinx_triple_aes_uio_driver #$(SRC_DIR)/test_direct_dma_uio_driver 
+INCLUDES	:= $(SRC_DIR)/user_mmap_driver $(SRC_DIR)/xilinx_aes_uio_driver $(SRC_DIR)/xilinx_qam_uio_driver $(SRC_DIR)/memmgr $(SRC_DIR)/fixed_point $(SRC_DIR)/xilinx_axi_reset_uio_driver $(SRC_DIR)/aes_fpga $(SRC_DIR)/xilinx_memory_scanner_uio_driver $(SRC_DIR)/xilinx_memory_scanner_ddr_uio_driver $(SRC_DIR)/xilinx_triple_aes_uio_driver #$(SRC_DIR)/test_direct_dma_uio_driver
 INCL		:= $(foreach d, $(INCLUDES), -I$d/)
 DRIVERS		:= $(foreach d, $(INCLUDES), $(wildcard $d/*.c))
 AES 		:= $(SRC_DIR)/aes_runner.c
@@ -26,6 +26,7 @@ MEM_SCAN	:= $(SRC_DIR)/memory_scanner_runner.c
 MEM_DDR		:= $(SRC_DIR)/memory_scanner_runner_ddr.c
 TRIPLE_AES	:= $(SRC_DIR)/triple_aes_test.c
 BBRAM		:= $(SRC_DIR)/zcu102_program_bbram.c
+FILE_MEM	:= $(SRC_DIR)/write_file_to_memory.c
 
 SOURCES		:= $(wildcard $(SRC_DIR)/**/*.c*)# $(SRC_DIR)/*.c*)
 SRCS		:= $(addprefix $(OUT_DIR)/,$(notdir $(SOURCES)))
@@ -72,6 +73,9 @@ triple_aes: $(TRIPLE_AES)
 bbram: $(BBRAM)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
+file_mem: $(FILE_MEM)
+	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
+
 #$(OUT_DIR)/%.o: $(SOURCES)
 #	$(CC) -c -fPIC -o $@ $^ $(LIBS) $(CFLAGS)
 
@@ -104,4 +108,3 @@ clean_lib:
 	rm -rf $(OUT_DIR)/*.so
 
 clean: clean_object clean_lib
-
