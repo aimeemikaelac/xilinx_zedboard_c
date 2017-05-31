@@ -29,9 +29,9 @@ curve25519_donna(u8 mypublic[32], const u8 secret[32], const u8 basepoint[32]){
 		(unsigned int*)(data_ptr + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE);
 
 	for(i=0; i<32/4; i++){
-		data_public[i] = (unsigned int*)(mypublic)[i];
-		data_secret[i] = (unsigned int*)(secret)[i];
-		data_basepoint[i] = (unsigned int*)(basepoint)[i];
+		data_public[i] = ((unsigned int*)(mypublic))[i];
+		data_secret[i] = ((unsigned int*)(secret))[i];
+		data_basepoint[i] = ((unsigned int*)(basepoint))[i];
 	}
 
 	// data_ptr[0] = 1;
@@ -46,9 +46,9 @@ curve25519_donna(u8 mypublic[32], const u8 secret[32], const u8 basepoint[32]){
 	printf("XCurve done\n");
 
 	for(i=0; i<32/4; i++){
-		(unsigned int*)(mypublic)[i] = data_public[i];
-		(unsigned int*)(secret)[i] = data_secret[i];
-		(unsigned int*)(basepoint)[i]= data_basepoint[i];
+		((unsigned int*)(mypublic))[i] = data_public[i];
+		((unsigned int*)(secret))[i] = data_secret[i];
+		((unsigned int*)(basepoint))[i]= data_basepoint[i];
 	}
 
 	return 0;
