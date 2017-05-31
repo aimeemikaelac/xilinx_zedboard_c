@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "user_mmap_driver.h"
-#inculde "xcurve25519_donna_hw.h"
+#include "xcurve25519_donna_hw.h"
 
 #ifdef _MSC_VER
 #define inline __inline
@@ -20,7 +20,7 @@ curve25519_donna(u8 mypublic[32], const u8 secret[32], const u8 basepoint[32]){
 	unsigned int *control_register;
 	shared_memory curve_device = getSharedMemoryArea(CURVE_BASE_ADDR, 0x1000);
 	unsigned char *data_ptr = (unsigned char*)curve_device->ptr;
-	control_register = data_ptr;
+	control_register = (unsigned int*)data_ptr;
 	unsigned int *data_public =
 		(unsigned int*)(data_ptr + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE);
 	unsigned int *data_secret =
@@ -37,7 +37,7 @@ curve25519_donna(u8 mypublic[32], const u8 secret[32], const u8 basepoint[32]){
 	// data_ptr[0] = 1;
 	*control_register = 1;
 
-	while((ap_done = control_register &0x2) == 0){
+	while((ap_done = (*control_register) &0x2) == 0){
 		__asm__("");
 		asm("");
 		//spin wait
