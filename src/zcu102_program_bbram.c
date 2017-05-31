@@ -1,6 +1,7 @@
 #include "user_mmap_driver.h"
 
-#define BBRAM_BASE 0xFFCD0000
+//#define BBRAM_BASE 0xFFCD0000
+#define BBRAM_BASE 0xFF0e0000
 #define BBRAM_LENGTH 0x48
 #define BBRAM_STATUS 0x0
 #define BBRAM_PROGRAM 0x8
