@@ -27,41 +27,71 @@
 // 0x10 : Data signal of ap_return
 //        bit 31~0 - ap_return[31:0] (Read)
 // 0x20 ~
-// 0x3f : Memory 'mypublic' (32 * 8b)
-//        Word n : bit [ 7: 0] - mypublic[4n]
-//                 bit [15: 8] - mypublic[4n+1]
-//                 bit [23:16] - mypublic[4n+2]
-//                 bit [31:24] - mypublic[4n+3]
+// 0x3f : Memory 'mypublic_in' (32 * 8b)
+//        Word n : bit [ 7: 0] - mypublic_in[4n]
+//                 bit [15: 8] - mypublic_in[4n+1]
+//                 bit [23:16] - mypublic_in[4n+2]
+//                 bit [31:24] - mypublic_in[4n+3]
 // 0x40 ~
-// 0x5f : Memory 'secret' (32 * 8b)
-//        Word n : bit [ 7: 0] - secret[4n]
-//                 bit [15: 8] - secret[4n+1]
-//                 bit [23:16] - secret[4n+2]
-//                 bit [31:24] - secret[4n+3]
+// 0x5f : Memory 'secret_in' (32 * 8b)
+//        Word n : bit [ 7: 0] - secret_in[4n]
+//                 bit [15: 8] - secret_in[4n+1]
+//                 bit [23:16] - secret_in[4n+2]
+//                 bit [31:24] - secret_in[4n+3]
 // 0x60 ~
-// 0x7f : Memory 'basepoint' (32 * 8b)
-//        Word n : bit [ 7: 0] - basepoint[4n]
-//                 bit [15: 8] - basepoint[4n+1]
-//                 bit [23:16] - basepoint[4n+2]
-//                 bit [31:24] - basepoint[4n+3]
+// 0x7f : Memory 'basepoint_in' (32 * 8b)
+//        Word n : bit [ 7: 0] - basepoint_in[4n]
+//                 bit [15: 8] - basepoint_in[4n+1]
+//                 bit [23:16] - basepoint_in[4n+2]
+//                 bit [31:24] - basepoint_in[4n+3]
+// 0x80 ~
+// 0x9f : Memory 'mypublic_out' (32 * 8b)
+//        Word n : bit [ 7: 0] - mypublic_out[4n]
+//                 bit [15: 8] - mypublic_out[4n+1]
+//                 bit [23:16] - mypublic_out[4n+2]
+//                 bit [31:24] - mypublic_out[4n+3]
+// 0xa0 ~
+// 0xbf : Memory 'secret_out' (32 * 8b)
+//        Word n : bit [ 7: 0] - secret_out[4n]
+//                 bit [15: 8] - secret_out[4n+1]
+//                 bit [23:16] - secret_out[4n+2]
+//                 bit [31:24] - secret_out[4n+3]
+// 0xc0 ~
+// 0xdf : Memory 'basepoint_out' (32 * 8b)
+//        Word n : bit [ 7: 0] - basepoint_out[4n]
+//                 bit [15: 8] - basepoint_out[4n+1]
+//                 bit [23:16] - basepoint_out[4n+2]
+//                 bit [31:24] - basepoint_out[4n+3]
 // (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
 
-#define XCURVE25519_DONNA_AXILITES_ADDR_AP_CTRL        0x00
-#define XCURVE25519_DONNA_AXILITES_ADDR_GIE            0x04
-#define XCURVE25519_DONNA_AXILITES_ADDR_IER            0x08
-#define XCURVE25519_DONNA_AXILITES_ADDR_ISR            0x0c
-#define XCURVE25519_DONNA_AXILITES_ADDR_AP_RETURN      0x10
-#define XCURVE25519_DONNA_AXILITES_BITS_AP_RETURN      32
-#define XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE  0x20
-#define XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_HIGH  0x3f
-#define XCURVE25519_DONNA_AXILITES_WIDTH_MYPUBLIC      8
-#define XCURVE25519_DONNA_AXILITES_DEPTH_MYPUBLIC      32
-#define XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE    0x40
-#define XCURVE25519_DONNA_AXILITES_ADDR_SECRET_HIGH    0x5f
-#define XCURVE25519_DONNA_AXILITES_WIDTH_SECRET        8
-#define XCURVE25519_DONNA_AXILITES_DEPTH_SECRET        32
-#define XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE 0x60
-#define XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_HIGH 0x7f
-#define XCURVE25519_DONNA_AXILITES_WIDTH_BASEPOINT     8
-#define XCURVE25519_DONNA_AXILITES_DEPTH_BASEPOINT     32
+#define XCURVE25519_DONNA_AXILITES_ADDR_AP_CTRL            0x00
+#define XCURVE25519_DONNA_AXILITES_ADDR_GIE                0x04
+#define XCURVE25519_DONNA_AXILITES_ADDR_IER                0x08
+#define XCURVE25519_DONNA_AXILITES_ADDR_ISR                0x0c
+#define XCURVE25519_DONNA_AXILITES_ADDR_AP_RETURN          0x10
+#define XCURVE25519_DONNA_AXILITES_BITS_AP_RETURN          32
+#define XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE   0x20
+#define XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_HIGH   0x3f
+#define XCURVE25519_DONNA_AXILITES_WIDTH_MYPUBLIC_IN       8
+#define XCURVE25519_DONNA_AXILITES_DEPTH_MYPUBLIC_IN       32
+#define XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE     0x40
+#define XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_HIGH     0x5f
+#define XCURVE25519_DONNA_AXILITES_WIDTH_SECRET_IN         8
+#define XCURVE25519_DONNA_AXILITES_DEPTH_SECRET_IN         32
+#define XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE  0x60
+#define XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_HIGH  0x7f
+#define XCURVE25519_DONNA_AXILITES_WIDTH_BASEPOINT_IN      8
+#define XCURVE25519_DONNA_AXILITES_DEPTH_BASEPOINT_IN      32
+#define XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE  0x80
+#define XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_HIGH  0x9f
+#define XCURVE25519_DONNA_AXILITES_WIDTH_MYPUBLIC_OUT      8
+#define XCURVE25519_DONNA_AXILITES_DEPTH_MYPUBLIC_OUT      32
+#define XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE    0xa0
+#define XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_HIGH    0xbf
+#define XCURVE25519_DONNA_AXILITES_WIDTH_SECRET_OUT        8
+#define XCURVE25519_DONNA_AXILITES_DEPTH_SECRET_OUT        32
+#define XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE 0xc0
+#define XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_HIGH 0xdf
+#define XCURVE25519_DONNA_AXILITES_WIDTH_BASEPOINT_OUT     8
+#define XCURVE25519_DONNA_AXILITES_DEPTH_BASEPOINT_OUT     32
 

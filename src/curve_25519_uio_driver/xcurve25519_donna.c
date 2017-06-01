@@ -85,287 +85,572 @@ u32 XCurve25519_donna_Get_return(XCurve25519_donna *InstancePtr) {
     Data = XCurve25519_donna_ReadReg(InstancePtr->Axilites_BaseAddress, XCURVE25519_DONNA_AXILITES_ADDR_AP_RETURN);
     return Data;
 }
-u32 XCurve25519_donna_Get_mypublic_BaseAddress(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_mypublic_in_BaseAddress(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE);
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE);
 }
 
-u32 XCurve25519_donna_Get_mypublic_HighAddress(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_mypublic_in_HighAddress(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_HIGH);
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_HIGH);
 }
 
-u32 XCurve25519_donna_Get_mypublic_TotalBytes(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_mypublic_in_TotalBytes(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE + 1);
+    return (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE + 1);
 }
 
-u32 XCurve25519_donna_Get_mypublic_BitWidth(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_mypublic_in_BitWidth(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return XCURVE25519_DONNA_AXILITES_WIDTH_MYPUBLIC;
+    return XCURVE25519_DONNA_AXILITES_WIDTH_MYPUBLIC_IN;
 }
 
-u32 XCurve25519_donna_Get_mypublic_Depth(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_mypublic_in_Depth(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return XCURVE25519_DONNA_AXILITES_DEPTH_MYPUBLIC;
+    return XCURVE25519_DONNA_AXILITES_DEPTH_MYPUBLIC_IN;
 }
 
-u32 XCurve25519_donna_Write_mypublic_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+u32 XCurve25519_donna_Write_mypublic_in_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE + 1))
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE + (offset + i)*4) = *(data + i);
+        *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE + (offset + i)*4) = *(data + i);
     }
     return length;
 }
 
-u32 XCurve25519_donna_Read_mypublic_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+u32 XCurve25519_donna_Read_mypublic_in_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE + 1))
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(data + i) = *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE + (offset + i)*4);
+        *(data + i) = *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE + (offset + i)*4);
     }
     return length;
 }
 
-u32 XCurve25519_donna_Write_mypublic_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+u32 XCurve25519_donna_Write_mypublic_in_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE + 1))
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE + offset + i) = *(data + i);
+        *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE + offset + i) = *(data + i);
     }
     return length;
 }
 
-u32 XCurve25519_donna_Read_mypublic_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+u32 XCurve25519_donna_Read_mypublic_in_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE + 1))
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(data + i) = *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE + offset + i);
+        *(data + i) = *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE + offset + i);
     }
     return length;
 }
 
-u32 XCurve25519_donna_Get_secret_BaseAddress(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_secret_in_BaseAddress(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE);
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE);
 }
 
-u32 XCurve25519_donna_Get_secret_HighAddress(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_secret_in_HighAddress(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_HIGH);
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_HIGH);
 }
 
-u32 XCurve25519_donna_Get_secret_TotalBytes(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_secret_in_TotalBytes(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE + 1);
+    return (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE + 1);
 }
 
-u32 XCurve25519_donna_Get_secret_BitWidth(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_secret_in_BitWidth(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return XCURVE25519_DONNA_AXILITES_WIDTH_SECRET;
+    return XCURVE25519_DONNA_AXILITES_WIDTH_SECRET_IN;
 }
 
-u32 XCurve25519_donna_Get_secret_Depth(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_secret_in_Depth(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return XCURVE25519_DONNA_AXILITES_DEPTH_SECRET;
+    return XCURVE25519_DONNA_AXILITES_DEPTH_SECRET_IN;
 }
 
-u32 XCurve25519_donna_Write_secret_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+u32 XCurve25519_donna_Write_secret_in_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE + 1))
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE + (offset + i)*4) = *(data + i);
+        *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE + (offset + i)*4) = *(data + i);
     }
     return length;
 }
 
-u32 XCurve25519_donna_Read_secret_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+u32 XCurve25519_donna_Read_secret_in_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE + 1))
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(data + i) = *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE + (offset + i)*4);
+        *(data + i) = *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE + (offset + i)*4);
     }
     return length;
 }
 
-u32 XCurve25519_donna_Write_secret_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+u32 XCurve25519_donna_Write_secret_in_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE + 1))
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE + offset + i) = *(data + i);
+        *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE + offset + i) = *(data + i);
     }
     return length;
 }
 
-u32 XCurve25519_donna_Read_secret_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+u32 XCurve25519_donna_Read_secret_in_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE + 1))
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(data + i) = *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE + offset + i);
+        *(data + i) = *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE + offset + i);
     }
     return length;
 }
 
-u32 XCurve25519_donna_Get_basepoint_BaseAddress(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_basepoint_in_BaseAddress(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE);
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE);
 }
 
-u32 XCurve25519_donna_Get_basepoint_HighAddress(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_basepoint_in_HighAddress(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_HIGH);
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_HIGH);
 }
 
-u32 XCurve25519_donna_Get_basepoint_TotalBytes(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_basepoint_in_TotalBytes(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE + 1);
+    return (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE + 1);
 }
 
-u32 XCurve25519_donna_Get_basepoint_BitWidth(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_basepoint_in_BitWidth(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return XCURVE25519_DONNA_AXILITES_WIDTH_BASEPOINT;
+    return XCURVE25519_DONNA_AXILITES_WIDTH_BASEPOINT_IN;
 }
 
-u32 XCurve25519_donna_Get_basepoint_Depth(XCurve25519_donna *InstancePtr) {
+u32 XCurve25519_donna_Get_basepoint_in_Depth(XCurve25519_donna *InstancePtr) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-    return XCURVE25519_DONNA_AXILITES_DEPTH_BASEPOINT;
+    return XCURVE25519_DONNA_AXILITES_DEPTH_BASEPOINT_IN;
 }
 
-u32 XCurve25519_donna_Write_basepoint_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+u32 XCurve25519_donna_Write_basepoint_in_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE + 1))
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE + (offset + i)*4) = *(data + i);
+        *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE + (offset + i)*4) = *(data + i);
     }
     return length;
 }
 
-u32 XCurve25519_donna_Read_basepoint_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+u32 XCurve25519_donna_Read_basepoint_in_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE + 1))
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(data + i) = *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE + (offset + i)*4);
+        *(data + i) = *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE + (offset + i)*4);
     }
     return length;
 }
 
-u32 XCurve25519_donna_Write_basepoint_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+u32 XCurve25519_donna_Write_basepoint_in_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE + 1))
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE + offset + i) = *(data + i);
+        *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE + offset + i) = *(data + i);
     }
     return length;
 }
 
-u32 XCurve25519_donna_Read_basepoint_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+u32 XCurve25519_donna_Read_basepoint_in_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
     Xil_AssertNonvoid(InstancePtr != NULL);
     Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
 
     int i;
 
-    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE + 1))
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE + 1))
         return 0;
 
     for (i = 0; i < length; i++) {
-        *(data + i) = *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE + offset + i);
+        *(data + i) = *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE + offset + i);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Get_mypublic_out_BaseAddress(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE);
+}
+
+u32 XCurve25519_donna_Get_mypublic_out_HighAddress(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_HIGH);
+}
+
+u32 XCurve25519_donna_Get_mypublic_out_TotalBytes(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE + 1);
+}
+
+u32 XCurve25519_donna_Get_mypublic_out_BitWidth(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return XCURVE25519_DONNA_AXILITES_WIDTH_MYPUBLIC_OUT;
+}
+
+u32 XCurve25519_donna_Get_mypublic_out_Depth(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return XCURVE25519_DONNA_AXILITES_DEPTH_MYPUBLIC_OUT;
+}
+
+u32 XCurve25519_donna_Write_mypublic_out_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE + (offset + i)*4) = *(data + i);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Read_mypublic_out_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(data + i) = *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE + (offset + i)*4);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Write_mypublic_out_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE + offset + i) = *(data + i);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Read_mypublic_out_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(data + i) = *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE + offset + i);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Get_secret_out_BaseAddress(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE);
+}
+
+u32 XCurve25519_donna_Get_secret_out_HighAddress(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_HIGH);
+}
+
+u32 XCurve25519_donna_Get_secret_out_TotalBytes(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE + 1);
+}
+
+u32 XCurve25519_donna_Get_secret_out_BitWidth(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return XCURVE25519_DONNA_AXILITES_WIDTH_SECRET_OUT;
+}
+
+u32 XCurve25519_donna_Get_secret_out_Depth(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return XCURVE25519_DONNA_AXILITES_DEPTH_SECRET_OUT;
+}
+
+u32 XCurve25519_donna_Write_secret_out_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE + (offset + i)*4) = *(data + i);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Read_secret_out_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(data + i) = *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE + (offset + i)*4);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Write_secret_out_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE + offset + i) = *(data + i);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Read_secret_out_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(data + i) = *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE + offset + i);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Get_basepoint_out_BaseAddress(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE);
+}
+
+u32 XCurve25519_donna_Get_basepoint_out_HighAddress(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_HIGH);
+}
+
+u32 XCurve25519_donna_Get_basepoint_out_TotalBytes(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE + 1);
+}
+
+u32 XCurve25519_donna_Get_basepoint_out_BitWidth(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return XCURVE25519_DONNA_AXILITES_WIDTH_BASEPOINT_OUT;
+}
+
+u32 XCurve25519_donna_Get_basepoint_out_Depth(XCurve25519_donna *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return XCURVE25519_DONNA_AXILITES_DEPTH_BASEPOINT_OUT;
+}
+
+u32 XCurve25519_donna_Write_basepoint_out_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE + (offset + i)*4) = *(data + i);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Read_basepoint_out_Words(XCurve25519_donna *InstancePtr, int offset, int *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length)*4 > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(data + i) = *(int *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE + (offset + i)*4);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Write_basepoint_out_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE + offset + i) = *(data + i);
+    }
+    return length;
+}
+
+u32 XCurve25519_donna_Read_basepoint_out_Bytes(XCurve25519_donna *InstancePtr, int offset, char *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length) > (XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_HIGH - XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(data + i) = *(char *)(InstancePtr->Axilites_BaseAddress + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE + offset + i);
     }
     return length;
 }
