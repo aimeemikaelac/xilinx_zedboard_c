@@ -21,12 +21,20 @@ curve25519_donna(u8 mypublic[32], const u8 secret[32], const u8 basepoint[32]){
 	shared_memory curve_device = getSharedMemoryArea(CURVE_BASE_ADDR, 0x1000);
 	unsigned char *data_ptr = (unsigned char*)curve_device->ptr;
 	control_register = (unsigned int*)data_ptr;
+
 	unsigned int *data_public =
-		(unsigned int*)(data_ptr + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_BASE);
+		(unsigned int*)(data_ptr + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_IN_BASE);
 	unsigned int *data_secret =
-		(unsigned int*)(data_ptr + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_BASE);
+		(unsigned int*)(data_ptr + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_IN_BASE);
 	unsigned int *data_basepoint =
-		(unsigned int*)(data_ptr + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_BASE);
+		(unsigned int*)(data_ptr + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_IN_BASE);
+
+	unsigned int *data_public_out =
+		(unsigned int*)(data_ptr + XCURVE25519_DONNA_AXILITES_ADDR_MYPUBLIC_OUT_BASE);
+	unsigned int *data_secret_out =
+		(unsigned int*)(data_ptr + XCURVE25519_DONNA_AXILITES_ADDR_SECRET_OUT_BASE);
+	unsigned int *data_basepoint_out =
+		(unsigned int*)(data_ptr + XCURVE25519_DONNA_AXILITES_ADDR_BASEPOINT_OUT_BASE);
 
 	for(i=0; i<32/4; i++){
 		data_public[i] = ((unsigned int*)(mypublic))[i];
@@ -46,9 +54,9 @@ curve25519_donna(u8 mypublic[32], const u8 secret[32], const u8 basepoint[32]){
 	printf("XCurve done\n");
 
 	for(i=0; i<32/4; i++){
-		((unsigned int*)(mypublic))[i] = data_public[i];
-		((unsigned int*)(secret))[i] = data_secret[i];
-		((unsigned int*)(basepoint))[i]= data_basepoint[i];
+		((unsigned int*)(mypublic))[i] = data_public_out[i];
+		((unsigned int*)(secret))[i] = data_secret_out[i];
+		((unsigned int*)(basepoint))[i]= data_basepoint_out[i];
 	}
 
 	return 0;
@@ -64,6 +72,10 @@ unsigned char e2e1k[32];
 unsigned char e1[32] = {3};
 unsigned char e2[32] = {5};
 unsigned char k[32] = {9};
+
+unsigned char e1_2[32] = {3};
+unsigned char e2_2[32] = {5};
+unsigned char k_2[32] = {9};
 
 void test_reference(unsigned char *ek,unsigned char *e,unsigned char *k){
 	int i;
@@ -88,6 +100,9 @@ void test_reference(unsigned char *ek,unsigned char *e,unsigned char *k){
 void test_hls(unsigned char *ek,unsigned char *e,unsigned char *k){
 	int i;
 
+
+	curve25519_donna(ek,e,k);
+
 	for (i = 0;i < 32;++i){
 		printf("%02x",(unsigned int) e[i]);
 	}
@@ -96,9 +111,6 @@ void test_hls(unsigned char *ek,unsigned char *e,unsigned char *k){
 		printf("%02x",(unsigned int) k[i]);
 	}
 	printf("\n");
-
-	curve25519_donna_ref(ek,e,k);
-
 	for (i = 0;i < 32;++i){
 		printf("%02x",(unsigned int) ek[i]);
 	}
@@ -110,6 +122,12 @@ int main(){
 	unsigned char e1e2k_ref[32];
 	unsigned char e2e1k_ref[32];
 	printf("Testing ref:\n");
+
+    memset(e1k, 0, 32);
+    memset(e2e1k, 0, 32);
+    memset(e2k, 0, 32);
+    memset(e1e2k, 0, 32);
+
 	test_reference(e1k,e1,k);
 	test_reference(e2e1k,e2,e1k);
 	test_reference(e2k,e2,k);
@@ -123,13 +141,18 @@ int main(){
 	}
 
 	memcpy(e1e2k_ref, e1e2k, 32);
-	memcpy(e2e1k_ref, e1e2k, 32);
+	memcpy(e2e1k_ref, e2e1k, 32);
+
+    memset(e1k, 0, 32);
+    memset(e2e1k, 0, 32);
+    memset(e2k, 0, 32);
+    memset(e1e2k, 0, 32);
 
 	printf("\nTesting hls:\n");
-	test_hls(e1k,e1,k);
-	test_hls(e2e1k,e2,e1k);
-	test_hls(e2k,e2,k);
-	test_hls(e1e2k,e1,e2k);
+	test_hls(e1k,e1_2,k_2);
+	test_hls(e2e1k,e2_2,e1k);
+	test_hls(e2k,e2_2,k_2);
+	test_hls(e1e2k,e1_2,e2k);
 
 	for(i=0; i<32; i++){
 		if(e1e2k[i] != e2e1k[i]){
