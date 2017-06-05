@@ -1,4 +1,4 @@
-#include "xcrypto_sigh_hw.h"
+#include "xcrypto_sign_hw.h"
 #include "user_mmap_driver.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +24,8 @@ unsigned char sk[64] =
 
 int main(int argc, char* argv[]){
   int c, i;
-  unsigned int num_blocks;
+  unsigned int num_blocks = 0;
+  unsigned int ap_done;
   unsigned char *data_ptr;
   unsigned int *control_register, *sk_reg, *blocks_reg, *sig_out;
 
@@ -35,12 +36,19 @@ int main(int argc, char* argv[]){
         break;
       case 'h':
         usage();
+        return 0;
         break;
       default:
         printf("Invalid option: %c\n", (char)c);
         usage();
         return -1;
     }
+  }
+
+  if(num_blocks == 0){
+    printf("Specify a non-zero number of 128-bit blocks\n");
+    usage();
+    return -1;
   }
 
   shared_memory sign_device = getSharedMemoryArea(CRYPTO_SIGN_BASE, 0x1000);
@@ -53,14 +61,14 @@ int main(int argc, char* argv[]){
     (unsigned int*)(data_ptr + XCRYPTO_SIGN_AXILITES_ADDR_SIGNATURE_OUT_BASE);
 
   for(i=0; i<64/4; i++){
-    sk_reg[i] = ()(unsigned int*)(sk))[i];
+    sk_reg[i] = ((unsigned int*)(sk))[i];
   }
 
   *blocks_reg = num_blocks;
 
   *control_register = 1;
 
-  while((*control_register) & 0x2 == 0){
+  while((ap_done = (*control_register) & 0x2) == 0){
     __asm__("");
 		asm("");
   }
