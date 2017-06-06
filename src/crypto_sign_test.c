@@ -23,10 +23,10 @@ unsigned char sk[64] =
            0x7c,0x06,0x07,0xdf};
 
 int main(int argc, char* argv[]){
-  int c, i;
+  int c, i, j;
   unsigned int num_blocks = 0;
   unsigned int ap_done;
-  unsigned char *data_ptr;
+  unsigned char *data_ptr, *microblaze_data;
   unsigned int *control_register, *sk_reg, *blocks_reg, *sig_out;
 
   while((c = getopt(argc, argv, "n:h")) != -1){
@@ -52,7 +52,9 @@ int main(int argc, char* argv[]){
   }
 
   shared_memory sign_device = getSharedMemoryArea(CRYPTO_SIGN_BASE, 0x1000);
+  shared_memory microblaze_mem = getSharedMemoryArea(MICROBLAZE_MEM_BASE, num_blocks*128);
   data_ptr = (unsigned char*)sign_device->ptr;
+  microblaze_data = (unsigned char*)microblaze_mem->ptr;
   control_register = (unsigned int*)data_ptr;
   sk_reg = (unsigned int*)(data_ptr + XCRYPTO_SIGN_AXILITES_ADDR_SK_BASE);
   blocks_reg =
@@ -63,6 +65,14 @@ int main(int argc, char* argv[]){
   for(i=0; i<64/4; i++){
     sk_reg[i] = ((unsigned int*)(sk))[i];
   }
+
+/*  printf("Original microblaze data:\n");
+  for(i=0; i<num_blocks; i++){
+    for(j=0; j<128/4; j++){
+      printf("%08x", ((unsigned int*)(microblaze_data))[i*(128/4) + j]);
+    }
+  }
+  printf("\n");*/
 
   *blocks_reg = num_blocks;
 
