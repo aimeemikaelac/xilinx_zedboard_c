@@ -15,7 +15,8 @@ int main(){
   int i;
   //Use system() to call python programming script. As this program has to
   //be run as root anyways, this should be fine.
-  system("/usr/bin/python /home/michael/program_memory.py --bin /home/michael/ecdsa_test.bin --base_address 0xA0000000");
+  //sudo ~/root_of_trust/operational_os/program_memory.py --bin ~/ecdsa_test.bin --base_address 0xA0000000
+  system("/usr/bin/python /home/michael/root_of_trust/operational_os/program_memory.py --bin /home/michael/ecdsa_test.bin --base_address 0xA0000000");
   //reset system
   writeValueToAddress(1, RESET_CONTROL);
   shared_buffer_mem = getSharedMemoryArea(RESET_CONTROL, 0x2000);
