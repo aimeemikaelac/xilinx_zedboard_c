@@ -12,7 +12,7 @@ LDFLAGS		:= -fPIC -c
 SHRFLAGS	:= -shared -Wl,-soname,libuio.so
 LIBS 		:= -lssl -lcrypto -lm -ldl -lpthread
 CPP_LIBS	:= -lstdc++ -lc
-INCLUDES	:= $(SRC_DIR)/user_mmap_driver $(SRC_DIR)/xilinx_aes_uio_driver $(SRC_DIR)/xilinx_qam_uio_driver $(SRC_DIR)/memmgr $(SRC_DIR)/fixed_point $(SRC_DIR)/xilinx_axi_reset_uio_driver $(SRC_DIR)/aes_fpga $(SRC_DIR)/xilinx_memory_scanner_uio_driver $(SRC_DIR)/xilinx_memory_scanner_ddr_uio_driver  $(SRC_DIR)/xilinx_triple_aes_uio_driver $(SRC_DIR)/curve_25519_uio_driver $(SRC_DIR)/crypto_sign_uio_driver $(SRC_DIR)/ed25519_ref_c #$(SRC_DIR)/test_direct_dma_uio_driver
+INCLUDES	:= $(SRC_DIR)/user_mmap_driver $(SRC_DIR)/xilinx_aes_uio_driver $(SRC_DIR)/xilinx_qam_uio_driver $(SRC_DIR)/memmgr $(SRC_DIR)/fixed_point $(SRC_DIR)/xilinx_axi_reset_uio_driver $(SRC_DIR)/aes_fpga $(SRC_DIR)/xilinx_memory_scanner_uio_driver $(SRC_DIR)/xilinx_memory_scanner_ddr_uio_driver  $(SRC_DIR)/xilinx_triple_aes_uio_driver $(SRC_DIR)/curve_25519_uio_driver $(SRC_DIR)/crypto_sign_uio_driver $(SRC_DIR)/ed25519_ref_c $(SRC_DIR)/ed25519 #$(SRC_DIR)/test_direct_dma_uio_driver
 INCL		:= $(foreach d, $(INCLUDES), -I$d/)
 DRIVERS		:= $(foreach d, $(INCLUDES), $(wildcard $d/*.c))
 AES 		:= $(SRC_DIR)/aes_runner.c
@@ -30,6 +30,7 @@ FILE_MEM	:= $(SRC_DIR)/write_file_to_memory.c
 CURVE		:= $(SRC_DIR)/curve_25519_test.c
 CRYPTO_SIGN	:= $(SRC_DIR)/crypto_sign_test.c
 ED25519		:= $(SRC_DIR)/ed25519_sign_microblaze_test.c
+ed25519_test:= $(SRC_DIR)/ecdsa_ed25519_microblaze_test.c
 
 
 SOURCES		:= $(wildcard $(SRC_DIR)/**/*.c*)# $(SRC_DIR)/*.c*)
@@ -87,6 +88,9 @@ crypto_sign: $(CRYPTO_SIGN)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 ed25519: $(ED25519)
+	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
+
+ed25519_test: $(ED25519_TEST)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
 #$(OUT_DIR)/%.o: $(SOURCES)
