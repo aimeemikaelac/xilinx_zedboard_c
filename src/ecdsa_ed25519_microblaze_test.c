@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <sys/random.h>
+#include <sys/syscall.h>
 #include <time.h>
 #include "stdio.h"
 #include "unistd.h"
@@ -8,7 +8,6 @@
 
 #define SHARED_BUFFER 0xA0040000
 #define RESET_CONTROL 0xB0010000
-#define CONTROL_OFFSET 0x280
 #define TRIALS 50
 #define DATA_SIZE 0x100
 #define CONTROL_OFFSET 0
@@ -43,7 +42,7 @@ int main(){
   printf("ARM_SIGNATURE,ARM_TIME,MICROBLAZE_SIGNATURE,MICROBLAZE_TIME,DATA_SIZE,CORRECT\n");
   //Run several signatures
   for(trial_counter=0; trial_counter<TRIALS; trial_counter++){
-    if(getrandom(seed, 32, GRND_NONBLOCK) < 0){
+    if(syscall(SYS_getrandom, seed, 32, 0) < 0){
       fprintf(stderr, "Error getting random data. urandom may not be initialized.\n");
       return -1;
     }
@@ -53,7 +52,7 @@ int main(){
       data[i] = (unsigned char)rand();
     }
     arm_start = clock();
-    ed25519_sign(arm_signature, data, public_key, private_key);
+    ed25519_sign(arm_signature, data, DATA_SIZE, public_key, private_key);
     arm_end = clock();
     //Copy public key
     for(i=0; i<32; i++){
