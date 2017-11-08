@@ -20,7 +20,7 @@
 int main(){
   unsigned char seed[32], public_key[32], private_key[64], data[DATA_SIZE];
   unsigned char microblaze_signature[64], arm_signature[64];
-  volatile unsigned char *shared_buffer, *control;
+  volatile unsigned int *shared_buffer, *control;
   shared_memory shared_buffer_mem;
   int i, trial_counter, matched;
   clock_t arm_start, arm_end, microblaze_start, microblaze_end;
@@ -30,8 +30,8 @@ int main(){
   //sudo ~/root_of_trust/operational_os/program_memory.py --bin ~/ecdsa_test.bin --base_address 0xA0000000
   system("/usr/bin/python /home/michael/root_of_trust/operational_os/remote_attestation/program_memory.py --bin /home/michael/ecdsa_test.bin --base_address 0xA0000000");
   shared_buffer_mem = getSharedMemoryArea(SHARED_BUFFER, 0x2000);
-  shared_buffer = (volatile unsigned char*)(shared_buffer_mem->ptr);
-  control = shared_buffer + CONTROL_OFFSET;
+  shared_buffer = (volatile unsigned int*)(shared_buffer_mem->ptr);
+  control = (volatile unsigned int*)(shared_buffer_mem->ptr + CONTROL_OFFSET);
   //reset system
   writeValueToAddress(1, RESET_CONTROL);
   //Set up shared memory
@@ -55,16 +55,16 @@ int main(){
     ed25519_sign(arm_signature, data, DATA_SIZE, public_key, private_key);
     arm_end = clock();
     //Copy public key
-    for(i=0; i<32; i++){
-      shared_buffer[PUBLIC_OFFSET + i] = public_key[i];
+    for(i=0; i<32/4; i++){
+      shared_buffer[PUBLIC_OFFSET/4 + i] = ((unsigned int*)public_key)[i];
     }
     //Copy private key
-    for(i=0; i<64; i++){
-      shared_buffer[PRIVATE_OFFSET + i] = private_key[i];
+    for(i=0; i<64/4; i++){
+      shared_buffer[PRIVATE_OFFSET/4 + i] = ((unsigned int*)private_key)[i];
     }
     //Copy data
-    for(i=0; i<DATA_SIZE; i++){
-      shared_buffer[DATA_OFFSET + i] = data[i];
+    for(i=0; i<DATA_SIZE/4; i++){
+      shared_buffer[DATA_OFFSET/4 + i] = ((unsigned int*)data)[i];
     }
     //Clear last finished flag
     control[4] = 0;
@@ -79,9 +79,12 @@ int main(){
     arm_elapsed = ((double)(arm_end - arm_start))/CLOCKS_PER_SEC;
     microblaze_elapsed = ((double)(microblaze_end - microblaze_start))/CLOCKS_PER_SEC;
     //copy in microblaze signature
+    for(i=0; i<64/4; i++){
+      ((unsigned int*)microblaze_signature)[i] = shared_buffer[SIGNATURE_OFFSET/4 + i];
+    }
+    //compare signature
     matched = 1;
     for(i=0; i<64; i++){
-      microblaze_signature[i] = shared_buffer[SIGNATURE_OFFSET + i];
       if(arm_signature[i] != microblaze_signature[i]){
         matched = 0;
       }
