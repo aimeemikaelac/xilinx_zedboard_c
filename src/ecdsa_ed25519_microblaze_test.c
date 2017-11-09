@@ -8,8 +8,8 @@
 
 #define SHARED_BUFFER 0xA0040000
 #define RESET_CONTROL 0xB0010000
-#define TRIALS 50
-#define DATA_SIZE 0x100
+#define TRIALS 1000
+#define DATA_SIZE 0x1000
 #define CONTROL_OFFSET 0
 #define PUBLIC_OFFSET 0x20
 #define PRIVATE_OFFSET 0x40
@@ -34,10 +34,6 @@ int main(){
   control = (volatile unsigned int*)(shared_buffer_mem->ptr + CONTROL_OFFSET);
   //reset system
   writeValueToAddress(1, RESET_CONTROL);
-  //Set up shared memory
-  shared_buffer_mem = getSharedMemoryArea(RESET_CONTROL, 0x2000);
-  shared_buffer = shared_buffer_mem->ptr;
-  control = shared_buffer + DATA_SIZE + CONTROL_OFFSET;
   //print out CSV header
   printf("ARM_SIGNATURE,ARM_TIME,MICROBLAZE_SIGNATURE,MICROBLAZE_TIME,DATA_SIZE,CORRECT\n");
   //Run several signatures
@@ -67,10 +63,9 @@ int main(){
       shared_buffer[DATA_OFFSET/4 + i] = ((unsigned int*)data)[i];
     }
     //Clear last finished flag
-    control[4] = 0;
     microblaze_start = clock();
-    control[0] = 0xFF;
-    while(control == 0){
+    *control = 0x1;
+    while((*control & 0x2) == 0){
       asm("");
       __asm__("");
     }
