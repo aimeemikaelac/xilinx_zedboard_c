@@ -32,6 +32,7 @@ CURVE		:= $(SRC_DIR)/curve_25519_test.c
 CRYPTO_SIGN	:= $(SRC_DIR)/crypto_sign_test.c
 ED25519		:= $(SRC_DIR)/ed25519_sign_microblaze_test.c
 ED25519_TEST:= $(SRC_DIR)/ecdsa_ed25519_microblaze_test.c
+WRITE_FILE	:= $(SRC_DIR)/write_file_to_memory.c
 
 
 SOURCES		:= $(wildcard $(SRC_DIR)/**/*.c*)# $(SRC_DIR)/*.c*)
@@ -94,6 +95,8 @@ crypto_sign: $(CRYPTO_SIGN)
 ed25519_test: $(ED25519_TEST)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
+write_file:
+	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 #$(OUT_DIR)/%.o: $(SOURCES)
 #	$(CC) -c -fPIC -o $@ $^ $(LIBS) $(CFLAGS)
 
