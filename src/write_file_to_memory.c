@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 unsigned long get_size_by_fd(int fd) {
     struct stat statbuf;
@@ -9,7 +12,17 @@ unsigned long get_size_by_fd(int fd) {
     return statbuf.st_size;
 }
 
+
+void usage(void)
+{
+	printf("*argv[0] -g <ADDRESS> -f <FILE>\n");
+	printf("    -g <ADDR>   GPIO physical address\n");
+	printf("    -f          File to progam\n");
+	return;
+}
+
 int main(int argc, char** argv){
+  int c;
   long i, address = 0;
   char *filename = NULL;
   unsigned int *file_buffer = NULL;
@@ -47,18 +60,18 @@ int main(int argc, char** argv){
   }
   long fsize = get_size_by_fd(fp);
 
-  printf("Writing %s of size %i to %i\n", filename, fsize, address);
+  printf("Writing %s of size %i to %li\n", filename, fsize, address);
 
-  file_buffer = (unsigned int*)mmap(0, file_size, PROT_WRITE, MAP_READ, fp, 0);
+  file_buffer = (unsigned int*)mmap(0, fsize, PROT_READ, MAP_SHARED, fp, 0);
   if(file_buffer == MAP_FAILED){
     printf("Could not map file\n");
     return -1;
   }
 
-  for(i=0; i<file_size/sizeof(uint32_t); i++){
+  for(i=0; i<fsize/sizeof(unsigned int); i++){
     writeValueToAddress(file_buffer[i], address + i);
   }
 
-  munmap(file_buffer);
+  munmap(file_buffer, fsize);
   return 0;
 }
