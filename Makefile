@@ -95,7 +95,7 @@ crypto_sign: $(CRYPTO_SIGN)
 ed25519_test: $(ED25519_TEST)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 
-write_file:
+write_file: $(WRITE_FILE)
 	$(CC) -o $(OUT_DIR)/$@.o $^ $(EXECFLAGS) $(DRIVERS) $(INCL) $(LIBS)
 #$(OUT_DIR)/%.o: $(SOURCES)
 #	$(CC) -c -fPIC -o $@ $^ $(LIBS) $(CFLAGS)
