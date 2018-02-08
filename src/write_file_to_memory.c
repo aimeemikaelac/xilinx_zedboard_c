@@ -29,7 +29,7 @@ int main(int argc, char** argv){
 
   while((c = getopt(argc, argv, "g:f")) != -1) {
 		switch(c) {
-		case 'a':
+		case 'g':
 			address=strtoul(optarg,NULL, 0);
 			break;
 		case 'f':
