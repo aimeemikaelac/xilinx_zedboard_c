@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 	void *ptr;
 	unsigned page_size=sysconf(_SC_PAGESIZE);
 
-	printf("GPIO access through /dev/mem.\n", page_size);
+	printf("GPIO access through /dev/mem.\n");
 
 	/* Parse command line arguements */
 	while((c = getopt(argc, argv, "g:io:h")) != -1) {
@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
 
 
 	munmap(ptr, page_size);
+    close(fd);
 
 	return 0;
 }

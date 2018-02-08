@@ -23,8 +23,8 @@ int getValueAtAddress(unsigned gpio_addr, unsigned int* value){
 
 //write value to address in system memory map using gpio. program
 //must still be run as root
-int writeValueToAddress(unsigned int value, unsigned gpio_addr){
-	shared_memory mem = getSharedMemoryArea(gpio_addr, 0);
+int writeValueToAddress(unsigned int value, unsigned int gpio_addr){
+	shared_memory mem = getSharedMemoryArea(gpio_addr, 4);
 
 	/* Write value to the device register */
 	*((unsigned int *)(mem->ptr)) = value;
@@ -36,7 +36,7 @@ int writeValueToAddress(unsigned int value, unsigned gpio_addr){
 
 //get the value at memory address gpio_addr in system address
 //map using GPIO and /dev/map. program must be run as root
-int getValueAtAddressUio(int offset, unsigned int* value, char* filename, unsigned length){
+int getValueAtAddressUio(int offset, unsigned int* value, char* filename, unsigned int length){
 	shared_memory mem = getUioMemoryArea(filename, length);
 
 	if(mem == NULL){
@@ -54,7 +54,7 @@ int getValueAtAddressUio(int offset, unsigned int* value, char* filename, unsign
 
 //write value to address in uio memory map using uio. program
 //must still be run as root
-int writeValueToAddressUio(unsigned int value, int offset, char* filename, unsigned length){
+int writeValueToAddressUio(unsigned int value, int offset, char* filename, unsigned int length){
 	shared_memory mem = getUioMemoryArea(filename, length);
 
 	/* Write value to the device register */
@@ -65,14 +65,14 @@ int writeValueToAddressUio(unsigned int value, int offset, char* filename, unsig
 	return 0;
 }
 
-shared_memory getSharedMemoryArea(unsigned sharedMemoryAddress, unsigned length){
-	unsigned page_addr, page_offset;
+shared_memory getSharedMemoryArea(unsigned int sharedMemoryAddress, unsigned int length){
+	unsigned int page_addr, page_offset, page_base;
 	//get page size from system
-	unsigned page_size=sysconf(_SC_PAGESIZE);
-	unsigned mmap_length = page_size;
-	if(length != 0){
+	unsigned int page_size=sysconf(_SC_PAGESIZE);
+	unsigned int mmap_length = 2*page_size;
+/*	if(length != 0){
 		mmap_length = length;
-	}
+	}*/
 	int fd;
 	void * ptr = NULL;
 
@@ -89,10 +89,10 @@ shared_memory getSharedMemoryArea(unsigned sharedMemoryAddress, unsigned length)
 	}
 
 	/* mmap the device into memory */
-	// page_addr = (sharedMemoryAddress & (~(page_size-1)));
-	page_base = (offset / pagesize) * pagesize;
+//	page_base = (sharedMemoryAddress & (~(page_size-1)));
+	page_base = (sharedMemoryAddress / page_size) * page_size;
 	page_offset = sharedMemoryAddress - page_base;
-	ptr = mmap(NULL, page_offset + mmap_length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, page_base);
+	ptr = mmap(NULL, mmap_length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, page_base);
 	if(ptr == MAP_FAILED){
 		perror("Error mmapping /dev/mem");
 		close(fd);
@@ -117,10 +117,10 @@ shared_memory getSharedMemoryArea(unsigned sharedMemoryAddress, unsigned length)
 	return mem;
 }
 
-shared_memory getUioMemoryArea(char* filename, unsigned mmap_length){
-	unsigned page_addr, page_offset;
+shared_memory getUioMemoryArea(char* filename, unsigned int mmap_length){
+	unsigned int page_addr, page_offset;
 	//get page size from system
-	unsigned page_size=sysconf(_SC_PAGESIZE);
+	unsigned int page_size=sysconf(_SC_PAGESIZE);
 //	unsigned mmap_length = page_size;
 //	if(length != 0){
 //		mmap_length = length;
@@ -138,7 +138,7 @@ shared_memory getUioMemoryArea(char* filename, unsigned mmap_length){
 	}
 
 	/* mmap the device into memory */
-	unsigned sharedMemoryAddress = 0x0;
+	unsigned int sharedMemoryAddress = 0x0;
 	page_addr = (sharedMemoryAddress & (~(page_size-1)));
 	page_offset = sharedMemoryAddress - page_addr;
 	ptr = mmap(NULL, mmap_length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, page_addr);
@@ -180,7 +180,7 @@ shared_memory getUioMemoryArea(char* filename, unsigned mmap_length){
 //}
 
 void cleanupSharedMemoryPointer(shared_memory mem){
-	munmap((void *)mem->ptr, mem->offset + mem->length);
+	munmap((void *)mem->ptr, mem->offset);
 
 	close(mem->fd);
 

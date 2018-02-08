@@ -7,14 +7,14 @@ LIB		:= libuio.so
 TARGET		:= $(OUT_DIR)/$(LIB)
 
 EXECFLAGS	:= -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -static
-LIBS 		:= -lssl -lcrypto -lm -ldl -lpthread
+LIBS 		:= #-lssl -lcrypto -lm -ldl -lpthread
 LDFLAGS		:= $(LIBS)
 SHRFLAGS	:= -shared -Wl,-soname,libuio.so
 CPP_LIBS	:= -lstdc++ -lc
-INCLUDES	:= $(SRC_DIR)/user_mmap_driver $(SRC_DIR)/xilinx_aes_uio_driver $(SRC_DIR)/xilinx_qam_uio_driver $(SRC_DIR)/memmgr $(SRC_DIR)/xilinx_axi_reset_uio_driver $(SRC_DIR)/aes_fpga $(SRC_DIR)/xilinx_memory_scanner_uio_driver $(SRC_DIR)/xilinx_memory_scanner_ddr_uio_driver  $(SRC_DIR)/xilinx_triple_aes_uio_driver $(SRC_DIR)/curve_25519_uio_driver $(SRC_DIR)/crypto_sign_uio_driver $(SRC_DIR)/ed25519
+INCLUDES	:= $(SRC_DIR)/user_mmap_driver #$(SRC_DIR)/xilinx_aes_uio_driver $(SRC_DIR)/xilinx_qam_uio_driver $(SRC_DIR)/memmgr $(SRC_DIR)/xilinx_axi_reset_uio_driver $(SRC_DIR)/aes_fpga $(SRC_DIR)/xilinx_memory_scanner_uio_driver $(SRC_DIR)/xilinx_memory_scanner_ddr_uio_driver  $(SRC_DIR)/xilinx_triple_aes_uio_driver $(SRC_DIR)/curve_25519_uio_driver $(SRC_DIR)/crypto_sign_uio_driver $(SRC_DIR)/ed25519
 #$(SRC_DIR)/test_direct_dma_uio_driver $(SRC_DIR)/ed25519_ref_c
 INCL		:= $(foreach d, $(INCLUDES), -I$d/)
-CFLAGS		:= $(INCL) #-Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -fPIC -c
+CFLAGS		:= -g $(INCL) #-Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -fPIC -c
 CXXFLAGS	:= $(INCL)
 DRIVERS		:= $(foreach d, $(INCLUDES), $(wildcard $d/*.c))
 AES 		:= $(SRC_DIR)/aes_runner.o
