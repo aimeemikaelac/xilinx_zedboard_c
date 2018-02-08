@@ -27,7 +27,7 @@ int main(int argc, char** argv){
   char *filename = NULL;
   unsigned int *file_buffer = NULL;
 
-  while((c = getopt(argc, argv, "g:f")) != -1) {
+  while((c = getopt(argc, argv, "gf")) != -1) {
 		switch(c) {
 		case 'g':
 			address=strtoul(optarg,NULL, 0);
