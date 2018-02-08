@@ -89,10 +89,11 @@ shared_memory getSharedMemoryArea(unsigned sharedMemoryAddress, unsigned length)
 	}
 
 	/* mmap the device into memory */
-	page_addr = (sharedMemoryAddress & (~(page_size-1)));
-	page_offset = sharedMemoryAddress - page_addr;
-	ptr = mmap(NULL, mmap_length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, page_addr);
-	if(ptr == NULL){
+	// page_addr = (sharedMemoryAddress & (~(page_size-1)));
+	page_base = (offset / pagesize) * pagesize;
+	page_offset = sharedMemoryAddress - page_base;
+	ptr = mmap(NULL, page_offset + mmap_length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, page_base);
+	if(ptr == MAP_FAILED){
 		perror("Error mmapping /dev/mem");
 		close(fd);
 		return NULL;
@@ -179,7 +180,7 @@ shared_memory getUioMemoryArea(char* filename, unsigned mmap_length){
 //}
 
 void cleanupSharedMemoryPointer(shared_memory mem){
-	munmap((void *)mem->ptr, mem->page_size);
+	munmap((void *)mem->ptr, mem->offset + mem->length);
 
 	close(mem->fd);
 
