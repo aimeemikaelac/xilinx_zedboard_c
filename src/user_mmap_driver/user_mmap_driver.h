@@ -40,11 +40,11 @@ typedef struct shared_memory_struct{
 typedef shared_memory_struct* shared_memory;
 
 //get an int at an address in system memory
-int getValueAtAddress(unsigned address, unsigned int* value);
+int getValueAtAddress(unsigned long long address, unsigned int* value);
 //write an int to an address in system memory
-int writeValueToAddress(unsigned int value, unsigned address);
+int writeValueToAddress(unsigned int value, unsigned long long address);
 //get a pointer to a memory region of a certain length through /dev/mem
-shared_memory getSharedMemoryArea(unsigned address, unsigned length);
+shared_memory getSharedMemoryArea(unsigned long long address, unsigned length);
 //cleanup a shared_memory struct
 void cleanupSharedMemoryPointer(shared_memory mem);
 //sync a shred_memory struct

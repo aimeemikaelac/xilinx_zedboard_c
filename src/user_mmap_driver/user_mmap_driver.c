@@ -5,7 +5,7 @@
 //TODO: refactor this and write function, as setup and unmap is the same in both
 //get the value at memory address gpio_addr in system address
 //map using GPIO and /dev/map. program must be run as root
-int getValueAtAddress(unsigned gpio_addr, unsigned int* value){
+int getValueAtAddress(unsigned long long gpio_addr, unsigned int* value){
 	shared_memory mem = getSharedMemoryArea(gpio_addr, 0);
 
 	if(mem == NULL){
@@ -23,11 +23,12 @@ int getValueAtAddress(unsigned gpio_addr, unsigned int* value){
 
 //write value to address in system memory map using gpio. program
 //must still be run as root
-int writeValueToAddress(unsigned int value, unsigned int gpio_addr){
+int writeValueToAddress(unsigned int value, unsigned long long gpio_addr){
 	shared_memory mem = getSharedMemoryArea(gpio_addr, 4);
 
 	/* Write value to the device register */
-	*((unsigned int *)(mem->ptr)) = value;
+    unsigned int *base = (unsigned int*)(mem->ptr);
+    *base = value;
 //	*((unsigned *)(ptr + page_offset + 8)) = value;
 	cleanupSharedMemoryPointer(mem);
 
@@ -65,8 +66,9 @@ int writeValueToAddressUio(unsigned int value, int offset, char* filename, unsig
 	return 0;
 }
 
-shared_memory getSharedMemoryArea(unsigned int sharedMemoryAddress, unsigned int length){
-	unsigned int page_addr, page_offset, page_base;
+shared_memory getSharedMemoryArea(unsigned long long sharedMemoryAddress, unsigned int length){
+	unsigned long long page_addr, page_base;
+    unsigned int page_offset;
 	//get page size from system
 	unsigned int page_size=sysconf(_SC_PAGESIZE);
 	unsigned int mmap_length = 2*page_size;
@@ -107,7 +109,7 @@ shared_memory getSharedMemoryArea(unsigned int sharedMemoryAddress, unsigned int
 		return NULL;
 	}
 	//increment ptr to be at the point specified by the input address
-	ptr = ptr + ((char)page_offset);
+	ptr = ptr + page_offset;
 
 	mem->fd = fd;
 	mem->ptr = ptr;
@@ -158,7 +160,7 @@ shared_memory getUioMemoryArea(char* filename, unsigned int mmap_length){
 		return NULL;
 	}
 	//increment ptr to be at the point specified by the input address
-	ptr = ptr + ((char)page_offset);
+	ptr = ptr + page_offset;
 
 	mem->fd = fd;
 	mem->ptr = ptr;
@@ -180,7 +182,7 @@ shared_memory getUioMemoryArea(char* filename, unsigned int mmap_length){
 //}
 
 void cleanupSharedMemoryPointer(shared_memory mem){
-	munmap((void *)mem->ptr, mem->offset);
+	munmap((void *)mem->original_ptr, mem->length);
 
 	close(mem->fd);
 
