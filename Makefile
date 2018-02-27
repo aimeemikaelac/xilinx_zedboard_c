@@ -34,6 +34,7 @@ CRYPTO_SIGN	:= $(SRC_DIR)/crypto_sign_test.o
 ED25519		:= $(SRC_DIR)/ed25519_sign_microblaze_test.o
 ED25519_TEST:= $(SRC_DIR)/ecdsa_ed25519_microblaze_test.o
 WRITE_FILE	:= $(SRC_DIR)/write_file_to_memory.o
+ICAP_TEST	:= $(SRC_DIR)/icap_program.cpp
 
 
 SOURCES		:= $(wildcard $(SRC_DIR)/**/*.c*)# $(SRC_DIR)/*.c*)
@@ -97,6 +98,9 @@ ed25519_test: $(ED25519_TEST) $(OBJECTS)
 	$(CC) -o $(OUT_DIR)/$@ $^ $(LDFLAGS)
 
 write_file: $(WRITE_FILE) $(OBJECTS)
+	$(CC) -o $(OUT_DIR)/$@ $^ $(LDFLAGS)
+
+icap_test: $(ICAP_TEST) &(OBJECTS)
 	$(CC) -o $(OUT_DIR)/$@ $^ $(LDFLAGS)
 #$(OUT_DIR)/%.o: $(SOURCES)
 #	$(CC) -c -fPIC -o $@ $^ $(LIBS) $(CFLAGS)
