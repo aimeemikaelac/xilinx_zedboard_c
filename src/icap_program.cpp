@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include "user_mmap_driver.h"
+#include <sys/stat.h>
 
 #define ICAP 0xB0000000
 #define WRITE_FIFO_OFFSET 0x100
@@ -22,10 +23,10 @@ void usage(void)
 }
 
 
-int main(){
+int main(int argc, char *argv[]){
   char *filename = NULL;
   unsigned int *file_buffer = NULL;
-  unsigned int control = 1, status = 1;
+  unsigned int control = 1, status = 1, c = 0;
   int i;
   while((c = getopt(argc, argv, "f")) != -1) {
     switch(c) {
@@ -51,8 +52,6 @@ int main(){
     return -1;
   }
   long fsize = get_size_by_fd(fp);
-
-  printf("Writing %s of size %i to %li\n", filename, fsize, address);
 
   file_buffer = (unsigned int*)mmap(0, fsize, PROT_READ, MAP_SHARED, fp, 0);
   if(file_buffer == MAP_FAILED){
