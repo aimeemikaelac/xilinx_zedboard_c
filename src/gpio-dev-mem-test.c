@@ -76,6 +76,11 @@ int main(int argc, char *argv[])
 	page_addr = (gpio_addr & (~(page_size-1)));
 	page_offset = gpio_addr - page_addr;
 	ptr = mmap(NULL, page_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, page_addr);
+    if(ptr < 0){
+      printf("mmap failed. see errno for reason.\n");
+      close(fd);
+      return -1;
+    }
 
 	if (direction == IN) {
 	/* Read value from the device register */

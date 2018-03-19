@@ -2,7 +2,7 @@
 #include "user_mmap_driver.h"
 #include <sys/stat.h>
 
-#define ICAP 0x41400000
+#define ICAP 0xB0000000
 #define WRITE_FIFO_OFFSET 0x100
 #define SIZE_REG_OFFSET 0x108
 #define CONTROL_REG_OFFSET 0x10C
@@ -86,11 +86,11 @@ int main(int argc, char *argv[]){
   for(i=0; i<fsize/4; i++){
     writeValueToAddress(file_buffer[i], ICAP + WRITE_FIFO_OFFSET);
     getValueAtAddress(ICAP + VACANCY_REG_OFFSET, &vacancy);
-    printf("FIFO vacancy: %08x\n", vacancy);
+//    printf("FIFO vacancy: %08x\n", vacancy);
     if(vacancy == 0){
-      printf("Triggering write in ICAP\n");
+//      printf("Triggering write in ICAP\n");
       writeValueToAddress(0x1, ICAP + CONTROL_REG_OFFSET);
-      printf("Waiting for control registers to clear\n");
+//      printf("Waiting for control registers to clear\n");
       do{
         getValueAtAddress(ICAP + CONTROL_REG_OFFSET, &control);
       } while(control != 0);
@@ -101,9 +101,9 @@ int main(int argc, char *argv[]){
   close(fp);
 
 
-  printf("Triggering write in ICAP\n");
+//  printf("Triggering write in ICAP\n");
   writeValueToAddress(0x1, ICAP + CONTROL_REG_OFFSET);
-  printf("Waiting for control registers to clear\n");
+//  printf("Waiting for control registers to clear\n");
   do{
     getValueAtAddress(ICAP + CONTROL_REG_OFFSET, &control);
   } while(control != 0);
