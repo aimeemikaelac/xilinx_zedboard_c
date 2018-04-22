@@ -29,9 +29,9 @@ int main(int argc, char *argv[])
 	unsigned long long gpio_addr = 0;
 	int value = 0;
 
-	unsigned page_addr, page_offset;
+	unsigned long long page_addr, page_offset;
 	void *ptr;
-	unsigned page_size=sysconf(_SC_PAGESIZE);
+	unsigned long long page_size=sysconf(_SC_PAGESIZE);
 
 	printf("GPIO access through /dev/mem.\n");
 
