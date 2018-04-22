@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 	int c;
 	int fd;
 	int direction=IN;
-	unsigned gpio_addr = 0;
+	unsigned long long gpio_addr = 0;
 	int value = 0;
 
 	unsigned page_addr, page_offset;
