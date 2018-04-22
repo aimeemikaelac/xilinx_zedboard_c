@@ -84,17 +84,17 @@ int main(int argc, char *argv[])
 
 	if (direction == IN) {
 	/* Read value from the device register */
-		value = *((int *)(ptr + page_offset));
+		value = (int)(*((unsigned long long*)(ptr + page_offset)));
 		printf("gpio dev-mem test: input: %08x\n",value);
 	} else {
 	/* Write value to the device register */
-		*((unsigned *)(ptr + page_offset)) = value;
+		*((unsigned long long *)(ptr + page_offset)) = value;
 //		*((unsigned *)(ptr + page_offset + 8)) = value;
 	}
 
 
 	munmap(ptr, page_size);
-    close(fd);
+	close(fd);
 
 	return 0;
 }
