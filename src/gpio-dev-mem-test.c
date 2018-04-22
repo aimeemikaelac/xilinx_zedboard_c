@@ -84,13 +84,14 @@ int main(int argc, char *argv[])
 
 	if (direction == IN) {
 	/* Read value from the device register */
-		value = (int)(*((unsigned long long*)(ptr + page_offset)));
-		int value2 = (int)(*((unsigned long long*)(ptr + page_offset + 4)));
+//		value = (int)(*((unsigned long long*)(ptr + page_offset)));
+		value = *((int*)(ptr + page_offset));
+//		int value2 = (int)(*((unsigned long long*)(ptr + page_offset + 4)));
 		printf("gpio dev-mem test: input: %08x\n",value);
-		printf("value after: %08x\n", value2);
+//		printf("value after: %08x\n", value2);
 	} else {
 	/* Write value to the device register */
-		*((unsigned long long *)(ptr + page_offset)) = value;
+		*((int*)(ptr + page_offset)) = value;
 //		*((unsigned *)(ptr + page_offset + 8)) = value;
 	}
 
